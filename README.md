@@ -83,13 +83,13 @@ Check the configuration parameters USERNAME and SSH_PUB in the first few lines.
 It's sets up a Debian container:
  * setup apt to use apt-cacher-ng server (http://10.0.3.1:3142/)
  * Installs the following packages:
-  - `apt-utils gnupg apt-transport-https ca-certificates`
-  - `iputils-ping wget screen less bash-completion sudo nano \
+   - `apt-utils gnupg apt-transport-https ca-certificates`
+   - `iputils-ping wget screen less bash-completion sudo nano \
   openssh-server systemd-journal-remote unattended-upgrades`
  * Sets up journald remote logging(http://10.0.3.1:19532)
  * Adds an non-root administrator user
-  - sudo without password
-  - copy SSH public key to ~/.ssh/authorized_keys
+   - sudo without password
+   - copy SSH public key to ~/.ssh/authorized_keys
 
 
 
