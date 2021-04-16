@@ -30,19 +30,25 @@ function LOG() {
 }
 
 # install apt-transport-https
+LOG "Installing apt-transport-https..."
 apt-get update -y
 apt-get upgrade -y
 apt-get install -y apt-utils gnupg apt-transport-https ca-certificates
 
-# install sources.list for stable that uses https
-LOG "Setting up APT for https..."
-cp /etc/apt/sources.list /etc/apt/sources.list.orig
-cat << EOF > /etc/apt/sources.list
-# use default CDN(fastly) over HTTPS, enable contrib and non-free
+# use the debian https mirror for now. (will be disabled once apt-cacher-ng is installed)
+cat << EOF > /etc/apt/sources.list.d/debian_https.list
 deb https://deb.debian.org/debian buster main contrib non-free
 deb https://deb.debian.org/debian buster-updates main contrib non-free
-deb https://deb.debian.org/debian-security buster/updates main
 deb https://deb.debian.org/debian buster-backports main contrib non-free
+deb https://deb.debian.org/debian-security buster/updates main
+EOF
+
+# will be enabled once apt-cacher-ng is setup
+cat << EOF > /etc/apt/sources.list.d/debian_cached.list.disabled
+deb http://10.0.3.1:3142/deb.debian.org/debian buster main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian buster-updates main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian buster-backports main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian-security buster/updates main
 EOF
 
 # set debconf config value before installing so no promts are needed:
@@ -55,7 +61,7 @@ echo "apt-cacher-ng iptables-persistent/autosave_v4 boolean false" | debconf-set
 echo "apt-cacher-ng iptables-persistent/autosave_v6 boolean false" | debconf-set-selections
 
 # install required and nice-to-have packages
-LOG "Installing required packages..."
+LOG "Ugrading and installing required packages..."
 apt-get update -y
 #apt-get upgrade -y
 apt-get dist-upgrade -y
@@ -180,6 +186,7 @@ fi
 
 
 #setup fail2ban
+LOG "Setting up fail2ban for SSH..."
 rm /etc/fail2ban/jail.d/defaults-debian.conf
 cat << EOF > /etc/fail2ban/10-local.conf
 [DEFAULT]
@@ -199,6 +206,7 @@ EOF
 
 
 # setup apt-cacher-ng host
+LOG "Setting up apt-cacher-ng..."
 cp /etc/apt-cacher-ng/acng.conf /etc/apt-cacher-ng/acng.conf.orig
 cat << EOF > /etc/apt-cacher-ng/acng.conf
 BindAddress: 10.0.3.1
@@ -214,9 +222,15 @@ EOF
 systemctl enable apt-cacher-ng.service
 systemctl restart apt-cacher-ng.service
 
+# switch apt to to local apt-cacher-ng
+LOG "Switching APT to apt-cacher-ng..."
+mv /etc/apt/sources.list.d/debian_cached.list.disabled /etc/apt/sources.list.d/debian_cached.list
+mv /etc/apt/sources.list.d/debian_https.list /etc/apt/sources.list.d/debian_https.list.disabled
+apt-get update -y
 
 
 # setup SSH server
+LOG "Configuring SSH server for key-based authentication..."
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 cat << EOF > /etc/ssh/sshd_config
 # default values omitted for brevity
@@ -242,6 +256,7 @@ systemctl restart ssh
 
 
 # setup remote logging for containers
+LOG "Configuring journald..."
 cp /etc/systemd/journald.conf /etc/systemd/journald.conf.orig
 cat << EOF > /etc/systemd/journald.conf
 # See journald.conf(5) for details.
@@ -253,6 +268,7 @@ SystemMaxUse=2G
 EOF
 
 # change from HTTPS to HTTP
+LOG "Configuring systemd-journal-remote to recive logs over HTTPS on 10.0.3.1"
 mkdir -p /etc/systemd/system/systemd-journal-remote.service.d
 cat << EOF > /etc/systemd/system/systemd-journal-remote.service.d/override.conf
 [Service]
