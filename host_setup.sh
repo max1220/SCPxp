@@ -9,6 +9,22 @@ set -e
 # Things that (currently) need to be done manually:
 # * setup mounts/fstab
 
+### CONFIGURATION ###
+
+# perform setup needed for cgroup v2(currently broken)
+ENABLE_CGROUPV2=false
+
+# enable setup for unprivileged containers(currently broken)
+ENABLE_UNPRIVILEGED=false
+
+# setup this user for use with unprivileged containers(needs to exist already)
+USERNAME=max
+
+### END CONFIGURATION ###
+
+
+
+
 function LOG() {
 	echo -e "\e[32m$@\e[0m"
 }
@@ -53,45 +69,113 @@ apt-get install -y --no-install-recommends \
 
 
 
+LOG "Updating kernel cmdline..."
+
 # enable apparmor
 echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT apparmor=1 security=apparmor\"" > /etc/default/grub.d/apparmor.cfg
 
 # TODO: cgroupv2 currently not working
-#echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT systemd.unified_cgroup_hierarchy=1\"" > /etc/default/grub.d/cgroupv2.cfg
+if [ "$ENABLE_CGROUPV2" = true ]; then
+	echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT systemd.unified_cgroup_hierarchy=1\"" > /etc/default/grub.d/cgroupv2.cfg
+fi
 update-grub
 
 
-
 # enable LXC bridge
+LOG "Enabling lxc-net..."
 echo "USE_LXC_BRIDGE=\"true\"" > /etc/default/lxc-net
 systemctl enable lxc-net
 systemctl restart lxc-net
 
 
-# TODO: cgroupv2 currently not working
-#cp /usr/share/lxc/config/debian.common.conf /usr/share/lxc/config/debian.common.conf.orig
-#cp /usr/share/lxc/config/common.conf /usr/share/lxc/config/common.conf.orig
-#sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/debian.common.conf
-#sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/common.conf
+# modify default configuration to use cgroup v2 for device confinement
+if [ "$ENABLE_CGROUPV2" = true ]; then
+	LOG "Modifying default container configuration to use cgroupv2 devices"
+	cp /usr/share/lxc/config/debian.common.conf /usr/share/lxc/config/debian.common.conf.orig
+	cp /usr/share/lxc/config/common.conf /usr/share/lxc/config/common.conf.orig
+	sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/debian.common.conf
+	sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/common.conf
+fi
 
 
+# create directory for shared(public) data
 mkdir -p /data/shared
 
 
+# allow root to map itself to UID's >1M
+LOG "Setting up subuid/subgid for root..."
+echo "root:1000000:65536" >> /etc/subuid
+echo "root:1000000:65536" >> /etc/subgid
+
+
+if [ "$ENABLE_UNPRIVILEGED" = true ]; then
+	LOG "Setting up subuid/subgid for $USERNAME..."
+	echo "$USERNAME:2000000:65536" >> /etc/subuid
+	echo "$USERNAME:2000000:65536" >> /etc/subgid
+
+	LOG "Setting up to enable unprivileged_userns_clone..."
+	cat << EOF > /etc/sysctl.d/30-userns.conf
+kernel.unprivileged_userns_clone=0
+EOF
+
+	LOG "Setting up default.conf for unprivileged user $USERNAME"
+	mkdir -p /home/$USERNAME/.config/lxc
+	cat << EOF > .config/lxc/default.conf
+lxc.apparmor.profile = unconfined
+lxc.cap.drop = audit_control
+lxc.cap.drop = audit_read
+lxc.cap.drop = audit_write
+lxc.cap.drop = sys_module
+lxc.cap.drop = mac_admin
+lxc.cap.drop = mac_override
+lxc.cap.drop = sys_time
+lxc.cap.drop = net_raw
+
+lxc.idmap = u 0 2000000 65536
+lxc.idmap = g 0 2000000 65536
+lxc.mount.auto = proc:mixed sys:ro cgroup:mixed
+
+EOF
+	chown -R $USERNAME:$USERNAME /home/$USERNAME/.config
+fi
+
 # setup LXC default container config
+LOG "Setting up LXC default.conf ..."
 cp /etc/lxc/default.conf /etc/lxc/default.conf.orig
 cat << EOF > /etc/lxc/default.conf
 lxc.apparmor.profile = generated
 
-#lxc.cgroup.devices.allow =
-#lxc.cgroup.devices.deny = a
-#lxc.init.cmd = /lib/systemd/systemd systemd.unified_cgroup_hierarchy=1
-
 lxc.start.auto = 1
+lxc.cap.drop = audit_control
+lxc.cap.drop = audit_read
+lxc.cap.drop = audit_write
+lxc.cap.drop = sys_module
+lxc.cap.drop = mac_admin
+lxc.cap.drop = mac_override
+lxc.cap.drop = sys_time
+lxc.cap.drop = net_raw
+
+lxc.idmap = u 0 1000000 65536
+lxc.idmap = g 0 1000000 65536
+
+lxc.mount.auto = proc:mixed sys:ro cgroup:mixed
 
 lxc.mount.entry=/data/shared data/shared none bind,optional,create=dir 0 0
 
 EOF
+
+# TODO: cgroupv2 currently not working
+if [ "$ENABLE_CGROUPV2" = true ]; then
+	cat << EOF >> /etc/lxc/default.conf
+# disable cgroup v1
+lxc.cgroup.devices.allow =
+lxc.cgroup.devices.deny = a
+# configure containers systemd to use cgroup v2
+lxc.init.cmd = /lib/systemd/systemd systemd.unified_cgroup_hierarchy=1
+
+EOF
+fi
+
 
 
 
