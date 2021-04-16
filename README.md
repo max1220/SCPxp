@@ -140,6 +140,31 @@ rule for forwarding requests to the *host* on port `8080` to the
 
 
 
+## Using letsencrypt
+
+You can easily distribute letsencrypt keys to a container.
+
+On the host system, you can create new letsencrypt certificates using:
+
+```
+sudo new certonly \
+--standalone \
+--pre-hook /path/to/lxc-scripts/letsencrypt_pre.sh \
+--post-hook /home/max/LXC/letsencrypt_post.sh \
+-d example.com \
+-d www.example.com
+```
+
+You could then add a bind mount to the container to forward this single certificate obtained for the VM:
+
+```
+lxc.mount.entry=/etc/letsencrypt/live/example.com etc/letsencrypt/live/example.com none bind,create=dir 0 0
+lxc.mount.entry=/etc/letsencrypt/archive/example.com etc/letsencrypt/archive/example.com none bind,create=dir 0 0
+```
+
+You need to add both mounts, as the certificates in the live/ directory are
+just symlinks to the corresponding certificates in the archive/ directory.
+
 ## letsencrypt_pre.sh
 
 This script uses iptables to temporarily allow connection to port 80
@@ -149,7 +174,8 @@ containers on that port.
 ## letsencrypt_post.sh
 
 This script removes the temporary iptables rules, and restarts
-services that depend on the certificates.
+containers that depend on the certificates.
+
 
 
 
