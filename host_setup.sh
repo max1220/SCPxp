@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # This script is used to setup a LXC container host.
 # Use it on a fresh install of Debian 10 with working internet connection.
@@ -23,18 +24,12 @@ USERNAME=max
 ### END CONFIGURATION ###
 
 
-
-
-function LOG() {
-	echo -e "\e[32m$@\e[0m"
-}
-
 # install apt-transport-https
 LOG "Installing apt-transport-https..."
 apt-get update -y
-apt-get upgrade -y
-apt-get install -y apt-utils gnupg apt-transport-https ca-certificates
+apt-get install -y apt-utils gnupg2 apt-transport-https ca-certificates
 
+LOG "Setting up temporary sources.list entries..."
 # use the debian https mirror for now. (will be disabled once apt-cacher-ng is installed)
 cat << EOF > /etc/apt/sources.list.d/debian_https.list
 deb https://deb.debian.org/debian buster main contrib non-free
@@ -51,8 +46,12 @@ deb http://10.0.3.1:3142/deb.debian.org/debian buster-backports main contrib non
 deb http://10.0.3.1:3142/deb.debian.org/debian-security buster/updates main
 EOF
 
+# disable current(reduntant) sources.list
+mv /etc/apt/sources.list /etc/apt/sources.list.disabled
+
 # set debconf config value before installing so no promts are needed:
 
+LOG "Preconfiguring debconf..."
 # no tunneling through apt-cacher-ng(this could bypass firewall rules)
 echo "apt-cacher-ng apt-cacher-ng/tunnelenable boolean false" | debconf-set-selections
 
@@ -61,21 +60,32 @@ echo "apt-cacher-ng iptables-persistent/autosave_v4 boolean false" | debconf-set
 echo "apt-cacher-ng iptables-persistent/autosave_v6 boolean false" | debconf-set-selections
 
 # install required and nice-to-have packages
-LOG "Ugrading and installing required packages..."
+LOG "Ugrading and installing packages..."
 apt-get update -y
-#apt-get upgrade -y
 apt-get dist-upgrade -y
 apt-get install -y --no-install-recommends \
- sudo screen nano less bash-completion man-db dialog lua5.1 dnsutils netcat \
+ sudo screen nano less bash-completion man-db dialog lua5.1 dnsutils \
  openssh-server unattended-upgrades \
  systemd-journal-remote iptables-persistent apt-cacher-ng fail2ban certbot \
  lxc dnsmasq-base lxc-templates debootstrap rsync \
  uidmap apparmor apparmor-utils \
+ qemu-system-x86 qemu-kvm libvirt-daemon-system libvirt-clients netcat-openbsd \
  linux-image-amd64/buster-backports
+#apt-get install -y -t buster-backports systemd linux-image-amd64
 
+
+LOG "Configuring libvirtd..."
+# add user to libvirt group(allow using system libvirt)
+adduser ${USERNAME} libvirt
+
+# auto-start libvirt default network
+virsh --connect=qemu:///system net-autostart default
 
 
 LOG "Updating kernel cmdline..."
+
+# set grub timeout to 1s(faster boots)
+echo "GRUB_TIMEOUT=1" > /etc/default/grub.d/timeout.cfg
 
 # enable apparmor
 echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT apparmor=1 security=apparmor\"" > /etc/default/grub.d/apparmor.cfg
@@ -128,15 +138,6 @@ EOF
 	mkdir -p /home/$USERNAME/.config/lxc
 	cat << EOF > .config/lxc/default.conf
 lxc.apparmor.profile = unconfined
-lxc.cap.drop = audit_control
-lxc.cap.drop = audit_read
-lxc.cap.drop = audit_write
-lxc.cap.drop = sys_module
-lxc.cap.drop = mac_admin
-lxc.cap.drop = mac_override
-lxc.cap.drop = sys_time
-lxc.cap.drop = net_raw
-
 lxc.idmap = u 0 2000000 65536
 lxc.idmap = g 0 2000000 65536
 lxc.mount.auto = proc:mixed sys:ro cgroup:mixed
@@ -152,14 +153,18 @@ cat << EOF > /etc/lxc/default.conf
 lxc.apparmor.profile = generated
 
 lxc.start.auto = 1
-lxc.cap.drop = audit_control
-lxc.cap.drop = audit_read
-lxc.cap.drop = audit_write
-lxc.cap.drop = sys_module
-lxc.cap.drop = mac_admin
-lxc.cap.drop = mac_override
-lxc.cap.drop = sys_time
-lxc.cap.drop = net_raw
+lxc.cap.keep = chown
+lxc.cap.keep = dac_override
+lxc.cap.keep = dac_read_search
+lxc.cap.keep = fowner
+lxc.cap.keep = kill
+lxc.cap.keep = mknod
+lxc.cap.keep = net_bind_service
+lxc.cap.keep = sys_nice
+lxc.cap.keep = setgid
+lxc.cap.keep = setuid
+lxc.cap.keep = sys_tty_config
+
 
 lxc.idmap = u 0 1000000 65536
 lxc.idmap = g 0 1000000 65536
@@ -187,7 +192,7 @@ fi
 
 #setup fail2ban
 LOG "Setting up fail2ban for SSH..."
-rm /etc/fail2ban/jail.d/defaults-debian.conf
+rm -f /etc/fail2ban/jail.d/defaults-debian.conf
 cat << EOF > /etc/fail2ban/10-local.conf
 [DEFAULT]
 bantime = 1h
@@ -268,7 +273,7 @@ SystemMaxUse=2G
 EOF
 
 # change from HTTPS to HTTP
-LOG "Configuring systemd-journal-remote to recive logs over HTTPS on 10.0.3.1"
+LOG "Configuring systemd-journal-remote to recive logs over HTTP on 10.0.3.1"
 mkdir -p /etc/systemd/system/systemd-journal-remote.service.d
 cat << EOF > /etc/systemd/system/systemd-journal-remote.service.d/override.conf
 [Service]
