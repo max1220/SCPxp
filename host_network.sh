@@ -1,15 +1,12 @@
 #!/bin/bash
 set -e
+function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # this script configures networking for the LXC container host.
 # It configures the required interfaces via /etc/network/interfaces,
 # sets the hostname,
 # installs and configures lxc-net and ndppd if needed,
 # and updates the default LXC config accordingly.
-
-function LOG() {
-	echo -e "\e[32m$@\e[0m"
-}
 
 if [ -z "$1" ]; then
 	echo "Error: Need to supply configuration file as first parameter"
@@ -62,6 +59,7 @@ EOF
 
 # setup iptables for IPv4
 LOG "Setting up /etc/iptables/rules.v4 for IPv4..."
+mkdir -p /etc/iptables/
 cat << EOF > /etc/iptables/rules.v4
 *filter
 # default is drop incomming/forward, allow rest
