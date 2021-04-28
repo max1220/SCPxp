@@ -28,6 +28,8 @@ Login as regular user, perform `sudo apt-get update` and `sudo apt-get upgrade` 
 
 (optionally) install SSH server for easy access during setup `sudo apt install openssh-server`
 
+(optionally) setup sudo so you don't need to enter a password.
+
 Now you can use my scripts to perform the actual installation of the
 host system.
 
@@ -35,11 +37,16 @@ First, download the current version of my scripts on the server.
 Git has the advantage that you can easily update the scripts
 (git to be installed: `sudo apt install git`):
 
-`git clone https://TBD`
+```
+git clone https://github.com/max1220/lxc-scripts
+```
 
 Alternatively:
 
-`wget https://TBD`
+```
+wget https://github.com/max1220/lxc-scripts/archive/refs/heads/main.zip
+unzip main.zip && rm main.zip
+```
 
 After obtaining the scripts(via git, wget, etc.),
 `cd` into the directory, and run `sudo ./host_setup.sh`.
@@ -49,9 +56,10 @@ This should install a some base packages, and setup some services(see below for 
 Edit `./host_network.sh` to reflect your network setup.
 (It's commented, also see provider documentation).
 
-Now run `sudo ./host_network.sh` to install the new networking configuration.
+Now run `sudo ./host_network.sh <host network config.sh>` to install the new networking configuration.
+An example network configuration for running as libvirtd guest is provided.
 
-At this point, the only thing left is `sudo reboot`.
+If the scripts ran successfully you should reboot now.
 The reboot is required because we changed the grub configuration to
 enable apparmor support in our kernel.
 
@@ -67,7 +75,7 @@ by calling the associated lxc-* programms.
 It uses the dialog util to provide interactive input.
 
 Currently, it supports:
- * create/start/stop/delete/clone/rename/backup containers
+ * create/start/stop/restart/delete/clone/rename containers
  * list running/stopped containers
  * copy files from/to containers
  * run scripts in containers
@@ -80,13 +88,12 @@ Currently, it supports:
 
 This script is the default container onboarding script.
 Check the configuration parameters USERNAME and SSH_PUB in the first few lines.
-It's sets up a Debian container:
- * setup apt to use apt-cacher-ng server (http://10.0.3.1:3142/)
+It's sets up a Debian container nicely:
+ * setup apt to use apt-cacher-ng (use http://10.0.3.1:3142/)
  * Installs the following packages:
-   - `apt-utils gnupg apt-transport-https ca-certificates`
-   - `iputils-ping wget screen less bash-completion sudo nano \
-  openssh-server systemd-journal-remote unattended-upgrades`
- * Sets up journald remote logging(http://10.0.3.1:19532)
+   - `apt-transport-https ca-certificates apt-utils iputils-ping ca-certificates wget screen less bash-completion sudo \
+   nano openssh-server systemd-journal-remote unattended-upgrades`
+ * Sets up journald remote logging(use http://10.0.3.1:19532)
  * Adds an non-root administrator user
    - sudo without password
    - copy SSH public key to ~/.ssh/authorized_keys
@@ -98,12 +105,16 @@ It's sets up a Debian container:
 This script should be used on a clean install of Debian 10 to setup the LXC host.
 It requires that you already have a working internet connection,
 and that you have copied your SSH key to the host already(disables password login)
+ * install a lot of packages
+ * setup sub*id mapping
+ * install libvirt and allow default user access
  * install and configure apt-cacher-ng for containers
  * enable apparmor in grub config
  * sets up default LXC container config
  * setup fail2ban for SSH
  * Configure SSH securely(no password login!)
  * setup journal-remote to listen using HTTP on bridge IP
+ * more. (see `host_setup.sh`)
 
 
 
@@ -158,8 +169,8 @@ sudo new certonly \
 You could then add a bind mount to the container to forward this single certificate obtained for the VM:
 
 ```
-lxc.mount.entry=/etc/letsencrypt/live/example.com etc/letsencrypt/live/example.com none bind,create=dir 0 0
-lxc.mount.entry=/etc/letsencrypt/archive/example.com etc/letsencrypt/archive/example.com none bind,create=dir 0 0
+lxc.mount.entry=/etc/letsencrypt/live/example.com etc/letsencrypt/live/example.com none ro,bind,create=dir 0 0
+lxc.mount.entry=/etc/letsencrypt/archive/example.com etc/letsencrypt/archive/example.com none ro,bind,create=dir 0 0
 ```
 
 You need to add both mounts, as the certificates in the live/ directory are
@@ -198,9 +209,11 @@ tasks, see their respective documentation/comments.
 
 
 # TODO
+  - container backup
   - unprivileged containers
   - monitoring
   - host backup?
+  - wireguard
   - move container backup logic from manage_containers.lua to scripts/backup.sh
   - setup scripts for
     * mail
