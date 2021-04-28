@@ -1,21 +1,14 @@
 #!/bin/bash
 set -e
+function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # This script is my default container onboarding scirpt.
-# It sets up a debian container nicely:
+# It sets up a Debian 10 system nicely:
 #  * configure apt for contrib and non-free, enable apt-transport-https
 #  * installs some common packages
-#    * bash-completion
-#    * sudo
-#    * nano
-#    * openssh-server
-#    * systemd-journal-remote
-#    * unattended-upgrades
-#    * apt-transport-https
 #  * sets up sudo so that the default user needs no password
 #  * configures systemd-journal-remote to send journald logs to host
 # Below are a few user-configurable settings for this script:
-# TODO: setup hostname/fqdn, /etc/hosts
 
 ### CONFIGURATION ###
 
@@ -25,14 +18,11 @@ USERNAME=max
 # the new user will have this key in his ~/.ssh/authorized_keys
 SSH_PUB="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDKvYFrAT997455zvBcOgudHwp2ZvlNKq278ZsTDR+MQFH0xwKVywzQMnOH1MtzBocwO44VmDKm6YM92KXuMcxQ/8QeTzp+dj+PuOfPgCYXNNqCsPw75ruTFxADBVmtVUCA+SSlmj85RMqgcRVXKp55it3EukbvQJVeMoAhUwiLpi+lVQwFfB9Poh9gFACK/J6yZ7g2aUzDwOog/YhQwpuiD1Z2C9jezaBDm+Z/sDMWN0HKoCfLcOz95kgGTVU1C+KKQdGFO9KRc1t7bA5VUyFwWRf97JDtAdCq/QCQLZc1ZoFHYDsKv6THuLJR0D4paKqqTLFCyKZtv7qVpsNJwOBANA8W+2R3/eoWVbTJS2eNkNM3nsxoyJAwBsz4DmsJghkapHrGh9GElMqjlDVpfFNX+B3un6LiqvUDJxcUCvaBLdygxchwQ3oeDSpNGADw6L/PsRB+k4UN0uUhP1YAnyv7RtaK9X20V/EsPj1KlG+2yNsCsmtXyI+Kv/z3Y/TuXok= max@debian-fx"
 
-# should this container use the apt-cacher-ng on the host?
+# should this system use the apt-cacher-ng on the host?
 ENABEL_APT_CACHE=true
 
 ### END CONFIGURATION ###
 
-function LOG() {
-	echo -e "\e[32m$@\e[0m"
-}
 
 # wait 30s for network to become available for apt updates
 for i in {1..30}; do
@@ -94,8 +84,8 @@ apt-get upgrade -y
 
 LOG "Installing base packages..."
 apt-get install -y --no-install-recommends \
-apt-utils iputils-ping wget screen less bash-completion sudo nano \
-openssh-server systemd-journal-remote unattended-upgrades \
+apt-utils iputils-ping ca-certificates wget screen less bash-completion sudo \
+nano openssh-server systemd-journal-remote unattended-upgrades
 
 # configure remote systemd journal logging
 LOG "Setting up remote logging..."
@@ -103,6 +93,22 @@ cat << EOF > /etc/systemd/journal-upload.conf
 [Upload]
  URL=http://10.0.3.1:19532
 EOF
+
+# we need to disable some of the isolation features as they are blocked
+# because the LXC config disables both CAP_SYS_ADMIN and some bind mounts
+LOG "Configuring systemd-journal-upload for unprivileged container"
+mkdir -p /etc/systemd/system/systemd-journal-upload.service.d
+cat << EOF > /etc/systemd/system/systemd-journal-upload.service.d/override.conf
+[Service]
+DynamicUser=no
+PrivateDevices=no
+StateDirectory=
+User=
+
+EOF
+
+
+
 systemctl enable systemd-journal-upload.service
 systemctl start systemd-journal-upload.service
 
@@ -142,8 +148,6 @@ chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
 chmod 0400 /home/$USERNAME/.ssh/authorized_keys
 
 LOG
-LOG
-LOG "Container setup ok!"
 LOG "Try logging in using:"
 LOG
 LOG "  ssh $USERNAME@$HOSTNAME"
