@@ -21,6 +21,9 @@ ENABLE_UNPRIVILEGED=false
 # setup this user for use with unprivileged containers(needs to exist already)
 USERNAME=max
 
+# enable setup for libvirtd
+ENABLE_LIBVIRT=false
+
 ### END CONFIGURATION ###
 
 
@@ -68,24 +71,25 @@ apt-get install -y --no-install-recommends \
  openssh-server unattended-upgrades \
  systemd-journal-remote iptables-persistent apt-cacher-ng fail2ban certbot \
  lxc dnsmasq-base lxc-templates debootstrap rsync \
- uidmap apparmor apparmor-utils \
- qemu-system-x86 qemu-kvm libvirt-daemon-system libvirt-clients netcat-openbsd \
- linux-image-amd64/buster-backports
-#apt-get install -y -t buster-backports systemd linux-image-amd64
+ uidmap apparmor apparmor-utils dbus bridge-utils
 
+# Also install a more recent kernel, systemd and btrfs-progs from backports
+# apt-get install -y -t buster-backports systemd linux-image-amd64 btrfs-progs
 
-LOG "Configuring libvirtd..."
-# add user to libvirt group(allow using system libvirt)
-adduser ${USERNAME} libvirt
-
-# auto-start libvirt default network
-virsh --connect=qemu:///system net-autostart default
-
+if [ "$ENABLE_LIBVIRT" = true ]; then
+	# Also setup libvirt for QEMU based VMs
+	apt-get install -y --no-install-recommends qemu-system-x86 qemu-kvm libvirt-daemon-system libvirt-clients netcat-openbsd
+	LOG "Configuring libvirtd..."
+	# add user to libvirt group(allow using system libvirt)
+	adduser ${USERNAME} libvirt
+	# auto-start libvirt default network
+	virsh --connect=qemu:///system net-autostart default
+fi
 
 LOG "Updating kernel cmdline..."
 
-# set grub timeout to 1s(faster boots)
-echo "GRUB_TIMEOUT=1" > /etc/default/grub.d/timeout.cfg
+# set grub timeout to 2s(faster boots)
+echo "GRUB_TIMEOUT=2" > /etc/default/grub.d/timeout.cfg
 
 # enable apparmor
 echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT apparmor=1 security=apparmor\"" > /etc/default/grub.d/apparmor.cfg
@@ -117,6 +121,9 @@ fi
 # create directory for shared(public) data
 mkdir -p /data/shared
 
+# allow default lxc-mappedt user to accesss shared directory
+sudo chown 1001000:1001000 /data/shared/
+
 
 # allow root to map itself to UID's >1M
 LOG "Setting up subuid/subgid for root..."
@@ -131,12 +138,12 @@ if [ "$ENABLE_UNPRIVILEGED" = true ]; then
 
 	LOG "Setting up to enable unprivileged_userns_clone..."
 	cat << EOF > /etc/sysctl.d/30-userns.conf
-kernel.unprivileged_userns_clone=0
+kernel.unprivileged_userns_clone=1
 EOF
 
 	LOG "Setting up default.conf for unprivileged user $USERNAME"
 	mkdir -p /home/$USERNAME/.config/lxc
-	cat << EOF > .config/lxc/default.conf
+	cat << EOF > /home/$USERNAME/.config/lxc/default.conf
 lxc.apparmor.profile = unconfined
 lxc.idmap = u 0 2000000 65536
 lxc.idmap = g 0 2000000 65536
