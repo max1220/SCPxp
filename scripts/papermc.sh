@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # Downloads and sets up a PaperMC server.
 # Use on Debian 10.
@@ -65,6 +66,73 @@ chmod u+x start.sh
 # you need to have read & accepted the EULA beforehand!
 echo "eula=true" > eula.txt
 
+mkdir plugins
+cd plugins
+wget "https://github.com/webbukkit/dynmap/releases/download/v3.1-beta-7/Dynmap-3.1-beta7-spigot.jar"
+wget "https://ci.enginehub.org/repository/download/bt10/17754:id/worldedit-bukkit-7.3.0-SNAPSHOT-dist.jar?branch=master&guest=1"
+wget "https://ci.codemc.io/view/Author/job/pop4959/job/Chunky/lastSuccessfulBuild/artifact/bukkit/build/libs/Chunky-1.2.65.jar"
+cd ..
+
+cat << EOF > server.properties
+# game settings
+motd=A Minecraft Server
+max-players=20
+gamemode=survival
+pvp=true
+difficulty=hard
+online-mode=true
+view-distance=10
+
+# level settings
+level-name=world
+level-seed=
+level-type=default
+generator-settings=
+generate-structures=true
+max-world-size=10000
+
+# network settings
+server-port=25565
+network-compression-threshold=-1
+enable-rcon=false
+rcon.port=25575
+rcon.password=
+enable-query=false
+query.port=25565
+
+# misc
+enable-jmx-monitoring=false
+enable-command-block=false
+max-tick-time=60000
+use-native-transport=true
+enable-status=true
+allow-flight=false
+broadcast-rcon-to-ops=true
+max-build-height=256
+server-ip=
+allow-nether=true
+sync-chunk-writes=true
+op-permission-level=4
+prevent-proxy-connections=false
+resource-pack=
+entity-broadcast-range-percentage=100
+player-idle-timeout=0
+force-gamemode=false
+rate-limit=0
+hardcore=false
+white-list=false
+broadcast-console-to-ops=true
+spawn-npcs=true
+spawn-animals=true
+snooper-enabled=true
+function-permission-level=2
+text-filtering-config=
+spawn-monsters=true
+enforce-whitelist=false
+resource-pack-sha1=
+spawn-protection=16
+EOF
+
 chown -R minecraft:minecraft ${PAPERMC_DIR}
 
 # create systemd service for automatic start
@@ -92,8 +160,8 @@ systemctl enable papermc.service
 systemctl restart papermc.service
 
 
-echo
-echo "	PaperMC installed"
-echo
+LOG
+LOG "	PaperMC installed"
+LOG
 #echo "(press enter to return)"
 #read
