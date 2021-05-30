@@ -53,11 +53,10 @@ After obtaining the scripts(via git, wget, etc.),
 
 This should install a some base packages, and setup some services(see below for details).
 
-Edit `./host_network.sh` to reflect your network setup.
-(It's commented, also see provider documentation).
 
 Now run `sudo ./host_network.sh <host network config.sh>` to install the new networking configuration.
 An example network configuration for running as libvirtd guest is provided.
+(It's commented, also see your provider documentation)
 
 If the scripts ran successfully you should reboot now.
 The reboot is required because we changed the grub configuration to
