@@ -1,8 +1,8 @@
 #!/bin/bash
-echo -e
+set -e
 function LOG() { echo -e "\e[34m$@\e[0m"; }
 
-# this script uses a pre-configured libvirt VM snapshot (fresh booted Debian 10 install),
+# this script restores a pre-configured libvirt VM snapshot (fresh booted Debian 10 install),
 # then uses the host_setup.sh and host_network.sh scripts to setup the VM.
 # I use this script to make sure that my setup is reproduceable.
 
@@ -20,6 +20,9 @@ SNAPSHOT="prepared"
 
 # used for ssh and scp
 SSH="max@${IP}"
+
+# enable setting up btrfs(needs to configured in Debian installer as well)
+ENABLE_BTRFS=false
 
 ### END CONFIGURATION ###
 
@@ -44,10 +47,22 @@ virsh -c qemu:///system snapshot-revert ${VM} ${SNAPSHOT}
 
 wait_for_connection ${IP} 22
 
-scp -r ${PWD} ${SSH}:~
-
 # update time in restored container
 ssh ${SSH} sudo hwclock --hctosys
+
+scp -r ${PWD} ${SSH}:~
+
+if [ "$ENABLE_BTRFS" = true ]; then
+	LOG "Setting up btrfs..."
+	ssh ${SSH} -t "cd LXC ; sudo ./host_btrfs.sh"
+
+	LOG "Rebooting..."
+	ssh ${SSH} "sudo reboot" || true
+	sleep 1
+fi
+
+
+wait_for_connection ${IP} 22
 
 LOG "Setting up base system..."
 ssh ${SSH} -t "cd LXC ; sudo ./host_setup.sh"
@@ -56,8 +71,11 @@ LOG "Setting up networking..."
 ssh ${SSH} -t "cd LXC ; sudo ./host_network.sh host_network_config_libvirt.sh"
 
 LOG "Rebooting..."
-ssh ${SSH} "sudo reboot"
+ssh ${SSH} "sudo reboot" || true
+sleep 1
 
 wait_for_connection ${IP} 22
 
-LOG "Ok"
+LOG
+LOG "Libvirt VM Ok"
+LOG
