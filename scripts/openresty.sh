@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # Installs and configures a openresty(nginx) server.
 # Use on Debian 10.
@@ -71,7 +72,7 @@ http {
 	add_header X-Content-Type-Options "nosniff";
 
 	# include the server directives from the sites/ directory
-	include /etc/openresty/sites/*.conf
+	include /etc/openresty/sites/*.conf;
 }
 EOF
 
@@ -142,7 +143,7 @@ EOF
 
 # add all domains
 for domainname in ${DOMAINS}; do
-	echo "Adding setup for domain ${domainname}"
+	LOG "Adding setup for domain ${domainname}"
 	add_domain ${domainname}
 done
 
@@ -150,9 +151,8 @@ done
 systemctl enable openresty
 systemctl restart openresty
 
-echo
-echo
-echo "openresty setup done!"
-echo
+LOG
+LOG "openresty setup done!"
+LOG
 #echo "(press enter to return)"
 #read
