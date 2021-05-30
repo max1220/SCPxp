@@ -236,7 +236,7 @@ function menu_create() {
 	["${container}" = ""] && return
 	template="$(inputbox "Enter the LXC template to use:" "${DEFAULT_LXC_TEMPLATE}")"
 	template_args="$(inputbox "Extra arguments for template:" "${DEFAULT_LXC_TEMPLATE_ARGS}")"
-	ask_confirm_exec lxc-create -n $container -t $template -- $template_args
+	ask_confirm_exec lxc-create -B best -n $container -t $template -- $template_args
 	if yesno "Start container now?"; then
 		ask_confirm_exec lxc-start -n ${container}
 		post_install_script="$(inputbox "Run post-install script?" "${DEFAULT_POST_INSTALL_SCRIPT}")"
