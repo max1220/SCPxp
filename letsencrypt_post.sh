@@ -27,3 +27,11 @@ for container_name in $RESTART_CONTAINERS; do
 		lxc-start -n $container_name
 	fi
 done
+
+
+# needed for bind-mounting when uid-mapping:
+setfacl -R -m u:1000000:rx /etc/letsencrypt/archive
+setfacl -R -m u:1000000:rx /etc/letsencrypt/live
+# allow www-data read access
+setfacl -R -m u:1000033:rx /etc/letsencrypt/archive
+setfacl -R -m u:1000033:rx /etc/letsencrypt/live
