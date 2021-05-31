@@ -157,10 +157,10 @@ You can easily distribute letsencrypt keys to a container.
 On the host system, you can create new letsencrypt certificates using:
 
 ```
-sudo new certonly \
+sudo letsencrypt certonly \
 --standalone \
 --pre-hook /path/to/lxc-scripts/letsencrypt_pre.sh \
---post-hook /home/max/LXC/letsencrypt_post.sh \
+--post-hook /path/to/lxc-scripts/letsencrypt_post.sh \
 -d example.com \
 -d www.example.com
 ```
@@ -185,7 +185,7 @@ containers on that port.
 
 This script removes the temporary iptables rules, and restarts
 containers that depend on the certificates.
-
+It also uses setfacl to allow the uid mapped users root(uid=1000000) and www-data(1000033) access to the certificates.
 
 
 
@@ -219,3 +219,4 @@ tasks, see their respective documentation/comments.
 	  - iredmail(SOGO) + jsxc
     * jabber
   - port manage_containers.lua to bash?
+  - Figure out why ACL is only needed on btrfs?
