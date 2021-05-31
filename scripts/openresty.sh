@@ -147,6 +147,11 @@ for domainname in ${DOMAINS}; do
 	add_domain ${domainname}
 done
 
+systemctl stop openresty
+
+# remove old directories with wrong permissions
+rm -rf /usr/local/openresty/nginx/*_temp
+
 # enable openresty at bootup & start openresty
 systemctl enable openresty
 systemctl restart openresty
