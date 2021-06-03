@@ -44,7 +44,7 @@ wget -O ${VELOCITY_JAR} ${VELOCITY_URL}
 # create start script
 cat << EOF > start.sh
 #!/bin/bash
-java -Xms1G -Xmx1G -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:+UnlockExperimentalVMOptions -XX:+ParallelRefProcEnabled -XX:+AlwaysPreTouch -XX:MaxInlineLevel=15 -jar ${VELOCITY_JAR}
+java -Xms512M -Xmx512M -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:+UnlockExperimentalVMOptions -XX:+ParallelRefProcEnabled -XX:+AlwaysPreTouch -XX:MaxInlineLevel=15 -jar ${VELOCITY_JAR}
 EOF
 chmod u+x start.sh
 
