@@ -3,13 +3,13 @@ REQUIRE_CONFIRM=false
 DRYRUN=false
 DEFAULT_LXC_TEMPLATE="download"
 DEFAULT_LXC_TEMPLATE_ARGS="-d debian -r buster -a amd64 --keyserver keyserver.ubuntu.com"
-DEFAULT_POST_INSTALL_SCRIPT="onboard.sh"
+DEFAULT_POST_INSTALL_SCRIPT="scripts/onboard.sh"
 BACKTITLE="Manage LXC containers on $HOSTNAME"
 USERNAME="max"
 SCRIPTS_DIR="scripts"
 DIALOG="dialog"
 
-#TODO: forward(iptables), backup
+#TODO: forward(iptables), backup/snapshot(btrfs?), restart
 
 # utillities for working with the dialog util
 function menu() {
