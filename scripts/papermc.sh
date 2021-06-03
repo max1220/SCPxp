@@ -25,9 +25,9 @@ apt-get install -y --no-install-recommends openjdk-11-jre-headless
 
 # add minecraft user if it doesn't exist
 if getent passwd minecraft > /dev/null; then
-	echo "Minecraft user already exists!"
+	LOG "Minecraft user already exists!"
 else
-	echo "Adding minecraft user"
+	LOG "Adding minecraft user"
 	adduser \
 		--system \
 		--shell /bin/bash \
@@ -66,11 +66,11 @@ chmod u+x start.sh
 # you need to have read & accepted the EULA beforehand!
 echo "eula=true" > eula.txt
 
-mkdir plugins
+mkdir -p plugins
 cd plugins
 wget "https://github.com/webbukkit/dynmap/releases/download/v3.1-beta-7/Dynmap-3.1-beta7-spigot.jar"
 wget "https://ci.enginehub.org/repository/download/bt10/17754:id/worldedit-bukkit-7.3.0-SNAPSHOT-dist.jar?branch=master&guest=1"
-wget "https://ci.codemc.io/view/Author/job/pop4959/job/Chunky/lastSuccessfulBuild/artifact/bukkit/build/libs/Chunky-1.2.65.jar"
+wget "https://ci.codemc.io/view/Author/job/pop4959/job/Chunky/lastStableBuild/artifact/bukkit/build/libs/Chunky-Bukkit-1.2.78.jar"
 cd ..
 
 cat << EOF > server.properties
