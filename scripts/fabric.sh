@@ -76,12 +76,18 @@ echo "eula=true" > eula.txt
 mkdir -p mods
 cd mods
 wget "https://github.com/FabricMC/fabric/releases/download/0.34.2%2B1.16/fabric-api-0.34.2+1.16.jar"
-wget "https://github.com/Zundrel/cc-tweaked-fabric/releases/download/v1.19.2/cc-tweaked-fabric-1.16.2-1.91.2.jar"
+wget "https://maven.fabricmc.net/net/fabricmc/fabric-language-kotlin/1.6.1%2Bkotlin.1.5.10/fabric-language-kotlin-1.6.1%2Bkotlin.1.5.10.jar"
+wget "https://github.com/Merith-TK/cc-restitched/releases/download/v1.95.3/cc-restiched-1.95.3-beta.jar"
 wget "https://github.com/CaffeineMC/phosphor-fabric/releases/download/mc1.16.2-v0.7.2/phosphor-fabric-mc1.16.3-0.7.2+build.12.jar"
 wget "https://github.com/CaffeineMC/lithium-fabric/releases/download/mc1.16.5-0.6.4/lithium-fabric-mc1.16.5-0.6.4.jar"
 wget "https://github.com/WearBlackAllDay/DimensionalThreading/releases/download/v1.2.3/DimThread-1.2.3.jar"
 wget "https://github.com/webbukkit/dynmap/releases/download/v3.1-beta-7/Dynmap-3.1-beta7-fabric-1.16.4.jar"
+wget "https://github.com/Juuxel/Adorn/releases/download/1.14.1/Adorn-1.14.1+1.16.5.jar"
 wget "https://ci.enginehub.org/repository/download/bt10/17754:id/worldedit-fabric-mc1.16.4-7.3.0-SNAPSHOT-dist.jar?branch=master&guest=1" -O worldedit.jar
+
+# proxy support:
+#wget "https://github.com/OKTW-Network/FabricProxy-Lite/releases/download/v1.1.3/FabricProxy-Lite-1.1.3.jar"
+#wget "https://github.com/VelocityPowered/CrossStitch/releases/download/0.1.2/crossstitch-0.1.2.jar"
 cd ..
 
 
