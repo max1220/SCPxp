@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eu
 
 # trigger script for letsencrypt to be run *before* letsencrypt tries
 # to authenticate a domain. Adds temporary firewall rules for the

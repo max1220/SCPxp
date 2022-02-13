@@ -1,30 +1,24 @@
 #!/bin/bash
-set -e
+set -eu
 function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # This script is used to setup a LXC container host.
 # Use it on a fresh install of Debian 10 with working internet connection.
-
 # You also want to setup networking for the server.
 # See host_network.sh for an example network setup(it's easily configurable)
 # Things that (currently) need to be done manually:
 # * setup mounts/fstab
 
-### CONFIGURATION ###
+#TODO: Setup logalerts
 
-# perform setup needed for cgroup v2(currently broken)
-ENABLE_CGROUPV2=false
 
-# enable setup for unprivileged containers(currently broken)
-ENABLE_UNPRIVILEGED=false
+if [ -z "${1}" ]; then
+	>&2 echo "Error: Need to supply configuration file as first parameter"
+	exit 1
+fi
+LOG "Using base configuration file: ${1}"
+. "${1}"
 
-# setup this user for use with unprivileged containers(needs to exist already)
-USERNAME=max
-
-# enable setup for libvirtd
-ENABLE_LIBVIRT=false
-
-### END CONFIGURATION ###
 
 
 # install apt-transport-https
@@ -35,18 +29,19 @@ apt-get install -y apt-utils gnupg2 apt-transport-https ca-certificates
 LOG "Setting up temporary sources.list entries..."
 # use the debian https mirror for now. (will be disabled once apt-cacher-ng is installed)
 cat << EOF > /etc/apt/sources.list.d/debian_https.list
-deb https://deb.debian.org/debian buster main contrib non-free
-deb https://deb.debian.org/debian buster-updates main contrib non-free
-deb https://deb.debian.org/debian buster-backports main contrib non-free
-deb https://deb.debian.org/debian-security buster/updates main
+deb https://deb.debian.org/debian bullseye main contrib non-free
+deb https://deb.debian.org/debian bullseye-updates main contrib non-free
+deb https://deb.debian.org/debian bullseye-backports main contrib non-free
+deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+
 EOF
 
 # will be enabled once apt-cacher-ng is setup
 cat << EOF > /etc/apt/sources.list.d/debian_cached.list.disabled
-deb http://10.0.3.1:3142/deb.debian.org/debian buster main contrib non-free
-deb http://10.0.3.1:3142/deb.debian.org/debian buster-updates main contrib non-free
-deb http://10.0.3.1:3142/deb.debian.org/debian buster-backports main contrib non-free
-deb http://10.0.3.1:3142/deb.debian.org/debian-security buster/updates main
+deb http://10.0.3.1:3142/deb.debian.org/debian bullseye main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian bullseye-updates main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian bullseye-backports main contrib non-free
+deb http://10.0.3.1:3142/security.debian.org/debian-security bullseye-security main contrib non-free
 EOF
 
 # disable current(reduntant) sources.list
@@ -74,14 +69,14 @@ apt-get install -y --no-install-recommends \
  uidmap apparmor apparmor-utils dbus bridge-utils
 
 # Also install a more recent kernel, systemd and btrfs-progs from backports
-# apt-get install -y -t buster-backports systemd linux-image-amd64 btrfs-progs
+# apt-get install -y -t bullseye-backports systemd linux-image-amd64 btrfs-progs
 
-if [ "$ENABLE_LIBVIRT" = true ]; then
+if [ "${ENABLE_LIBVIRT}" = true ]; then
 	# Also setup libvirt for QEMU based VMs
 	apt-get install -y --no-install-recommends qemu-system-x86 qemu-kvm libvirt-daemon-system libvirt-clients netcat-openbsd
 	LOG "Configuring libvirtd..."
 	# add user to libvirt group(allow using system libvirt)
-	adduser ${USERNAME} libvirt
+	adduser "${USERNAME}" libvirt
 	# auto-start libvirt default network
 	virsh --connect=qemu:///system net-autostart default
 fi
@@ -94,9 +89,12 @@ echo "GRUB_TIMEOUT=2" > /etc/default/grub.d/timeout.cfg
 # enable apparmor
 echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT apparmor=1 security=apparmor\"" > /etc/default/grub.d/apparmor.cfg
 
-# TODO: cgroupv2 currently not working
-if [ "$ENABLE_CGROUPV2" = true ]; then
+if [ "${ENABLE_CGROUPV2}" = true ]; then
+	# enable cgroupv2 via kernel parameter
 	echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT systemd.unified_cgroup_hierarchy=1\"" > /etc/default/grub.d/cgroupv2.cfg
+else
+	# explicitly disable for newer kernels
+	echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT systemd.unified_cgroup_hierarchy=0\"" > /etc/default/grub.d/cgroupv2.cfg
 fi
 update-grub
 
@@ -109,12 +107,12 @@ systemctl restart lxc-net
 
 
 # modify default configuration to use cgroup v2 for device confinement
-if [ "$ENABLE_CGROUPV2" = true ]; then
+if [ "${ENABLE_CGROUPV2}" = true ]; then
 	LOG "Modifying default container configuration to use cgroupv2 devices"
-	cp /usr/share/lxc/config/debian.common.conf /usr/share/lxc/config/debian.common.conf.orig
-	cp /usr/share/lxc/config/common.conf /usr/share/lxc/config/common.conf.orig
-	sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/debian.common.conf
-	sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/common.conf
+	#cp /usr/share/lxc/config/debian.common.conf /usr/share/lxc/config/debian.common.conf.orig
+	#cp /usr/share/lxc/config/common.conf /usr/share/lxc/config/common.conf.orig
+	#sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/debian.common.conf
+	#sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/common.conf
 fi
 
 
@@ -131,26 +129,36 @@ echo "root:1000000:65536" >> /etc/subuid
 echo "root:1000000:65536" >> /etc/subgid
 
 
-if [ "$ENABLE_UNPRIVILEGED" = true ]; then
-	LOG "Setting up subuid/subgid for $USERNAME..."
-	echo "$USERNAME:2000000:65536" >> /etc/subuid
-	echo "$USERNAME:2000000:65536" >> /etc/subgid
+if [ "${ENABLE_UNPRIVILEGED}" = true ]; then
+	LOG "Setting up subuid/subgid for ${USERNAME}..."
+	echo "${USERNAME}:2000000:65536" >> /etc/subuid
+	echo "${USERNAME}:2000000:65536" >> /etc/subgid
+
+	loginctl enable-linger "${USERNAME}"
+
+	echo "${USERNAME} veth lxcbr0 50" >> /etc/lxc/lxc-usernet
 
 	LOG "Setting up to enable unprivileged_userns_clone..."
 	cat << EOF > /etc/sysctl.d/30-userns.conf
 kernel.unprivileged_userns_clone=1
 EOF
+	sysctl -p
 
-	LOG "Setting up default.conf for unprivileged user $USERNAME"
-	mkdir -p /home/$USERNAME/.config/lxc
-	cat << EOF > /home/$USERNAME/.config/lxc/default.conf
+	LOG "Setting up default.conf for unprivileged user ${USERNAME}"
+	mkdir -p "/home/${USERNAME}/.config/lxc"
+	cat << EOF > "/home/${USERNAME}/.config/lxc/default.conf"
 lxc.apparmor.profile = unconfined
 lxc.idmap = u 0 2000000 65536
 lxc.idmap = g 0 2000000 65536
 lxc.mount.auto = proc:mixed sys:ro cgroup:mixed
 
+# Network configuration
+lxc.net.0.type = veth
+lxc.net.0.link = lxcbr0
+lxc.net.0.flags = up
+
 EOF
-	chown -R $USERNAME:$USERNAME /home/$USERNAME/.config
+	chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}/.config"
 fi
 
 # setup LXC default container config
@@ -172,18 +180,21 @@ lxc.cap.keep = setgid
 lxc.cap.keep = setuid
 lxc.cap.keep = sys_tty_config
 
-
 lxc.idmap = u 0 1000000 65536
 lxc.idmap = g 0 1000000 65536
 
 lxc.mount.auto = proc:mixed sys:ro cgroup:mixed
 
-lxc.mount.entry=/data/shared data/shared none bind,optional,create=dir 0 0
+# Network configuration
+lxc.net.0.type = veth
+lxc.net.0.link = lxcbr0
+lxc.net.0.flags = up
+
 
 EOF
 
 # TODO: cgroupv2 currently not working
-if [ "$ENABLE_CGROUPV2" = true ]; then
+if [ "${ENABLE_CGROUPV2}" = true ]; then
 	cat << EOF >> /etc/lxc/default.conf
 # disable cgroup v1
 lxc.cgroup.devices.allow =
@@ -256,7 +267,7 @@ PasswordAuthentication no
 IgnoreRhosts yes
 HostbasedAuthentication no
 ChallengeResponseAuthentication no
-UsePAM no
+UsePAM yes
 X11Forwarding yes
 PrintMotd no
 AcceptEnv LANG LC_*
@@ -322,9 +333,23 @@ systemctl enable systemd-journal-remote
 systemctl restart systemd-journal-remote
 
 
+# make to finish iptables-restore before lxc-net starts
+mkdir -p /etc/systemd/system/netfilter-persistent.service.d
+cat << EOF > /etc/systemd/system/netfilter-persistent.service.d/override.conf
+[Unit]
+Before=network-pre.target shutdown.target lxc-net.service
+EOF
+
+
+# make sure apt-cacher-ng starts after the LXC network bridge interface is available
+mkdir -p /etc/systemd/system/apt-cacher-ng.service.d
+cat << EOF > /etc/systemd/system/apt-cacher-ng.service.d/override.conf
+[Unit]
+After=lxc-net.service
+EOF
+
 
 LOG
 LOG "Host setup ok!"
+LOG "Rebooting recommended!"
 LOG
-#LOG "(press enter to return)"
-#read
