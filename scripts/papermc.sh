@@ -2,26 +2,41 @@
 set -e
 function LOG() { echo -e "\e[32m$@\e[0m"; }
 
-# Downloads and sets up a PaperMC server.
-# Use on Debian 10.
-# TODO: Install config files
-# TODO: Install plugins
+# Downloads and sets up a Minecraft 1.18 PaperMC server.
+# Use on Debian 11.
 
 ### CONFIGURATION ###
 
-# URL to download the PaperMC server from
-# you need to have read & accepted the server EULA beforehand!
-PAPERMC_URL="https://papermc.io/api/v2/projects/paper/versions/1.16.5/builds/629/downloads/paper-1.16.5-629.jar"
+# This script downloads the latest build of the specified PaperMC version.
+PAPERMC_VERSION="1.18.1"
 
 # install papermc to this directory
 PAPERMC_DIR="/home/minecraft/papermc/"
+
+# URL to download the whitelist from on startup
+WHITELIST_URL="https://mc.max1220.de/whitelist.json"
+
+# Size of the Java-allocated RAM for this minecraft server
+# 2GB+ are recommended
+JAVA_RAM="2G"
+
+# Minecraft username of the primary op.
+# This user is /op'ed at every server start.
+OP_NAME="max1220"
+
+# List of plugins to download into the plugins/ directory
+PLUGINS=(
+	"https://github.com/webbukkit/dynmap/releases/download/v3.3-beta-2/Dynmap-3.3-beta-2-spigot.jar" \
+	"https://ci.enginehub.org/repository/download/bt10/19476:id/worldedit-bukkit-7.2.9-SNAPSHOT-dist.jar?branch=version/7.2.x&guest=1" \
+	#"https://ci.codemc.io/view/Author/job/pop4959/job/Chunky/lastStableBuild/artifact/bukkit/build/libs/Chunky-Bukkit-1.2.173.jar"
+)
 
 ### END CONFIGURATION ###
 
 # install jre
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y --no-install-recommends openjdk-11-jre-headless
+apt-get install -y --no-install-recommends openjdk-17-jre jq
 
 # add minecraft user if it doesn't exist
 if getent passwd minecraft > /dev/null; then
@@ -40,17 +55,25 @@ fi
 
 # create directory for papermc server
 mkdir -p ${PAPERMC_DIR}
-cd ${PAPERMC_DIR}
+pushd ${PAPERMC_DIR}
 
-# download papermc server jar
-PAPERMC_JAR="$(basename "${PAPERMC_URL}")"
-wget -O ${PAPERMC_JAR} ${PAPERMC_URL}
+
+
+# I really wish they kept a simple latest-version download API.
+# Now we need JSON parsing and 2 extra HTTP requests :/
+PAPERMC_LATEST_BUILD="$(wget -O - "https://papermc.io/api/v2/projects/paper/versions/${PAPERMC_VERSION}" | jq -r ".builds[-1]")"
+PAPERMC_DOWNLOAD_NAME="$(wget -O - "https://papermc.io/api/v2/projects/paper/versions/${PAPERMC_VERSION}/builds/${PAPERMC_LATEST_BUILD}" | jq -r ".downloads.application.name")"
+PAPERMC_DOWNLOAD_URL="https://papermc.io/api/v2/projects/paper/versions/${PAPERMC_VERSION}/builds/${PAPERMC_LATEST_BUILD}/downloads/${PAPERMC_DOWNLOAD_NAME}"
+
+# download papermc jar
+wget -O ${PAPERMC_DOWNLOAD_NAME} ${PAPERMC_DOWNLOAD_URL}
 
 # create start script using aikars flags
+# Also updates the whitelist.json from the web server on every start
 cat << EOF > start.sh
 #!/bin/bash
-# TODO
-java -Xms2G -Xmx2G -XX:+UseG1GC -XX:+ParallelRefProcEnabled \
+wget -O whitelist.json "${WHITELIST_URL}"
+java -Xms${JAVA_RAM} -Xmx${JAVA_RAM} -XX:+UseG1GC -XX:+ParallelRefProcEnabled \
 -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions \
 -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 \
 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 \
@@ -59,20 +82,22 @@ java -Xms2G -Xmx2G -XX:+UseG1GC -XX:+ParallelRefProcEnabled \
 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 \
 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 \
 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true \
--jar ${PAPERMC_JAR} nogui
+-jar ${PAPERMC_DOWNLOAD_NAME} nogui
 EOF
 chmod u+x start.sh
 
 # you need to have read & accepted the EULA beforehand!
 echo "eula=true" > eula.txt
 
+# download plugins
 mkdir -p plugins
-cd plugins
-wget "https://github.com/webbukkit/dynmap/releases/download/v3.1-beta-7/Dynmap-3.1-beta7-spigot.jar"
-wget "https://ci.enginehub.org/repository/download/bt10/17754:id/worldedit-bukkit-7.3.0-SNAPSHOT-dist.jar?branch=master&guest=1"
-wget "https://ci.codemc.io/view/Author/job/pop4959/job/Chunky/lastStableBuild/artifact/bukkit/build/libs/Chunky-Bukkit-1.2.78.jar"
-cd ..
+pushd plugins
+for url in ${PLUGINS[@]}; do
+	wget "${url}"
+done
+popd
 
+# Install a sensible server configuration
 cat << EOF > server.properties
 # game settings
 motd=A Minecraft Server
@@ -120,7 +145,7 @@ player-idle-timeout=0
 force-gamemode=false
 rate-limit=0
 hardcore=false
-white-list=false
+white-list=true
 broadcast-console-to-ops=true
 spawn-npcs=true
 spawn-animals=true
@@ -128,12 +153,10 @@ snooper-enabled=true
 function-permission-level=2
 text-filtering-config=
 spawn-monsters=true
-enforce-whitelist=false
+enforce-whitelist=true
 resource-pack-sha1=
 spawn-protection=16
 EOF
-
-chown -R minecraft:minecraft ${PAPERMC_DIR}
 
 # create systemd service for automatic start
 cat << EOF > /etc/systemd/system/papermc.service
@@ -149,7 +172,7 @@ User=minecraft
 Group=minecraft
 WorkingDirectory=${PAPERMC_DIR}
 ExecStart=${PAPERMC_DIR}/start.sh
-StandardInputText=op max1220
+StandardInputText=op ${OP_NAME}
 Restart=always
 
 [Install]
@@ -159,9 +182,13 @@ systemctl daemon-reload
 systemctl enable papermc.service
 systemctl restart papermc.service
 
+chown -R minecraft:minecraft .
+popd
 
 LOG
 LOG "	PaperMC installed"
+LOG
+LOG "You can now login as ${OP_NAME}(admin)"
 LOG
 #echo "(press enter to return)"
 #read

@@ -3,7 +3,7 @@ set -e
 function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # Setup a basic Xpra session
-# Use on Debian 10.
+# Use on Debian 11.
 
 ### CONFIGURATION ###
 
@@ -21,7 +21,7 @@ apt-get update -y
 apt-get install -y --no-install-recommends wget gnupg2 apt-transport-https ca-certificates
 wget -q https://xpra.org/gpg.asc -O- | apt-key add -
 cat << EOF > /etc/apt/sources.list.d/xrpa.list
-deb https://xpra.org/beta/ buster main
+deb https://xpra.org/beta/ bullseye main
 EOF
 apt-get update -y
 apt-get install -y --no-install-recommends \
@@ -29,7 +29,7 @@ apt-get install -y --no-install-recommends \
  gstreamer1.0-tools gstreamer1.0-pulseaudio gstreamer1.0-plugins-base \
  gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly \
  python3-pyinotify python3-netifaces python3-xdg python3-paramiko python3-gst-1.0 \
- pulseaudio pavucontrol \
+ python3-setproctitle pulseaudio pavucontrol \
  lxde-core lxsession-default-apps gtk2-engines mousepad xarchiver p7zip-full lxterminal \
  lxtask lxappearance obconf gpicview dbus-x11 lxpolkit lxsession-edit \
  firefox-esr webext-ublock-origin-firefox

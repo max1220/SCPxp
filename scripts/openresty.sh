@@ -3,7 +3,7 @@ set -e
 function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # Installs and configures a openresty(nginx) server.
-# Use on Debian 10.
+# Use on Debian 11.
 
 ### CONFIGURATION ###
 
@@ -15,7 +15,7 @@ DOMAINS="example.com"
 # add openresty repository
 apt-get -y install --no-install-recommends wget gnupg2 ca-certificates
 wget -O - https://openresty.org/package/pubkey.gpg | apt-key add -
-echo "deb http://openresty.org/package/debian buster openresty" > /etc/apt/sources.list.d/openresty.list
+echo "deb http://openresty.org/package/debian bullseye openresty" > /etc/apt/sources.list.d/openresty.list
 
 # install openresty
 apt update -y

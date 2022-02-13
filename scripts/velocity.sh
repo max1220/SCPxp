@@ -9,15 +9,14 @@ function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 ### CONFIGURATION ###
 
-VELOCITY_URL="https://versions.velocitypowered.com/download/1.1.5.jar"
-VELOCITY_JAR="velocity_$(basename "${VELOCITY_URL}")"
-VELOCITY_DIR="/home/minecraft/velocity/"
+# Which version of velocity to download?
+VELOCITY_VERSION="3.1.1"
 
 ### END CONFIGURATION ###
 
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y --no-install-recommends openjdk-11-jre-headless
+apt-get install -y --no-install-recommends openjdk-11-jre-headless jq
 
 if getent passwd minecraft > /dev/null; then
 	LOG "Minecraft user already exists!"
@@ -36,10 +35,16 @@ fi
 
 # create directory for velocity server
 mkdir -p ${VELOCITY_DIR}
-cd ${VELOCITY_DIR}
+pushd ${VELOCITY_DIR}
 
-# download velocity server jar
-wget -O ${VELOCITY_JAR} ${VELOCITY_URL}
+# I really wish they kept a simple latest-version download API.
+# Now we need JSON parsing and 2 extra HTTP requests :/
+VELOCITY_LATEST_BUILD="$(wget -O - "https://papermc.io/api/v2/projects/velocity/versions/${VELOCITY_VERSION}" | jq -r ".builds[-1]")"
+VELOCITY_DOWNLOAD_NAME="$(wget -O - "https://papermc.io/api/v2/projects/velocity/versions/${VELOCITY_VERSION}/builds/${VELOCITY_LATEST_BUILD}" | jq -r ".downloads.application.name")"
+VELOCITY_DOWNLOAD_URL="https://papermc.io/api/v2/projects/velocity/versions/${VELOCITY_VERSION}/builds/${LATEST_BUILD}/downloads/${VELOCITY_DOWNLOAD_NAME}"
+
+# download velocity jar
+wget -O ${VELOCITY_DOWNLOAD_NAME} ${VELOCITY_URL}
 
 # create start script
 cat << EOF > start.sh
@@ -47,8 +52,6 @@ cat << EOF > start.sh
 java -Xms512M -Xmx512M -XX:+UseG1GC -XX:G1HeapRegionSize=4M -XX:+UnlockExperimentalVMOptions -XX:+ParallelRefProcEnabled -XX:+AlwaysPreTouch -XX:MaxInlineLevel=15 -jar ${VELOCITY_JAR}
 EOF
 chmod u+x start.sh
-
-chown -R minecraft:minecraft ${VELOCITY_DIR}
 
 # create systemd service for automatic start
 cat << EOF > /etc/systemd/system/velocity.service
@@ -72,6 +75,9 @@ EOF
 systemctl daemon-reload
 systemctl enable velocity.service
 systemctl restart velocity.service
+
+chown -R minecraft:minecraft .
+popd
 
 LOG
 LOG "	Velocity installed"

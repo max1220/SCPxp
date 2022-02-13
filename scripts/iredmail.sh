@@ -3,12 +3,12 @@ set -e
 function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # Downloads and then runs the iRedMail scripts for setting up a mailserver.
-# Use on Debian 10.
+# Use on Debian 11.
 
 ### CONFIGURATION ###
 
 # Version of iRedMail to use
-IREDMAIL_VERSION="1.4.0"
+IREDMAIL_VERSION="1.5.1"
 
 # URL to download iRedMail from
 IREDMAIL_URL="https://github.com/iredmail/iRedMail/archive/${IREDMAIL_VERSION}.tar.gz"

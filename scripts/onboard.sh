@@ -10,15 +10,16 @@ function LOG() { echo -e "\e[32m$@\e[0m"; }
 #  * configures systemd-journal-remote to send journald logs to host
 # Below are a few user-configurable settings for this script:
 
+#TODO: Setup logalerts
+
 ### CONFIGURATION ###
 
-# a new non-root user will be created, this is it's username:
+# a new non-root user will be created, this is its username:
 USERNAME=max
 
-# the new user will have this list of keys in his ~/.ssh/authorized_keys
+# the new user will have this list of keys in its ~/.ssh/authorized_keys
 SSH_PUB="
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDKvYFrAT997455zvBcOgudHwp2ZvlNKq278ZsTDR+MQFH0xwKVywzQMnOH1MtzBocwO44VmDKm6YM92KXuMcxQ/8QeTzp+dj+PuOfPgCYXNNqCsPw75ruTFxADBVmtVUCA+SSlmj85RMqgcRVXKp55it3EukbvQJVeMoAhUwiLpi+lVQwFfB9Poh9gFACK/J6yZ7g2aUzDwOog/YhQwpuiD1Z2C9jezaBDm+Z/sDMWN0HKoCfLcOz95kgGTVU1C+KKQdGFO9KRc1t7bA5VUyFwWRf97JDtAdCq/QCQLZc1ZoFHYDsKv6THuLJR0D4paKqqTLFCyKZtv7qVpsNJwOBANA8W+2R3/eoWVbTJS2eNkNM3nsxoyJAwBsz4DmsJghkapHrGh9GElMqjlDVpfFNX+B3un6LiqvUDJxcUCvaBLdygxchwQ3oeDSpNGADw6L/PsRB+k4UN0uUhP1YAnyv7RtaK9X20V/EsPj1KlG+2yNsCsmtXyI+Kv/z3Y/TuXok= max@debian-fx
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDCdi0w16UInC3cYB8uAbsBu2QaC3yCIOCoxd6c8emXe8bVWcAwuDqX2Gum4+I6CLxXWnz90iCHYZiTkah7loy6z//dJJvY/SNJhJF18qT7mVqTYRgCqc7vKWpMXl2jb+VJyOgJGZL5PHmZPqbnwdj3Ag3x3N4crX4nArp0IgaZqnbxP1fxN9uEn8b+yONOhl0I+BzxqlGfzMArroDH51hp7XiBm3xkAeirYXzN1NG1d1Cs9jo0xgd/9bGdGP/7Y+yO7ZWgb59f7Dwsh/U9/bwFxugngXLQRdL3DfMr3itcyi9hgsw5Ae3vPtPdpjQ+lgtq1mNt/VpDY241Q52Zpj09 max@host.max1220.de
 "
 
 # should this system use the apt-cacher-ng on the host?
@@ -50,18 +51,19 @@ done
 
 LOG "Configuring APT..."
 cat << EOF > /etc/apt/sources.list.d/debian_cached.list.disabled
-deb http://10.0.3.1:3142/deb.debian.org/debian buster main contrib non-free
-deb http://10.0.3.1:3142/deb.debian.org/debian buster-updates main contrib non-free
-deb http://10.0.3.1:3142/deb.debian.org/debian buster-backports main contrib non-free
-deb http://10.0.3.1:3142/deb.debian.org/debian-security buster/updates main
+deb http://10.0.3.1:3142/deb.debian.org/debian bullseye main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian bullseye-updates main contrib non-free
+deb http://10.0.3.1:3142/deb.debian.org/debian bullseye-backports main contrib non-free
+deb http://10.0.3.1:3142/security.debian.org/debian-security bullseye-security main contrib non-free
+
 EOF
 cat << EOF > /etc/apt/sources.list.d/debian_https.list.disabled
-deb https://deb.debian.org/debian buster main contrib non-free
-deb https://deb.debian.org/debian buster-updates main contrib non-free
-deb https://deb.debian.org/debian buster-backports main contrib non-free
-deb https://deb.debian.org/debian-security buster/updates main
+deb https://deb.debian.org/debian bullseye main contrib non-free
+deb https://deb.debian.org/debian bullseye-updates main contrib non-free
+deb https://deb.debian.org/debian bullseye-backports main contrib non-free
+deb http://security.debian.org/debian-security bullseye-security main contrib non-free
 EOF
-if [ "$ENABEL_APT_CACHE" = true ]; then
+if [ "${ENABEL_APT_CACHE}" = true ]; then
 	mv /etc/apt/sources.list.d/debian_cached.list.disabled /etc/apt/sources.list.d/debian_cached.list
 	# remove non-cached sources.list
 	rm /etc/apt/sources.list
@@ -69,9 +71,9 @@ if [ "$ENABEL_APT_CACHE" = true ]; then
 else
 	cat << EOF > /etc/apt/sources.list
 # temporary sources.list, to install apt-transport-https
-deb http://deb.debian.org/debian stable main
-deb http://deb.debian.org/debian stable-updates main
-deb http://deb.debian.org/debian-security stable/updates main
+deb http://deb.debian.org/debian bullseye main
+deb http://deb.debian.org/debian bullseye-updates main
+deb http://security.debian.org/debian-security bullseye-security main contrib non-free
 EOF
 	apt-get update -y
 	LOG "Installing apt-transport-https..."
@@ -94,13 +96,13 @@ apt-utils iputils-ping ca-certificates wget screen less bash-completion sudo \
 nano openssh-server systemd-journal-remote unattended-upgrades gnupg2
 
 # setup hostname
-hostname=$(hostname --short)
-LOG "Setting up hostname: $hostname.$DOMAINNAME..."
+hostname="$(hostname --short)"
+LOG "Setting up hostname: ${hostname}.${DOMAINNAME}..."
 # TODO: requires dbus?!: hostnamectl set-hostname $hostname.$domainname
-echo "$hostname.$DOMAINNAME" > /etc/hostname
+echo "${hostname}.${DOMAINNAME}" > /etc/hostname
 echo "" >> /etc/hosts
-echo "# FQDN:  $hostname.$DOMAINNAME" >> /etc/hosts
-echo "127.0.1.1 $hostname.$DOMAINNAME $hostname" >> /etc/hosts
+echo "# FQDN:  ${hostname}.${DOMAINNAME}" >> /etc/hosts
+echo "127.0.1.1 ${hostname}.${DOMAINNAME} ${hostname}" >> /etc/hosts
 
 # configure remote systemd journal logging
 LOG "Setting up remote logging..."
@@ -147,9 +149,9 @@ systemctl restart ssh
 
 ### USER SETUP ###
 
-LOG "Adding user $USERNAME..."
-adduser $USERNAME --disabled-password --gecos ""
-adduser $USERNAME sudo
+LOG "Adding user ${USERNAME}..."
+adduser "${USERNAME}" --disabled-password --gecos ""
+adduser "${USERNAME}" sudo
 
 # allow sudo without password(this user has password login disabled)
 echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user_nopasswd
@@ -157,19 +159,21 @@ chmod 0440 /etc/sudoers.d/user_nopasswd
 
 # copy host SSH public key to user authorized_keys
 LOG "Copying host SSH key..."
-mkdir /home/$USERNAME/.ssh/
-echo "${SSH_PUB}" > /home/$USERNAME/.ssh/authorized_keys
-chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
-chmod 0400 /home/$USERNAME/.ssh/authorized_keys
+mkdir "/home/${USERNAME}/.ssh/"
+echo "${SSH_PUB}" > "/home/${USERNAME}/.ssh/authorized_keys"
+chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}/.ssh"
+chmod 0400 "/home/${USERNAME}/.ssh/authorized_keys"
 
 LOG
 LOG "Try logging in using:"
 LOG
-LOG "  ssh $USERNAME@$HOSTNAME"
+LOG "  ssh ${USERNAME}@${HOSTNAME}"
 LOG
 IP=$(ip route get 1 | head -1 | cut -d " " -f7)
-LOG "  ssh $USERNAME@$IP"
+LOG "  ssh ${USERNAME}@${IP}"
 LOG
+#LOG "  ssh -J $DOMAINNAME $USERNAME@$IP"
+#LOG
 LOG "(Restarting the container might be needed to apply new hostname)"
 #LOG "(press enter to return)"
 #read

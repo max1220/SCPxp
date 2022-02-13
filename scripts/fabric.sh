@@ -3,25 +3,38 @@ set -e
 function LOG() { echo -e "\e[32m$@\e[0m"; }
 
 # Downloads and sets up a Minecraft modded server(fabric).
-# Use on Debian 10.
-# TODO: Install config files
-# TODO: Install plugins
+# Use on Debian 11.
 
 ### CONFIGURATION ###
 
 # URL to download the fabric server from
 # you need to have read & accepted the server EULA beforehand!
-FABRIC_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.7.3/fabric-installer-0.7.3.jar"
+FABRIC_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.10.2/fabric-installer-0.10.2.jar"
 
 # install fabric to this directory
 FABRIC_DIR="/home/minecraft/fabric/"
+
+# URL to download the whitelist from on startup
+WHITELIST_URL="https://mc.max1220.de/whitelist.json"
+
+# list of mods urls to download.
+MODS=(
+	"https://github.com/FabricMC/fabric/releases/download/0.34.2%2B1.16/fabric-api-0.34.2+1.16.jar"
+	"https://maven.fabricmc.net/net/fabricmc/fabric-language-kotlin/1.6.1%2Bkotlin.1.5.10/fabric-language-kotlin-1.6.1%2Bkotlin.1.5.10.jar"
+	"https://github.com/Merith-TK/cc-restitched/releases/download/v1.95.3/cc-restiched-1.95.3-beta.jar"
+	"https://github.com/CaffeineMC/phosphor-fabric/releases/download/mc1.16.2-v0.7.2/phosphor-fabric-mc1.16.3-0.7.2+build.12.jar"
+	"https://github.com/CaffeineMC/lithium-fabric/releases/download/mc1.16.5-0.6.4/lithium-fabric-mc1.16.5-0.6.4.jar"
+	"https://github.com/WearBlackAllDay/DimensionalThreading/releases/download/v1.2.3/DimThread-1.2.3.jar"
+	"https://github.com/webbukkit/dynmap/releases/download/v3.1-beta-7/Dynmap-3.1-beta7-fabric-1.16.4.jar"
+	"https://github.com/Juuxel/Adorn/releases/download/1.14.1/Adorn-1.14.1+1.16.5.jar"
+)
 
 ### END CONFIGURATION ###
 
 # install jre
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y --no-install-recommends openjdk-11-jre-headless
+apt-get install -y --no-install-recommends openjdk-17-jre-headless
 
 # add minecraft user if it doesn't exist
 if getent passwd minecraft > /dev/null; then
@@ -40,7 +53,7 @@ fi
 
 # create directory for fabric server
 mkdir -p "${FABRIC_DIR}"
-cd "${FABRIC_DIR}"
+pushd "${FABRIC_DIR}"
 
 # download fabric installer jar
 FABRIC_INST_JAR="$(basename "${FABRIC_URL}")"
@@ -55,7 +68,7 @@ FABRIC_JAR="fabric-server-launch.jar"
 # memory might need adjustment for larger modpacks or more than a few players
 cat << EOF > start.sh
 #!/bin/bash
-# TODO
+wget -O whitelist.json "${WHITELIST_URL}"
 java -Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled \
 -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions \
 -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 \
@@ -74,16 +87,11 @@ echo "eula=true" > eula.txt
 
 # install mods
 mkdir -p mods
-cd mods
-wget "https://github.com/FabricMC/fabric/releases/download/0.34.2%2B1.16/fabric-api-0.34.2+1.16.jar"
-wget "https://maven.fabricmc.net/net/fabricmc/fabric-language-kotlin/1.6.1%2Bkotlin.1.5.10/fabric-language-kotlin-1.6.1%2Bkotlin.1.5.10.jar"
-wget "https://github.com/Merith-TK/cc-restitched/releases/download/v1.95.3/cc-restiched-1.95.3-beta.jar"
-wget "https://github.com/CaffeineMC/phosphor-fabric/releases/download/mc1.16.2-v0.7.2/phosphor-fabric-mc1.16.3-0.7.2+build.12.jar"
-wget "https://github.com/CaffeineMC/lithium-fabric/releases/download/mc1.16.5-0.6.4/lithium-fabric-mc1.16.5-0.6.4.jar"
-wget "https://github.com/WearBlackAllDay/DimensionalThreading/releases/download/v1.2.3/DimThread-1.2.3.jar"
-wget "https://github.com/webbukkit/dynmap/releases/download/v3.1-beta-7/Dynmap-3.1-beta7-fabric-1.16.4.jar"
-wget "https://github.com/Juuxel/Adorn/releases/download/1.14.1/Adorn-1.14.1+1.16.5.jar"
-wget "https://ci.enginehub.org/repository/download/bt10/17754:id/worldedit-fabric-mc1.16.4-7.3.0-SNAPSHOT-dist.jar?branch=master&guest=1" -O worldedit.jar
+pushd mods
+for url in ${PLUGINS[@]}; do
+	wget "${url}"
+done
+popd
 
 # proxy support:
 #wget "https://github.com/OKTW-Network/FabricProxy-Lite/releases/download/v1.1.3/FabricProxy-Lite-1.1.3.jar"
@@ -138,7 +146,7 @@ player-idle-timeout=0
 force-gamemode=false
 rate-limit=0
 hardcore=false
-white-list=false
+white-list=true
 broadcast-console-to-ops=true
 spawn-npcs=true
 spawn-animals=true
@@ -146,7 +154,7 @@ snooper-enabled=true
 function-permission-level=2
 text-filtering-config=
 spawn-monsters=true
-enforce-whitelist=false
+enforce-whitelist=true
 resource-pack-sha1=
 spawn-protection=16
 EOF
@@ -211,7 +219,6 @@ cat << EOF > config/computercraft.json5
 EOF
 
 # fix permissions of the fabric dir
-chown -R minecraft:minecraft ${FABRIC_DIR}
 
 # create systemd service for automatic start
 cat << EOF > /etc/systemd/system/fabric.service
@@ -237,6 +244,8 @@ systemctl daemon-reload
 systemctl enable fabric.service
 systemctl restart fabric.service
 
+chown -R minecraft:minecraft .
+popd
 
 LOG
 LOG "	Fabric installed"
