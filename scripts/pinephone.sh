@@ -5,7 +5,8 @@ function LOG() { echo -e "\e[32m$@\e[0m"; }
 # This script is used to compile the
 # u-boot+atf+crust, Mobian kernel, and Modem firmware
 # for the pinephone.
-# Use on Debian 11, preferably in a container or VM!
+# Use on Debian 11, preferably in a container or VM.
+# This script should be run as a non-root user that has access to sudo
 
 MAKE_PARALLEL="$(nproc)"
 OR1K_TOOLCHAIN_URL="https://musl.cc/or1k-linux-musl-cross.tgz"
@@ -42,13 +43,13 @@ LOG "downloading toolchains..."
 
 
 # download or1k cross compiler
-if ! [ -d or1k-linux-musl-cross ]; then
+if [ ! -d or1k-linux-musl-cross ]; then
     wget "${OR1K_TOOLCHAIN_URL}" -O or1k-linux-musl-cross.tgz
     tar -xvzf or1k-linux-musl-cross.tgz
     rm or1k-linux-musl-cross.tgz
 fi
 # make sure toolchain is in PATH
-if ! [[ ":${PATH}:" == *":${PWD}:"* ]]; then
+if [[ ":${PATH}:" != *":${PWD}:"* ]]; then
     pushd or1k-linux-musl-cross/bin
     export PATH="${PATH}:${PWD}"
     echo -e "\n\n# or1k cross compiler for pinephone modem:\nexport PATH=\"${PATH}:${PWD}\"" >> ~/.bashrc
@@ -59,13 +60,13 @@ LOG "or1k toolchain ok!"
 
 # download aarch64 cross compiler
 # Could also use system aarch64 compiler, but musl is default for crust makefile
-if ! [ -d aarch64-linux-musl-cross ]; then
+if [ ! -d aarch64-linux-musl-cross ]; then
     wget  "${AARCH64_TOOLCHAIN_URL}" -O aarch64-linux-musl-cross.tgz
     tar -xvzf aarch64-linux-musl-cross.tgz
     rm aarch64-linux-musl-cross.tgz
 fi
 # make sure toolchain is in PATH
-if ! [[ ":${PATH}:" == *":${PWD}:"* ]]; then
+if [[ ":${PATH}:" != *":${PWD}:"* ]]; then
     pushd aarch64-linux-musl-cross/bin
     export PATH="${PATH}:${PWD}"
     echo -e "\n\n# aarch64 cross compiler for pinephone modem:\nexport PATH=\"${PATH}:${PWD}\"" >> ~/.bashrc
@@ -79,27 +80,27 @@ LOG "aarch64 toolchain ok!"
 
 # download crust firmware makefile
 LOG "crust building..."
-if ! [ -d crust ]; then
+if [ ! -d crust ]; then
     git clone "${CRUST_META_GIT}" crust
 fi
 pushd crust
 
 # download required repositories if not downloaded already
 export HOME="${PWD}"
-if ! [ -d arm-trusted-firmware ]; then
+if [ ! -d arm-trusted-firmware ]; then
 	BOARD="pinephone" make arm-trusted-firmware
 fi
-if ! [ -d crust ]; then
+if [ ! -d crust ]; then
 	BOARD="pinephone" make crust
 fi
-if ! [ -d u-boot ]; then
+if [ ! -d u-boot ]; then
 	BOARD="pinephone" make u-boot
 fi
 
 popd
 
 # download debian kernel source
-if ! [ -d kernel ]; then
+if [ ! -d kernel ]; then
     git clone -b "${MOBIAN_KERNEL_BRANCH}" "${MOBIAN_KERNEL_GIT}" kernel
 fi
 
@@ -162,7 +163,7 @@ LOG "kernel build ok!"
 
 
 # build pinephone modem firmware
-if ! [ -d crust ]; then
+if [ ! -d crust ]; then
 	git clone "${PINEPHONE_MODEM_SDK_GIT}" pinephone_modem_sdk
 fi
 pushd pinephone_modem_sdk

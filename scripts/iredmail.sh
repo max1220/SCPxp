@@ -15,7 +15,7 @@ IREDMAIL_URL="https://github.com/iredmail/iRedMail/archive/${IREDMAIL_VERSION}.t
 
 ### END CONFIGURATION ###
 
-sudo apt-get install -y --no-install-recommends gnupg2
+apt-get install -y --no-install-recommends gnupg2
 
 cd /root
 

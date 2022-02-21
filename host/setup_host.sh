@@ -1,15 +1,15 @@
 #!/bin/bash
 set -eu
-function LOG() { echo -e "\e[32m$@\e[0m"; }
-
 # This script is used to setup a LXC container host.
 # Use it on a fresh install of Debian 10 with working internet connection.
 # You also want to setup networking for the server.
 # See host_network.sh for an example network setup(it's easily configurable)
 # Things that (currently) need to be done manually:
 # * setup mounts/fstab
-
 #TODO: Setup logalerts
+
+# Load required utils
+. ./utils/log.sh
 
 
 if [ -z "${1}" ]; then
@@ -106,21 +106,11 @@ systemctl enable lxc-net
 systemctl restart lxc-net
 
 
-# modify default configuration to use cgroup v2 for device confinement
-if [ "${ENABLE_CGROUPV2}" = true ]; then
-	LOG "Modifying default container configuration to use cgroupv2 devices"
-	#cp /usr/share/lxc/config/debian.common.conf /usr/share/lxc/config/debian.common.conf.orig
-	#cp /usr/share/lxc/config/common.conf /usr/share/lxc/config/common.conf.orig
-	#sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/debian.common.conf
-	#sed -i "s/lxc.cgroup.devices/lxc.cgroup2.devices/g" /usr/share/lxc/config/common.conf
-fi
-
-
 # create directory for shared(public) data
 mkdir -p /data/shared
 
-# allow default lxc-mappedt user to accesss shared directory
-sudo chown 1001000:1001000 /data/shared/
+# allow default lxc-mapped user to accesss shared directory
+chown 1001000:1001000 /data/shared/
 
 
 # allow root to map itself to UID's >1M

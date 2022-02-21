@@ -58,7 +58,7 @@ echo "Restoring backup \"${LXC_ARCHIVE}\" to container \"${LXC_NAME}\""
 
 pushd "${LXC_PATH}"
 mv config config_orig
-ROOTFS_PATH="$(grep "lxc.rootfs.path" config_orig)"
+ROOTFS_PATH="$(grep -F "lxc.rootfs.path" config_orig)"
 popd
 
 # first, extract the LXC_PATH backup, containing the config file and rootfs.tar

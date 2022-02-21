@@ -1,21 +1,21 @@
-# from setup_host.sh:
+# from host/setup_host.sh:
 
 
-# perform setup needed for cgroup v2(currently broken)
+# perform setup needed for cgroup v2
 ENABLE_CGROUPV2=true
 
-# enable setup for unprivileged containers(currently broken)
+# enable setup for unprivileged containers
 ENABLE_UNPRIVILEGED=true
 
 # setup this user for unprivileged containers/libvirt(needs to exist already!)
 USERNAME="max"
 
-# enable setup for libvirtd
+# enable setup for libvirtd on the host
 ENABLE_LIBVIRT=true
 
 
 
-# from setup_btrfs.sh:
+# from host/setup_btrfs.sh:
 
 
 # Enable btrfs setup
@@ -32,8 +32,11 @@ ENABLE_BTRFS=false
 
 
 
-# from setup_network.sh:
+# from host/setup_network.sh:
 
+
+# Enable networking setup
+ENABLE_NETWORK=true
 
 # Hostname to setup for this machine
 HOSTNAME="host"
@@ -64,7 +67,7 @@ IPV4_NS2="nameserver 149.112.112.112"
 # enable IPv6
 IPV6_ENABLE=false
 
-# address the VM host is reachable at(for "eth0"), without netmask
+# address the VM host is reachable at, without netmask
 #IPV6_HOST_ADDR="xxxx:xxxx:xxxx:xxxx:aaaa::1"
 
 # Subnet size
@@ -88,20 +91,16 @@ IPV6_ENABLE=false
 
 
 
-# from remote_install.sh:
+# from libvirt/setup_libvirt.sh
 
+# Configuration for the libvirt VM installation script
+LIBVIRT_CONFIG="host/config_libvirt.sh"
 
-# used for ssh and scp during installation
-REMOTE_SSH="${USERNAME}@${IPV4_ADDR}"
+# The connection URL for libvirtd
+LIBVIRT_CONNECTION="qemu:///system"
 
-# the configuration used to setup the remote host system(typically this file)
-REMOTE_HOST_CONFIG="host/config_libvirt.sh"
+# name of the prepared libvirt VM:
+LIBVIRT_VM_NAME="debian_bullseye"
 
-# the network configuration that is applied to the remote host system
-REMOTE_NETWORK_CONFIG="${REMOTE_HOST_CONFIG}"
-
-# the btrfs configuration that is used on the remote host system
-REMOTE_BTRFS_CONFIG="${REMOTE_HOST_CONFIG}"
-
-# Time to wait for the remote system to come back online
-REMOTE_REBOOT_TIMEOUT=25
+# name of the snapshot that is restored before the setup:
+LIBVIRT_VM_SNAPSHOT="prepared"

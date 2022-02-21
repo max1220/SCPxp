@@ -1,6 +1,5 @@
 #!/bin/bash
 set -eu
-
 # This script creates a backup of a stopped LXC container.
 # The first argument is the container name, the second optional argument
 # is the name/path of the created backup
@@ -14,21 +13,21 @@ DEFAULT_BACKUP_PATH="${CONTAINER}_$(date --iso-8601=seconds).tar.gz"
 BACKUP_PATH="${DEFAULT_BACKUP_PATH}"
 
 
-
+# Check and prepare arguments
 if [ "${CONTAINER}" = "" ]; then
 	echo "Must specify container name!"
 	exit 1
 fi
-if ! [ "${2}" = "" ]; then
+if [ ! "${2}" = "" ]; then
 	BACKUP_PATH="${2}"
 fi
-if ! [ -d "${CONTAINER_PATH}" ]; then
+if [ ! -d "${CONTAINER_PATH}" ]; then
 	echo "Container not found!"
 	exit 1
 fi
 
 
-
+# enter the /var/lib/lxc/ path(or the user-equivalent)
 pushd "${CONTAINER_PATH}"
 
 # create rootfs backup as tarbal, in running container

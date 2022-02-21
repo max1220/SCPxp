@@ -1,12 +1,13 @@
 #!/bin/bash
 set -eu
-function LOG() { echo -e "\e[32m$@\e[0m"; }
-
 # This script configures networking for the LXC container host.
 # It configures the required interfaces via /etc/network/interfaces,
 # sets the hostname,
 # installs and configures lxc-net and ndppd if needed,
 # and updates the default LXC config accordingly.
+
+# Load required utils
+. ./utils/log.sh
 
 
 if [ -z "${1}" ]; then
@@ -15,6 +16,11 @@ if [ -z "${1}" ]; then
 fi
 LOG "Using network configuration file: ${1}"
 . "${1}"
+
+
+if [ "${ENABLE_NETWORK}" != true ]; then
+	exit 0
+fi
 
 
 

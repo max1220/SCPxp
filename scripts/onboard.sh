@@ -26,7 +26,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDKvYFrAT997455zvBcOgudHwp2ZvlNKq278ZsTDR+M
 ENABEL_APT_CACHE=true
 
 # the Domain as part of the FQDN
-DOMAINNAME="max1220.de"
+DOMAINNAME="example.com"
 
 ### END CONFIGURATION ###
 

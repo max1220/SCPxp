@@ -1,132 +1,124 @@
 #!/bin/bash
-set -e
-REQUIRE_CONFIRM=false
-DRYRUN=false
+set -eu
+# This script show a graphical menu for managing LXC containers.
+# It can be run as root to manage "priviledged" containers,
+# and can be run as a regular user to manage "unprivileged" containers.
+# Menu options are provided to start, stop, create, edit, backup,
+# destroy a container etc.
+
 DEFAULT_LXC_TEMPLATE="download"
 DEFAULT_LXC_TEMPLATE_ARGS="-d debian -r bullseye -a amd64 --keyserver hkp://keyserver.ubuntu.com"
 DEFAULT_POST_INSTALL_SCRIPT="scripts/onboard.sh"
-BACKTITLE="Manage LXC containers on ${HOSTNAME}"
-USERNAME="max"
+USERNAME="${USER}"
 SCRIPTS_DIR="scripts"
 BACKUPS_DIR="backups"
-DIALOG="dialog"
 LXC_PATH="$(lxc-config lxc.lxcpath)"
 
+DIALOG_BACKTITLE="Manage LXC containers on ${HOSTNAME}"
+REQUIRE_CONFIRM=false
+DRYRUN=false
+WAIT_AFTER_COMMAND=false
+
+# Load required utils
+. ./utils/log.sh
+. ./utils/lxc.sh
+. ./utils/ui_dialog.sh
+
+
+#TODO: Run in set -eu
+#TODO: Make "portable"(change CWD to current script directory)
 #TODO: (btrfs) snapshots
 #TODO: wait using lxc-wait for start/stop
-#TODO: Support graphical dialog alternatives like zenity/yad etc.?
-
-# utillities for working with the dialog util
-function menu() {
-	"${DIALOG}" --backtitle "${BACKTITLE}" --stdout --menu "${1}" 0 0 0 "${@:2}"
-}
-function menu_single() {
-	"${DIALOG}" --backtitle "${BACKTITLE}" --stdout --no-items --menu "${1}" 0 0 0 "${@:2}"
-}
-function msgbox() {
-	"${DIALOG}" --msgbox "${1}" 0 0
-}
-function inputbox() {
-	"${DIALOG}" --stdout --inputbox "${1}" 0 0 "${2}"
-}
-function yesno() {
-	"${DIALOG}" --yesno "${1}" 0 0
-}
+#TODO: Support graphical dialog alternatives like zenity/yad etc.
+#TODO: File dialog for selecting file to upload
+#TODO: Mount the CWD in container when running scripts so we can load configs, utils
+#TODO: Use generic /lib/systemd/system/lxc@.service for autostart of containers(should work as user as well?)
 
 
-
-# all commands that modify the system should be run through this function.
-# it makes sure that, if enabled, the user can confirm the execution of LXC commands(or prevent it)
-# When DRYRUN is set, only prints commands.
-function ask_confirm_exec() {
-	if [ "${REQUIRE_CONFIRM}" = true ]; then
-		if yesno "About to run command:\n\n${*}"; then
-			if [ "${DRYRUN}" = true ]; then
-				echo "DRYRUN: ${*}" 1>&2;
-			else
-				"$@"
-				echo -e "-----------\nExit=$?\n${*}\nPress enter."
-				read
-			fi
-		fi
-	else
-		if [ "${DRYRUN}" = true ]; then
-			echo "DRYRUN: ${*}" 1>&2;
-		else
-			"$@"
-		fi
-	fi
-}
-
-
-# scripts for working with LXC
-
-# run a command in an LXC container
-function lxc_exec() {
-	ask_confirm_exec lxc-attach --clear-env -n "${1}" -- ${@:2}
-}
-# copy a file from the host to the container
-function lxc_copy_from_host() {
-	container="${1}" ; source="${2}" ; target="${3}"
-	if [ "${REQUIRE_CONFIRM}" = true ]; then
-		if ! yesno "About to copy file:\n\nFrom host: ${source}\nTo ${container}: ${target}"; then
-			return
-		fi
-	fi
-	lxc-attach --clear-env -n "${container}" -- /bin/bash -c "cat - > \"${target}\"" < "${source}"
-}
-# copy a file from a container to the host
-function lxc_copy_to_host() {
-	container="${1}" ; source="${2}" ; target="${3}"
-	if [ "${REQUIRE_CONFIRM}" = true ]; then
-		if ! yesno "About to copy file:\n\nFrom ${container}: ${source}\nTo host: ${target}"; then
-			return
-		fi
-	fi
-	lxc-attach --clear-env -n ${container} -- /bin/cat "${source}" > "${target}"
-}
-# run a script from the host in a container, by copying it to /tmp in the container and running it
-function lxc_run_script_in_container() {
-	container="${1}" ; source="${2}"
-	target="/tmp/$(basename "${source}")"
-	lxc_copy_from_host "${container}" "${source}" "${target}"
-	lxc_exec "${container}" /bin/bash "${target}" || true
-	lxc_exec "${container}" /bin/rm "${target}"
-}
-# list all stopped containers to stdout(seperated by space)
-function lxc_list_stopped() {
-	lxc-ls -1 --stopped | tr '\n' ' '
-}
-# list all running containers to stdout(seperated by space)
-function lxc_list_running() {
-	lxc-ls -1 --active | tr '\n' ' '
-}
-
-
-# scripts that generate or handle the menu
-
-# show a menu for a container, listing the available scripts to run on this container
+# show a menu for a container, listing the available scripts in
+# the SCRIPTS_DIR, and when selected run that script on the container.
+# $1 is the container name
 function menu_scripts() {
 	container="${1}"
-	script_path="$(menu_single "Script list:" "${SCRIPTS_DIR}"/*.sh)"
+	scripts_list=("${SCRIPTS_DIR}"/*.sh)
+	script_path="$(menu_single "Script list:" "${scripts_list[@]}")"
 	if [ "${script_path}" = "" ]; then
 		script_path="$(textinput "Enter script path manually:")"
-		[ "${script_path}" = "" ] && return
 	fi
-	lxc_run_script_in_container "${1}" "${script_path}"
-	echo
-	echo "Press enter to return."
-	echo
-	read
+	[ ! -f "${script_path}" ] && return 1
+	ask_confirm_exec lxc_run_script_in_container "${1}" "${script_path}"
 }
-# first, let the user select a container from the list of running containers,
-# then show a menu for the specified running container.
+
+
+# handle a running container action
+# $1 is the container name
+# $2 is the action to perform
+function running_container_action() {
+	container="${1}"
+	action="${2}"
+	case "${action}" in
+		info)
+			msgbox "$(lxc-info -n "${container}")"
+			;;
+		root)
+			ask_confirm_exec lxc-unpriv-attach -n "${container}" -- su --login root
+			;;
+		user)
+			ask_confirm_exec lxc-unpriv-attach -n "${container}" -- su --login "${USERNAME}"
+			;;
+		copy_to)
+			host_path="$(inputbox "Please enter the path on the host:")"
+			[ "${host_path}" = "" ] && return
+			container_path="$(inputbox "Please enter the path in the container:")"
+			[ "${host_path}" = "" ] && return
+			lxc_copy_from_host "${container}" "${host_path}" "${container_path}"
+			;;
+		copy_from)
+			container_path="$(inputbox "Please enter the path in the container:")"
+			[ "${container_path}" = "" ] && return
+			host_path="$(inputbox "Please enter the path on the host:")"
+			[ "${host_path}" = "" ] && return
+			lxc_copy_to_host "${container}" "${container_path}" "${host_path}"
+			;;
+		scripts)
+			menu_scripts "${container}"
+			;;
+		forward)
+			container_port="$(inputbox "Please enter the port in the container:")"
+			[ "${container_port}" = "" ] && return
+			host_port="$(inputbox "Please enter the port on the host:")"
+			[ "${host_port}" = "" ] && return
+
+			port_forward="$(echo "${container_port}:${container}:${host_port}" | ./port_forwards.sh)"
+			if yesno "Generated iptable rule:\n\n${port_forward}\n\nApply now?"; then
+				ask_confirm_exec "${port_forward}"
+			fi
+			;;
+		restart)
+			ask_confirm_exec lxc-stop -r -n "${container}"
+			;;
+		kill)
+			ask_confirm_exec lxc-stop -k -n "${container}"
+			;;
+		stop)
+			ask_confirm_exec lxc-stop -n "${container}"
+			;;
+		*)
+			return 1
+			;;
+	esac
+}
+
+
+# first, let the user select a container from the list of running
+# containers, then show a menu for the specified running container.
 function menu_running() {
-	container=$(menu_single "Running LXC containers:" $(lxc_list_running))
+	IFS=$'\n' running_containers=( $(lxc_list_running) )
+	container="$(menu_single "Running LXC containers:" "${stopped_containers[@]}")"
 	[ "${container}" = "" ] && return;
 
 	while true; do
-		action=$(menu "Running container \"${container}\"" \
+		action="$(menu "Running container \"${container}\"" \
 			"info"		"show info" \
 			"root"		"get a root shell" \
 			"user"		"get a user shell" \
@@ -136,61 +128,70 @@ function menu_running() {
 			"forward"	"Add a temporary port forward for the container" \
 			"restart"	"restart the container" \
 			"kill"		"kill the container" \
-			"stop"		"stop the container" )
+			"stop"		"stop the container"
+		)"
 
-		if [ "${action}" = "info" ]; then
-			msgbox "$(lxc-info -n "${container}")"
-		elif [ "${action}" = "root" ]; then
-			ask_confirm_exec lxc-attach -n "${container}" -- su --login root
-		elif [ "${action}" = "user" ]; then
-			ask_confirm_exec lxc-attach -n "${container}" -- su --login "${USERNAME}"
-		elif [ "${action}" = "copy_to" ]; then
-			host_path="$(inputbox "Please enter the path on the host:")"
-			[ "${host_path}" = "" ] && return
-			container_path="$(inputbox "Please enter the path in the container:")"
-			[ "${host_path}" = "" ] && return
-			lxc_copy_from_host "${container}" "${host_path}" "${container_path}"
-		elif [ "${action}" = "copy_from" ]; then
-			container_path="$(inputbox "Please enter the path in the container:")"
-			[ "${container_path}" = "" ] && return
-			host_path="$(inputbox "Please enter the path on the host:")"
-			[ "${host_path}" = "" ] && return
-			lxc_copy_to_host "${container}" "${container_path}" "${host_path}"
-		elif [ "${action}" = "scripts" ]; then
-			menu_scripts "${container}"
-		elif [ "${action}" = "forward" ]; then
-			container_port="$(inputbox "Please enter the port in the container:")"
-			[ "${container_port}" = "" ] && return
-			host_port="$(inputbox "Please enter the port on the host:")"
-			[ "${host_port}" = "" ] && return
-
-			port_forward="$(echo "${container_port}:${container}:${host_port}" | ./port_forwards.sh)"
-			if yesno "Generated iptable rule:\n\n${port_forward}\n\nApply now?"; then
-				echo "Running: ${port_forward}"
-				$port_forward
-				echo
-				echo "Press enter to return."
-				echo
-				read
-			fi
-		elif [ "${action}" = "restart" ]; then
-			ask_confirm_exec lxc-stop -r -n "${container}"
-			break
-		elif [ "${action}" = "kill" ]; then
-			ask_confirm_exec lxc-stop -k -n "${container}"
-			break
-		elif [ "${action}" = "stop" ]; then
-			ask_confirm_exec lxc-stop -n "${container}"
-			break
-		elif [ "${action}" = "" ]; then
-			break
-		fi
+		running_container_action "${container}" "${action}" || break
 	done
 }
-# first, let the user select a container from the list of stopped containers,
-# then show a menu for the specified stopped container.
+
+
+# handle a stopped container action
+# $1 is the container name
+# $2 is the action to perform
+function stopped_container_action() {
+	container="${1}"
+	action="${2}"
+	case "${action}" in
+		info)
+			msgbox "$(lxc-info -n "${container}")"
+			;;
+		root)
+			ask_confirm_exec lxc-execute -n "${container}" -- login -f root
+			;;
+		user)
+			ask_confirm_exec lxc-execute -n "${container}" -- login -f "${USERNAME}"
+			;;
+		start)
+			ask_confirm_exec lxc-unpriv-start -n "${container}"
+			return 1
+			;;
+		edit)
+			editor "${LXC_PATH}/${container}/config"
+			;;
+		clone)
+			new_container="$(inputbox "Please enter a name for the new container:")"
+			[ "${new_container}" = "" ] && return;
+			ask_confirm_exec lxc-copy -n "${container}" -N "${new_container}"
+			container="${new_container}"
+			;;
+		rename)
+			new_container="$(inputbox "Please enter a new name for the container:")"
+			[ "${new_container}" = "" ] && return;
+			ask_confirm_exec lxc-copy -R -n "${container}" -N "${new_container}"
+			container="${new_container}"
+			;;
+		backup)
+			BACKUP_NAME="$(inputbox "Please enter a filename for the backup:" "${container}_$(date --iso-8601=seconds).rootfs.tar.gz")"
+			mkdir -p "${BACKUPS_DIR}"
+			BACKUP_PATH="$(realpath "${BACKUPS_DIR}")/${BACKUP_NAME}"
+			./backups/create_container_backup.sh "${container}" "${BACKUP_PATH}"
+			;;
+		destroy)
+			confirm_container="$(inputbox "Destroy container ${container}?\nThe rootfs will be deleted.\nThis can't be undone!\n\nTo confirm, please enter the name of the container.")"
+			[ "${confirm_container}" != "${container}" ] && return;
+			ask_confirm_exec lxc-destroy -n "${container}"
+			return 1
+			;;
+	esac
+}
+
+
+# first, let the user select a container from the list of stopped
+# containers, then show a menu for the specified stopped container.
 function menu_stopped() {
-	container=$(menu_single "Stopped LXC containers:" $(lxc_list_stopped))
+	IFS=$'\n' stopped_containers=( $(lxc_list_stopped) )
+	container="$(menu_single "Stopped LXC containers:" "${stopped_containers[@]}")"
 	[ "${container}" = "" ] && return;
 
 	while true; do
@@ -212,7 +213,7 @@ function menu_stopped() {
 		elif [ "${action}" = "user" ]; then
 			ask_confirm_exec lxc-execute -n "${container}" -- login -f "${USERNAME}"
 		elif [ "${action}" = "start" ]; then
-			ask_confirm_exec lxc-start -n "${container}"
+			ask_confirm_exec lxc-unpriv-start -n "${container}"
 			break
 		elif [ "${action}" = "edit" ]; then
 			editor "${LXC_PATH}/${container}/config"
@@ -245,6 +246,8 @@ function menu_stopped() {
 		fi
 	done
 }
+
+
 # the container creation "wizard"
 function menu_create() {
 	container="$(inputbox "Please enter a name for the new container:")"
@@ -253,15 +256,15 @@ function menu_create() {
 	template_args="$(inputbox "Extra arguments for template:" "${DEFAULT_LXC_TEMPLATE_ARGS}")"
 	ask_confirm_exec lxc-create -B best -n "${container}" -t "${template}" -- ${template_args}
 	if yesno "Start container now?"; then
-		ask_confirm_exec lxc-start -n "${container}"
+		ask_confirm_exec lxc-unpriv-start -n "${container}"
 		post_install_script="$(inputbox "Run post-install script?" "${DEFAULT_POST_INSTALL_SCRIPT}")"
 		if [ "${post_install_script}" != "" ]; then
-			lxc_run_script_in_container "${container}" "${post_install_script}"
-			echo -e "\nPress enter to return.\n"
-			read
+			ask_confirm_exec lxc_run_script_in_container "${container}" "${post_install_script}"
 		fi
 	fi
 }
+
+
 # the main menu
 function menu_main() {
 	while true; do
@@ -300,7 +303,7 @@ function menu_main() {
 			[ "${container_name}" = "" ] && break
 
 			# check if old container exists
-			if lxc-ls | grep -w "${container_name}"; then
+			if lxc-ls | grep -c -F "${container_name}"; then
 				if yesno "Old container will be deleted. Continue?"; then
 					# destroy old container
 					ask_confirm_exec lxc-destroy -n "${container_name}"
