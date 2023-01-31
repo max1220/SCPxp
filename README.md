@@ -22,7 +22,7 @@ These are some of the main features.
 
 These are problems mostly with this release, they are intended to be fixed(after the deadline)
 
-(*1) Has some issues with color support
-(*2) Currently only info/start/stop/restart
-(*3) Currently only shows file lists, can't open or download
-(*4) Slightly broken
+ * (*1) Has some issues with color support
+ * (*2) Currently only info/start/stop/restart
+ * (*3) Currently only shows file lists, can't open or download
+ * (*4) Slightly broken
