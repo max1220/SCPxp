@@ -4,6 +4,7 @@ This branch contains the code developed for the L1T Devember event.
 Specifically, I've cleaned and re-organized my scipts(still WIP),
 and I've developed a Windows XP-style server control panel.
 
+[Forum Post with Videos](https://forum.level1techs.com/t/192160)
 
 ## Web Features:
 
