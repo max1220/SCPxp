@@ -18,7 +18,7 @@ These are some of the main features.
  * Simple file explorer(*3)
  * Simple text editor(*4)
 
-##TODO
+## TODO
 
 These are problems mostly with this release, they are intended to be fixed(after the deadline)
 
