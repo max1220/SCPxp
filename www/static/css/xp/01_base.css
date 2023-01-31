@@ -1,0 +1,34 @@
+/* base */
+
+	body {
+		box-sizing: border-box !important;
+		margin: 0 0;
+		padding: 0 0;
+	}
+
+	/* Make elements non-selectable*/
+	.noselect {
+		user-select: none;
+	}
+
+	/* text to ellipsis instead of wrapping or overflowing */
+	.overflow-ellipsis {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	/* Hide the content */
+	.hidden {
+		display: none !important;
+	}
+
+	.left {
+		float: left;
+	}
+
+	.right {
+		float: right;
+	}
+
+/* /base */

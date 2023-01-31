@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Command output">
+		<meta name="author" content="max1220">
+		<title>⮻ LXC info</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+	</head>
+	<body>
+		<div style="margin: 10px;">
+			<h3 id="container_header">${container_name}</h3>
+			<p>Showing basic info about the LXC container.</p>
+			<p>You can control the container using the buttons below.</p>
+
+			<button class="btn" id="stop_btn" onclick="stop(); update_table_delay()">Stop</button>
+			<button class="btn" id="kill_btn" onclick="kill(); update_table_delay()">Kill</button>
+			<button class="btn" id="start_btn" onclick="start(); update_table_delay()">Start</button>
+			<button class="btn" id="restart_btn" onclick="restart(); update_table_delay()">Restart</button>
+			<button class="btn" id="destroy_btn" onclick="destroy(); update_table_delay()">Destroy</button>
+			<button class="btn" id="backup_btn" onclick="backup()">Backup</button>
+			<button class="btn" id="root_btn" onclick="root()">Root shell</button>
+			<button class="btn" id="user_btn" onclick="user()">User shell</button>
+			<button class="btn" id="forward_btn" onclick="forward()">Forward</button>
+			<button class="btn" id="refresh_btn" onclick="update_info()">Refresh</button>
+
+			<div style="padding-top: 15px;">
+				<span style="float: left; font-weight: bold;">State:</span>
+				<span style="float: right;" id="state_str">${state}</span>
+			</div>
+			<div style="clear: both;">
+				<span style="float: left; font-weight: bold;">PID:</span>
+				<span style="float: right;" id="pid_str">${pid}</span>
+			</div>
+			<div style="clear: both;">
+				<span style="float: left; font-weight: bold;">IPs:</span>
+				<span style="float: right;" id="ips_str">${ips}</span>
+			</div>
+			<div style="clear: both;"></div>
+			<span style="font-weight: bold;">Stats:</span>
+			<pre id="stats_str">${stats}</pre>
+
+			<script src="/static/js/fix_link_targets_iframe.js"></script>
+			<script src="/static/js/make_xhr.js"></script>
+			<script>
+				let container_header = document.getElementById("container_header")
+				let stop_btn = document.getElementById("stop_btn")
+				let kill_btn = document.getElementById("kill_btn")
+				let start_btn = document.getElementById("start_btn")
+				let restart_btn = document.getElementById("restart_btn")
+				let destroy_btn = document.getElementById("destroy_btn")
+				let backup_btn = document.getElementById("backup_btn")
+				let root_btn = document.getElementById("root_btn")
+				let user_btn = document.getElementById("user_btn")
+				let forward_btn = document.getElementById("forward_btn")
+				let refresh_btn = document.getElementById("refresh_btn")
+
+				let state_elem = document.getElementById("state_str")
+				let pid_elem = document.getElementById("pid_str")
+				let ips_elem = document.getElementById("ips_str")
+				let stats_elem = document.getElementById("stats_str")
+
+				let container_name = decodeURIComponent(window.location.hash.substr(1))
+
+				// create a new tmux session
+				function get_info(cb) {
+					console.log("Getting container info...")
+					make_xhr(
+						"/cgi-bin/lxc/info.sh?container_name="+encodeURIComponent(container_name),
+						"GET",
+						"application/x-www-form-urlencoded",
+						"",
+						function(url, resp) {
+							console.log("Got container info!")
+							if (!cb) { return; }
+							let decoded_obj = JSON.parse(resp)
+							if (decoded_obj && decoded_obj.success) {
+								cb(decoded_obj)
+							}
+						}
+					)
+				}
+
+				function stop() {
+					make_xhr(
+						"/cgi-bin/lxc/stop.sh",
+						"POST",
+						"application/x-www-form-urlencoded",
+						"container_name="+encodeURIComponent(container_name)
+					)
+				}
+				function kill() {
+					make_xhr(
+						"/cgi-bin/lxc/stop.sh",
+						"POST",
+						"application/x-www-form-urlencoded",
+						"container_name="+encodeURIComponent(container_name) + "&mode=kill"
+					)
+				}
+				function start() {
+					make_xhr(
+						"/cgi-bin/lxc/start.sh",
+						"POST",
+						"application/x-www-form-urlencoded",
+						"container_name="+encodeURIComponent(container_name)
+					)
+				}
+				function restart() {
+					make_xhr(
+						"/cgi-bin/lxc/stop.sh",
+						"POST",
+						"application/x-www-form-urlencoded",
+						"container_name="+encodeURIComponent(container_name) + "&mode=restart"
+					)
+				}
+				function destroy() {}
+				function backup() {}
+				function root() {}
+				function user() {}
+				function forward() {}
+
+				// refresh the displayed info
+				function update_info() {
+					get_info(function(resp) {
+						container_header.innerHTML = resp.name
+						state_elem.innerHTML = resp.state
+						pid_elem.innerHTML = resp.pid
+						ips_elem.innerHTML = resp.ips
+						stats_elem.innerHTML = resp.stats
+						if (resp.state == "RUNNING") {
+							stop_btn.classList.remove("hidden")
+							kill_btn.classList.remove("hidden")
+							start_btn.classList.add("hidden")
+							restart_btn.classList.remove("hidden")
+							destroy_btn.classList.add("hidden")
+						} else {
+							stop_btn.classList.add("hidden")
+							kill_btn.classList.add("hidden")
+							start_btn.classList.remove("hidden")
+							restart_btn.classList.add("hidden")
+							destroy_btn.classList.remove("hidden")
+						}
+					})
+				}
+
+				// give the buttons some time to work server-side before reloading the table values
+				function update_table_delay() { window.setTimeout(function() { update_info() }, 500) }
+
+				// update table immediatly and every 5seconds afterwards
+				update_info()
+				window.setInterval(function() { update_info() }, 5000)
+			</script>
+		</div>
+	</body>
+	<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=290}}}
+{{{window_height=410}}}
+-->
+</html>

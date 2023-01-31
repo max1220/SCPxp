@@ -1,0 +1,42 @@
+/* desktop */
+
+	body {
+		background-color: var(--desktop-bg-color);
+		background-image: var(--desktop-bg-image);
+		user-select: none;
+
+	}
+
+	#windows {
+		display: flex;
+		flex-direction: column;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: var(--taskbar-height);
+		overflow-x: hidden;
+	}
+
+	.desktop-icon {
+		width: 48px;
+		height: 48px;
+		border-radius: 3px;
+		font-size: 32px;
+		background-image: radial-gradient(
+			rgba(0,0,0,0.25),
+			rgba(0,0,0,0) 75%
+		);
+		color: #000;
+	}
+	.desktop-link {
+		margin: 1em;
+		width: 3em;
+		text-align: center;
+		font-family: sans-serif;
+		text-decoration: none;
+		color: #eee;
+		text-shadow: 1px 1px rgba(0,0,0,0.3);
+	}
+
+/* /desktop */

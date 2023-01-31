@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>🗀 File manager</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<style>
+			.window-popup {
+				position: absolute;
+				top: 33%;
+				left: calc(50% - 150px);
+				width: 300px;
+			}
+
+			#popup-blanker {
+				position: absolute;
+				left: 0;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				background-color: rgba(0,0,0,0.5);
+				z-index: 2;
+			}
+			#popups * {
+				z-index: 3;
+			}
+
+			#file-tree, #file-tree ul {
+				background-color: #fff;
+				margin: 0 0;
+				max-width: 250px;
+				min-width: 100px;
+				width: 150px;
+				height: 100%;
+				resize: horizontal;
+				box-sizing: border-box;
+				overflow: auto;
+				white-space: nowrap;
+				list-style-type: none;
+				padding-inline-start: 10px;
+			}
+			#file-table {
+				background-color: #fff;
+				width: 100%;
+			}
+			#file-table thead {
+				background-color: #EDEADA;
+				font-weight: bold;
+			}
+			#file-table tbody {
+				background-color: #fff;
+			}
+			#file-table tbody tr td {
+				border-right: 1px solid #EDEADA;
+				border-bottom: 1px solid #EDEADA;
+			}
+
+			details > summary {
+				list-style: none;
+			}
+
+			.resizeable {
+				resize: both;
+			}
+
+			.splitpane {
+				position: absolute;
+				top: calc(var(--menubar-height) + 1px);
+				left: 0;
+				right: 0;
+				bottom: calc(var(--statusbar-height) + 1px);
+				display: flex;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="menu-bar">
+			<div class="menu-category">File</div>
+			<div class="menu-sub hidden">
+				<a onclick="show_open()" class="menu-item">Open</a>
+				<a onclick="save('${file_path}')"class="menu-item">Save</a>
+				<a onclick="show_saveas()" class="menu-item">Save as</a>
+				<div class="menu-spacer"></div>
+				<a href="about:blank" class="menu-item">Exit</a>
+			</div>
+			<div class="menu-container">
+				<div class="menu-category">Help</div>
+				<div class="menu-sub hidden">
+					<a onclick="show_about()" class="menu-item">About</a>
+				</div>
+			</div>
+			<div class="menu-category">Edit</div>
+			<div class="menu-category" style="margin: 0 0; padding: 0 0; display: flex; width: 100%;">
+				<input type="text" id="file_path_text_input" style="width: 100%;">
+				<button class="btn" id="file_path_text_input_go" style="min-width: 30px;">go</button>
+				<button class="btn" id="menubar_go_up_button" style="min-width: 30px;">..</button>
+			</div>
+
+
+		</div>
+
+		<div class="splitpane">
+			<div style="border-right: 1px solid #888;">
+				<!-- Updated by JS -->
+				<ul id="file-tree" class="tree-view"></ul>
+			</div>
+			<div style="width: 100%; overflow: auto;">
+				<table id="file-table">
+					<thead>
+						<tr>
+							<td>File name</td>
+							<td>Mode</td>
+							<td>User</td>
+							<td>Group</td>
+							<td>Size</td>
+						</tr>
+					</thead>
+					<tbody id="file-list">
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="status-bar">
+			<p class="status-bar-field">${file_path_html}</p>
+			<p class="status-bar-field" id="status_text"></p>
+		</div>
+
+		<div id="popup-blanker" class="hidden"></div>
+
+		<div id="popups">
+			<div id="about-window" class="window window-popup hidden">
+				<div class="title-bar">
+					<div class="title-bar-text">About text editor</div>
+					<div class="title-bar-controls">
+						<button aria-label="Close" onclick="close_about()"></button>
+					</div>
+				</div>
+				<div class="window-body">
+					<h3>File manager</h3>
+					<p>A simple file manager</p>
+					<ul>
+						<li>CGI part written in bash</li>
+						<li>Front-end written in plain Javascript</li>
+					</ul>
+					<br>
+					<br>
+					<section class="field-row" style="justify-content: flex-end">
+						<button onclick="close_about()">Close</button>
+					</section>
+				</div>
+			</div>
+			<div id="open-window" class="window window-popup hidden">
+				<div class="title-bar">
+					<div class="title-bar-text">Open file...</div>
+					<div class="title-bar-controls">
+						<button onclick="close_open()" aria-label="Close"></button>
+					</div>
+				</div>
+				<div class="window-body">
+					<p>Please enter the path of the file to open:</p>
+
+					<!-- This form is submitted as-is(no javascript needed) -->
+					<form method="GET" action="/cgi-bin/xp/text_editor.sh">
+						<section class="field-row">
+							<label for="file_path">File&nbsp;path:</label>
+							<input type="text" name="file_path" style="width: 100%;">
+						</section>
+						<br>
+						<br>
+						<section class="field-row" style="justify-content: flex-end">
+							<button>Ok</button>
+						</section>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/xp/file_manager.js"></script>
+	</body>
+
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=600}}}
+{{{window_height=400}}}
+{{{window_resizeable}}}
+-->
+</html>
+
+
+
+
+
+

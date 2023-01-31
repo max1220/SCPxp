@@ -1,0 +1,16 @@
+/* application */
+
+	html {
+		height: 100%;
+	}
+	body {
+		min-height: 100%;
+		font-family: sans-serif;
+		font-size: 12px;
+		line-height: 14px;
+		padding: 4px;
+		user-select: none;
+		background-color: var(--windows-bg-color);
+	}
+
+/* /application */

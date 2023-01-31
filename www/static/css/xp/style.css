@@ -1,0 +1,724 @@
+/* vars */
+
+	:root {
+		--desktop-bg-color: #004E98;
+		/* --desktop-bg-image: url("/static/bliss.png"); */
+
+		--windows-shadow-color: #333;
+		--windows-border-radius: 8px;
+		--windows-border-color1: #0831d9;
+		--windows-border-color2: #166aee;
+		--windows-bg-color: #ece9d8;
+		--windows-title-bar-height: 26px;
+		--windows-title-bar-background-image:
+			linear-gradient(
+				180deg,
+				#0997ff,
+				#0053ee 8%,
+				#0050ee 40%,
+				#06f 88%,
+				#06f 93%,
+				#005bff 95%,
+				#005bff 96%,
+				#005bff
+			)
+		;
+		--windows-title-bar-background-image-unfocused:
+			linear-gradient(
+				180deg,
+				#33A9FF,
+				#3072EE 8%,
+				#3070EE 40%,
+				#3385FF 88%,
+				#3385FF 93%,
+				#337CFF 95%,
+				#337CFF 96%,
+				#337CFF
+			)
+		;
+		--windows-title-bar-text-color: #fff;
+		--statusbar-height: 18px;
+		--menubar-height: 22px;
+		--taskbar-height: 26px;
+	}
+
+/* /vars */
+/* base */
+
+	body {
+		box-sizing: border-box !important;
+		margin: 0 0;
+		padding: 0 0;
+	}
+
+	/* Make elements non-selectable*/
+	.noselect {
+		user-select: none;
+	}
+
+	/* text to ellipsis instead of wrapping or overflowing */
+	.overflow-ellipsis {
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	/* Hide the content */
+	.hidden {
+		display: none !important;
+	}
+
+	.left {
+		float: left;
+	}
+
+	.right {
+		float: right;
+	}
+
+/* /base */
+/* windows */
+
+	/* The container for all windows */
+	#windows {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		padding: 0 0;
+		margin: 0 0;
+	}
+
+
+
+	/* Add some values to windows to make the useful for the desktop */
+	.window {
+		position: absolute;
+		min-width: 100px;
+		min-height: 30px;
+		box-shadow: 1px 1px 4px var(--windows-shadow-color);
+		border-top-left-radius: var(--windows-border-radius);
+		border-top-right-radius: var(--windows-border-radius);
+		border: 1px solid var(--windows-border-color1);
+	}
+
+	.window .window-body {
+		border: 2px outset var(--windows-border-color2);
+		border-top: none;
+		background-color: var(--windows-bg-color);
+		position: absolute;
+		top: calc(var(--windows-title-bar-height) + 1px);
+		left: 0;
+		right: 0;
+		bottom: 0;
+	}
+	.window .title-bar {
+		display: flex;
+		height: var(--windows-title-bar-height);
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid var(--windows-border-color1);
+		border-top-left-radius: calc(var(--windows-border-radius) - 1px);
+		border-top-right-radius: calc(var(--windows-border-radius) - 1px);
+		color: var(--windows-title-bar-text-color);
+		background-image: var(--windows-title-bar-background-image);
+	}
+	.window .title-bar .title-bar-text {
+		padding-left: 0.5em;
+		font-weight: 700;
+		letter-spacing: 0;
+		font-size: 13px;
+		font-family: sans-serif;
+		text-shadow: 1px 1px #0f1089;
+	}
+	.window .title-bar .title-bar-controls {
+		padding-right: 4px;
+		display: flex;
+		align-items: center;
+	}
+	.window .title-bar .title-bar-controls * {
+		margin: 0 1px;
+		padding: 0 0;
+		width: 21px;
+		height: 21px;
+		border-radius: 3px;
+		border: 1px solid #eee;
+		color: #fff;
+		background-color: #0050ee;
+		box-shadow: 0px 0px 2px inset rgba(0,0,0,0.5);
+		background-image: linear-gradient(
+				/* Bottom */
+				0deg,
+				rgba(0,0,0,0.2),
+				rgba(0,0,0,0.1) 16%,
+				rgba(0,0,0,0) 24%
+			),
+			linear-gradient(
+				/* Left */
+				90deg,
+				rgba(255,255,255,0.3),
+				rgba(255,255,255,0.15) 8%,
+				rgba(0,0,0,0) 16%
+			),
+			linear-gradient(
+				/* Top */
+				180deg,
+				rgba(255,255,255,0.15) 8%,
+				rgba(255,255,255,0) 16%
+			),
+			linear-gradient(
+				/* Right */
+				270deg,
+				rgba(0,0,0,0.2),
+				rgba(0,0,0,0.1) 16%,
+				rgba(0,0,0,0) 24%
+			),
+			radial-gradient(
+				/* highlight 1 */
+				at 10% 10%,
+				rgba(255,255,255,0.4),
+				rgba(255,255,255,0.15),
+				rgba(255,255,255,0)
+			),
+			radial-gradient(
+				/* highlight 1 */
+				at 12% 12%,
+				rgba(255,255,255,0.3),
+				rgba(255,255,255,0) 16%
+			)
+		;
+
+	}
+	.window .title-bar .title-bar-controls *:hover {
+		background-color: #1262FF;
+	}
+	.window .title-bar .title-bar-controls *:active {
+		background-image: linear-gradient(
+				/* Bottom */
+				0deg,
+				rgba(255,255,255,0.2),
+				rgba(255,255,255,0.1) 12%,
+				rgba(255,255,255,0) 20%
+			),
+			linear-gradient(
+				/* Left */
+				90deg,
+				rgba(0,0,0,0.3),
+				rgba(0,0,0,0.15) 12%,
+				rgba(0,0,0,0) 20%
+			),
+			linear-gradient(
+				/* Top */
+				180deg,
+				rgba(0,0,0,0.15) 12%,
+				rgba(0,0,0,0) 20%
+			),
+			linear-gradient(
+				/* Right */
+				270deg,
+				rgba(255,255,255,0.2),
+				rgba(255,255,255,0.1) 12%,
+				rgba(255,255,255,0) 20%
+			)
+		;
+	}
+
+	.window .title-bar .title-bar-controls button[aria-label=Minimize]::after{
+		content: "▁";
+	}
+
+	.window .title-bar .title-bar-controls [aria-label=Maximize]::after {
+		content: "⮻";
+	}
+	.window .title-bar .title-bar-controls [aria-label=Close]::after {
+		content: "🞮";
+	}
+	.window .title-bar .title-bar-controls [aria-label=Close] {
+		background-color: #ED3315;
+	}
+	.window .title-bar .title-bar-controls [aria-label=Close]:hover {
+		background-color: #FF4021;
+	}
+
+
+
+	/* Decolor the unfocused window */
+	.window-unfocused .title-bar {
+		background-image: var(--windows-title-bar-background-image-unfocused);
+	}
+
+	.window-unfocused .title-bar .title-bar-controls * {
+		background-color: #3070EE;
+	}
+
+	/* Make a window resizeable */
+	.window-resizeable {
+		resize: both;
+		overflow: hidden;
+	}
+
+	/* Class for the body of an iframe window */
+	.window-body-iframe {
+		height: calc(100% - 27px);
+		box-sizing: border-box;
+	}
+	.window-body-iframe iframe {
+		width: 100%;
+		height: 100%;
+		border: none;
+	}
+
+/* /windows */
+/* taskbar */
+
+	/* The bottom task bar */
+	#taskbar {
+		position: fixed;
+		left: 0; right: 0; bottom: 0;
+		height: var(--taskbar-height);
+
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+
+		background:
+			linear-gradient(
+				180deg,
+				#0997ff,
+				#0053ee 8%,
+				#0050ee 40%,
+				#0066ff 88%,
+				#0066ff 93%,
+				#005bff 95%,
+				#003dd7 96%,
+				#003dd7
+			)
+		;
+	}
+
+	#taskbar-left {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	/* The buttons in the taskbar for minimizing/restoring a window */
+	.windowbutton {
+		height: 23px;
+		background:
+			linear-gradient(
+				180deg,
+				#0997ff,
+				#0053ee 8%,
+				#0050ee 40%,
+				#06f 88%,
+				#06f 93%,
+				#005bff 95%,
+				#003dd7 96%,
+				#003dd7
+			) !important
+		;
+		border: 1px outset #003dd7;
+		border-radius: 3px;
+		color: #eee;
+		padding: 0px 10px;
+		width: 10em;
+		text-align: left;
+		margin-left: 4px;
+	}
+	.windowbutton:hover {
+		border: 1px solid #0997ff;
+	}
+	.windowbutton:active {
+		border: 1px solid #003dd7;
+	}
+	/* version for the currently active window */
+	.windowbutton-visible {
+		background:
+			linear-gradient(
+				180deg,
+				#003dd7,
+				#044bff 8%,
+				#005bff 40%,
+				#06f 88%,
+				#06f 93%,
+				#0050ee 95%,
+				#0053ee 96%,
+				#0997ff
+			) !important
+		;
+		border: 1px inset #003dd7;
+	}
+
+	/* The clock at the right corner of the taskbar */
+	#clock {
+		color: #eee;
+		font-family: monospace;
+		text-shadow: 0px 0px 3px #000;
+		padding-right: 0.5em;
+	}
+
+	/* The start button with the Tux icon */
+	#start-button {
+		background:
+			linear-gradient(
+				180deg,
+				#5DE35D,
+				#1AC713 86%,
+				#32C907
+			)
+			!important
+		;
+		height: 26px;
+		font-size: 125%;
+		border: 0;
+		padding-right: 0.5em;
+		border-radius: 0;
+		border-top-right-radius: 7px 50%;
+		border-bottom-right-radius: 7px 50%;
+		box-shadow:
+			inset -5px -5px 2px #292,
+			inset 5px 5px 2px #52f952,
+			2px 0px 2px #003dd7
+		;
+		color: #fff;
+		text-shadow: 0px 0px 3px #000;
+
+	}
+	#start-button:hover {
+		background: linear-gradient(180deg,#9f9,#5cff55 86%,#68ff24) !important;
+	}
+	#start-button:active {
+		background: linear-gradient(180deg,#afa,#7cff75 86%,#88ff44) !important;
+	}
+	#start-icon {
+		width: 20px;
+		height: 20px;
+		display: inline-block;
+		background: url("/static/tux.svg");
+	}
+
+/* /taskbar */
+/* startmenu */
+
+	/* The startmenu, positioned in the bottom,left corner. */
+	#start-menu {
+		position: fixed;
+		left: 0;
+		bottom: 27px;
+		width: 200px;
+		background: linear-gradient(180deg,#000, #000,#11f) !important;
+		border: 1px solid #888;
+		box-shadow: 1px 1px 5px #000;
+		font-family: sans-serif;
+	}
+	.start-menu-icon {
+		display: inline-block;
+		min-width: 2em;
+		text-align: center;
+		filter: grayscale(1);
+		height: 1em;
+	}
+	/* startmenu items */
+	.start-menu-item {
+		background-color: #eee;
+		color: #111;
+		display: block;
+		padding: 7px;
+		text-decoration: none !important;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	.start-menu-spacer {
+		height: 1px;
+		border: 4px solid #eee;
+		background-color: #aaa;
+		margin-left: 20px;
+	}
+	.start-menu-item:hover {
+		background-color: #46f;
+		color: #eee;
+	}
+	.start-menu-item:hover + .start-menu-sub {
+		display: block;
+	}
+	.start-menu-item + .start-menu-sub:hover {
+		display: block;
+	}
+
+	/* First level margin on the left side to view the gradient */
+	#start-menu > .start-menu-item {
+		margin-left: 20px;
+	}
+
+	/* A sub-menu in the start-menu*/
+	.start-menu-sub {
+		position: absolute;
+		top: -1px;
+		right: -152px;
+		width: 150px;
+		border: 1px solid #888;
+		box-shadow: 1px 1px 5px #000;
+	}
+
+/* /startmenu */
+/* buttons */
+
+	.btn {
+		border: 1px solid #003c74;
+		border-radius: 3px;
+		min-height: 23px;
+		min-width: 75px;
+		padding: 3px 6px;
+		font-family: sans-serif;
+		box-sizing: border-box;
+		font-size: 12px;
+		color: #111;
+		text-decoration: none;
+		text-align: center;
+		vertical-align: middle;
+		display: inline-block;
+		background:
+			linear-gradient(
+				180deg,
+				#fff,
+				#ecebe5 86%,
+				#d8d0c4
+			)
+		;
+	}
+	.btn:hover {
+		box-shadow:
+			inset -1px 1px #fff0cf,
+			inset 1px 2px #fdd889,
+			inset -2px 2px #fbc761,
+			inset 2px -2px #e5a01a
+		;
+	}
+	.btn:active {
+		box-shadow:
+			inset -1px 1px #fff0cf,
+			inset 1px 2px #fdd889,
+			inset -2px 2px #fbc761,
+			inset 2px -2px #e5a01a
+		;
+	}
+	.btn:focus {
+		box-shadow:
+			inset -1px 1px #cee7ff,
+			inset 1px 2px #98b8ea,
+			inset -2px 2px #bcd4f6,
+			inset 1px -1px #89ade4,
+			inset 2px -2px #89ade4
+		;
+		outline: 1px dotted #000;
+		outline-offset: -4px;
+	}
+	.btn:active {
+		box-shadow: none;
+		background:
+			linear-gradient(
+				180deg,
+				#cdcac3,
+				#e3e3db 8%,
+				#e5e5de 94%,
+				#f2f2f1
+			)
+		;
+	}
+
+/* /buttons */
+/* tabs */
+
+	.tabs {
+		padding: 5px 2px;
+	}
+	.tabs menu {
+		display: block;
+		margin: 0 0;
+		padding: 0 0;
+		display: flex;
+	}
+	.tabs menu * {
+		font-size: 12px;
+		background-color: #fcfcfe;
+		border: 1px solid #919b9c;
+		padding: 3px 8px;
+		margin: 0 0;
+		margin-right: 1px;
+		margin-top: 2px;
+		border-top-right-radius: 3px;
+		border-top-left-radius: 3px;
+		background-image:
+			linear-gradient(
+				180deg,
+				#fff,
+				#fafaf9 25%,
+				#f0f0ea 95%,
+				#ecebe5
+			)
+		;
+	}
+	.tabs menu *[aria-selected="true"] {
+		border-top: 1px solid #e68b2c;
+		border-bottom: none;
+		margin-right: -1px;
+		margin-top: 0;
+		background-image:
+			linear-gradient(
+				180deg,
+				#ffc73c,
+				rgba(0,0,0,0) 15%
+			)
+		;
+	}
+	.tabs menu :hover {
+		background-image:
+			linear-gradient(
+				180deg,
+				#ffc73c,
+				#fff,
+				#fafaf9 25%,
+				#f0f0ea 95%,
+				#ecebe5
+			)
+		;
+	}
+	.tabs article {
+		margin-top: -1px;
+		background-color: #fcfcfe;
+		border: 1px solid #919b9c;
+		padding: 7px;
+	}
+
+/* /tabs */
+
+/* input */
+
+input {
+	box-sizing: border-box;
+	border: 1px solid #7f9db9;
+	background-color: #fff;
+	padding: 3px 4px;
+	border-radius: 0;
+	outline: none;
+	width: 200px;
+	height: 23px;
+}
+select {
+	box-sizing: border-box;
+	border: 1px solid #7f9db9;
+	background-color: #fff;
+	padding: 3px 4px;
+	outline: none;
+	width: 200px;
+	height: 23px;
+}
+
+/* /input */
+/* status bar */
+
+	.status-bar {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		height: var(--statusbar-height);
+
+		margin: 0 0;
+		padding: 0 0;
+		display: flex;
+		border-top: 1px solid #888;
+	}
+
+	.status-bar-field {
+		padding: 0 0;
+		margin: 0 0;
+	}
+
+/* /status bar */
+/* menubar */
+
+	#menu-bar {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: var(--menubar-height);
+		display: flex;
+		border-bottom: 1px solid #888;
+	}
+	.menu-item {
+		color: #111;
+		display: block;
+		padding: 4px;
+		margin: 1px 2px;
+		text-decoration: none !important;
+		cursor: pointer;
+	}
+
+	.menu-category {
+		color: #111;
+		display: block;
+		padding: 4px;
+		margin: 0px;
+		text-decoration: none !important;
+	}
+	.menu-category:hover {
+		background-color: #46f;
+		color: #eee;
+	}
+
+	.menu-spacer {
+		height: 1px;
+		background-color: #888;
+		margin: 0 2px;
+	}
+	.menu-item:hover {
+		background-color: #46f;
+		color: #eee;
+	}
+
+	.menu-category:hover + .menu-sub {
+		display: block;
+	}
+	.menu-category + .menu-sub:hover {
+		display: block;
+	}
+
+	.menu-sub ~ menu-category {
+		background-color: #f0f !important;
+	}
+
+
+	.menu-item:hover + .menu-sub {
+		display: block;
+	}
+	.menu-item + .menu-sub:hover {
+		display: block;
+
+
+	}
+	.disabled {
+		display: none;
+	}
+
+	.menu-sub {
+		position: absolute;
+		top: 21px;
+		left: 0;
+		width: 150px;
+		border: 1px solid #888;
+		box-shadow: 3px 3px 3px rgba(0,0,0,0.4);
+		background-color: #fff;
+		z-index: 1;
+		overflow: visible;
+	}
+
+	.menu-container {
+		position: relative;
+	}
+
+/* /menubar */

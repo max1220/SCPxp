@@ -1,0 +1,23 @@
+/* input */
+
+input {
+	box-sizing: border-box;
+	border: 1px solid #7f9db9;
+	background-color: #fff;
+	padding: 3px 4px;
+	border-radius: 0;
+	outline: none;
+	width: 200px;
+	height: 23px;
+}
+select {
+	box-sizing: border-box;
+	border: 1px solid #7f9db9;
+	background-color: #fff;
+	padding: 3px 4px;
+	outline: none;
+	width: 200px;
+	height: 23px;
+}
+
+/* /input */

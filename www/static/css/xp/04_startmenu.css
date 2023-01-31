@@ -1,0 +1,64 @@
+/* startmenu */
+
+	/* The startmenu, positioned in the bottom,left corner. */
+	#start-menu {
+		position: fixed;
+		left: 0;
+		bottom: 27px;
+		width: 200px;
+		background: linear-gradient(180deg,#000, #000,#11f) !important;
+		border: 1px solid #888;
+		box-shadow: 1px 1px 5px #000;
+		font-family: sans-serif;
+	}
+	.start-menu-icon {
+		display: inline-block;
+		min-width: 2em;
+		text-align: center;
+		filter: grayscale(1);
+		height: 1em;
+	}
+	/* startmenu items */
+	.start-menu-item {
+		background-color: #eee;
+		color: #111;
+		display: block;
+		padding: 7px;
+		text-decoration: none !important;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	.start-menu-spacer {
+		height: 1px;
+		border: 4px solid #eee;
+		background-color: #aaa;
+		margin-left: 20px;
+	}
+	.start-menu-item:hover {
+		background-color: #46f;
+		color: #eee;
+	}
+	.start-menu-item:hover + .start-menu-sub {
+		display: block;
+	}
+	.start-menu-item + .start-menu-sub:hover {
+		display: block;
+	}
+
+	/* First level margin on the left side to view the gradient */
+	#start-menu > .start-menu-item {
+		margin-left: 20px;
+	}
+
+	/* A sub-menu in the start-menu*/
+	.start-menu-sub {
+		position: absolute;
+		top: -1px;
+		right: -152px;
+		width: 150px;
+		border: 1px solid #888;
+		box-shadow: 1px 1px 5px #000;
+	}
+
+/* /startmenu */

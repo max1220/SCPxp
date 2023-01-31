@@ -1,0 +1,65 @@
+/* tabs */
+
+	.tabs {
+		padding: 5px 2px;
+	}
+	.tabs menu {
+		display: block;
+		margin: 0 0;
+		padding: 0 0;
+		display: flex;
+	}
+	.tabs menu * {
+		font-size: 12px;
+		background-color: #fcfcfe;
+		border: 1px solid #919b9c;
+		padding: 3px 8px;
+		margin: 0 0;
+		margin-right: 1px;
+		margin-top: 2px;
+		border-top-right-radius: 3px;
+		border-top-left-radius: 3px;
+		background-image:
+			linear-gradient(
+				180deg,
+				#fff,
+				#fafaf9 25%,
+				#f0f0ea 95%,
+				#ecebe5
+			)
+		;
+	}
+	.tabs menu *[aria-selected="true"] {
+		border-top: 1px solid #e68b2c;
+		border-bottom: none;
+		margin-right: -1px;
+		margin-top: 0;
+		background-image:
+			linear-gradient(
+				180deg,
+				#ffc73c,
+				rgba(0,0,0,0) 15%
+			)
+		;
+	}
+	.tabs menu :hover {
+		background-image:
+			linear-gradient(
+				180deg,
+				#ffc73c,
+				#fff,
+				#fafaf9 25%,
+				#f0f0ea 95%,
+				#ecebe5
+			)
+		;
+	}
+	.tabs article {
+		margin-top: -1px;
+		background-color: #fcfcfe;
+		border: 1px solid #919b9c;
+		padding: 7px;
+	}
+
+/* /tabs */
+

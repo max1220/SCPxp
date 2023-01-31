@@ -1,0 +1,66 @@
+/* buttons */
+
+	.btn {
+		border: 1px solid #003c74;
+		border-radius: 3px;
+		min-height: 23px;
+		min-width: 75px;
+		padding: 3px 6px;
+		font-family: sans-serif;
+		box-sizing: border-box;
+		font-size: 12px;
+		color: #111;
+		text-decoration: none;
+		text-align: center;
+		vertical-align: middle;
+		display: inline-block;
+		background:
+			linear-gradient(
+				180deg,
+				#fff,
+				#ecebe5 86%,
+				#d8d0c4
+			)
+		;
+	}
+	.btn:hover {
+		box-shadow:
+			inset -1px 1px #fff0cf,
+			inset 1px 2px #fdd889,
+			inset -2px 2px #fbc761,
+			inset 2px -2px #e5a01a
+		;
+	}
+	.btn:active {
+		box-shadow:
+			inset -1px 1px #fff0cf,
+			inset 1px 2px #fdd889,
+			inset -2px 2px #fbc761,
+			inset 2px -2px #e5a01a
+		;
+	}
+	.btn:focus {
+		box-shadow:
+			inset -1px 1px #cee7ff,
+			inset 1px 2px #98b8ea,
+			inset -2px 2px #bcd4f6,
+			inset 1px -1px #89ade4,
+			inset 2px -2px #89ade4
+		;
+		outline: 1px dotted #000;
+		outline-offset: -4px;
+	}
+	.btn:active {
+		box-shadow: none;
+		background:
+			linear-gradient(
+				180deg,
+				#cdcac3,
+				#e3e3db 8%,
+				#e5e5de 94%,
+				#f2f2f1
+			)
+		;
+	}
+
+/* /buttons */

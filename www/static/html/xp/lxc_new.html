@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Command output">
+		<meta name="author" content="max1220">
+		<title>⮻ LXC New container</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<style>
+			.form-row {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				padding: 3px;
+			}
+			input[type=checkbox] {
+				height: 14px;
+				width: 14px;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="margin: 1em;">
+			<p>Please provide the requested information below to create a new LXC container:</p>
+			<div class="form-row">
+				<label for="container_name">Name:</label>
+				<input type="text" name="container_name">
+			</div>
+			<div class="form-row">
+				<label for="container_name">OS:</label>
+				<select name="os_select">
+					<option>Debian</option>
+					<option>Ubuntu</option>
+					<option>Arch</option>
+					<option>Gentoo</option>
+				</select>
+			</div>
+			<div class="form-row">
+				<label for="start_after_create">Start after create:</label>
+				<input type="checkbox" name="start_after_create" id="start_after_create">
+			</div>
+			<div class="form-row">
+				<label for="run_script_after_create">Run script after create:</label>
+				<input type="checkbox" name="run_script_after_create" id="run_script_after_create">
+			</div>
+			<div class="form-row">
+				<label for="container_name">Script to run:</label>
+				<input type="text" name="script_name" id="script_name" value="onboard.sh">
+			</div>
+
+			<div style="float: right; padding: 5px; padding-top: 15px;">
+			<button class="btn">Create</button>
+			<a href="about:blank#close" class="btn">Cancel</a>
+			</div>
+		</div>
+	</body>
+	<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=300}}}
+{{{window_height=300}}}
+-->
+</html>

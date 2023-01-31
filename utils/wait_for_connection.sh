@@ -1,4 +1,6 @@
-# Checks for up to 30s for a connection to become available.
+#!/bin/bash
+
+# Checks for up to 30s for a TCP connection to become available.
 # $1 is address
 # $2 is port
 function wait_for_connection() {
@@ -9,8 +11,9 @@ function wait_for_connection() {
 			return 0
 		else
 			LOG "Waiting for connection ${i}/30"
+			sleep 1
 		fi
-		sleep 1
 	done
+	# no connection became available
 	return 1
 }

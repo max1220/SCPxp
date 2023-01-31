@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>🖵 Terminal</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<style>
+			body {
+				background-color: #000;
+				color: #fff;
+			}
+			@font-face {
+				font-family: 'perfect_dos_vga_437';
+				src: url('/static/font/perfect_dos_vga_437.ttf');
+			}
+			#terminal-content {
+				padding: 0 0;
+				margin: 0 0;
+				padding: 3px;
+				font-family: perfect_dos_vga_437, monospace;
+				font-size: 16px;
+			}
+			.term-fg-30 {
+				color: #000;
+			}
+			.term-fg-31 {
+				color: #a00;
+			}
+			.term-fg-32 {
+				color: #0a0;
+			}
+			.term-fg-33 {
+				color: #0a5;
+			}
+			.term-fg-34 {
+				color: #00a;
+			}
+			.term-fg-35 {
+				color: #a0a;
+			}
+			.term-fg-36 {
+				color: #0aa;
+			}
+			.term-fg-37 {
+				color: #aaa;
+			}
+		</style>
+	</head>
+	<body>
+		<pre id="terminal-content">No session.<a href="#new-session" onclick="setTimeout(function() { window.location.reload(); }, 0);">new session</a></pre>
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/xp/terminal.js"></script>
+	</body>
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=800}}}
+{{{window_height=400}}}
+-->
+</html>
+
+
+
+

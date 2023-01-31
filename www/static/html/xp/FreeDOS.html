@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>🖵 DOS prompt(FreeDOS)</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<style>
+			html, body {
+				background-color: #000;
+			}
+			#screen-container {
+				padding: 0 0;
+				margin: 0 0;
+				width: 100%;
+				height: 100%;
+				box-sizing: border-box;
+				overflow: auto;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+			#screen {
+				padding: 1em;
+			}
+			#screen-text {
+				white-space: pre;
+				font-family: monospace;
+				line-height: 17px;
+				text-transform: full-width;
+			}
+			#screen-gfx {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="screen-container">
+			<div id="screen">
+				<div id="screen-text"></div>
+				<canvas id="screen-gfx"></canvas>
+			</div>
+		</div>
+
+		<script src="/v86/build/libv86.js"></script>
+		<script>
+			"use strict";
+			window.onload = function() {
+				var emulator = window.emulator = new V86Starter({
+					wasm_path: "/v86/build/v86.wasm",
+					memory_size: 32 * 1024 * 1024,
+					vga_memory_size: 2 * 1024 * 1024,
+					screen_container: document.getElementById("screen"),
+					bios: {
+						url: "/v86/bios/seabios.bin",
+					},
+					vga_bios: {
+						url: "/v86/bios/vgabios.bin",
+					},
+					fda: {
+						url: "/v86/images/freedos722.img",
+						size: 737280,
+						async: false,
+					},
+					autostart: true,
+				});
+			}
+		</script>
+	</body>
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=640}}}
+{{{window_height=500}}}
+{{{window_resizeable}}}
+-->
+</html>

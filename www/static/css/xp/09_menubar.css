@@ -1,0 +1,83 @@
+/* menubar */
+
+	#menu-bar {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: var(--menubar-height);
+		display: flex;
+		border-bottom: 1px solid #888;
+	}
+	.menu-item {
+		color: #111;
+		display: block;
+		padding: 4px;
+		margin: 1px 2px;
+		text-decoration: none !important;
+		cursor: pointer;
+	}
+
+	.menu-category {
+		color: #111;
+		display: block;
+		padding: 4px;
+		margin: 0px;
+		text-decoration: none !important;
+	}
+	.menu-category:hover {
+		background-color: #46f;
+		color: #eee;
+	}
+
+	.menu-spacer {
+		height: 1px;
+		background-color: #888;
+		margin: 0 2px;
+	}
+	.menu-item:hover {
+		background-color: #46f;
+		color: #eee;
+	}
+
+	.menu-category:hover + .menu-sub {
+		display: block;
+	}
+	.menu-category + .menu-sub:hover {
+		display: block;
+	}
+
+	.menu-sub ~ menu-category {
+		background-color: #f0f !important;
+	}
+
+
+	.menu-item:hover + .menu-sub {
+		display: block;
+	}
+	.menu-item + .menu-sub:hover {
+		display: block;
+
+
+	}
+	.disabled {
+		display: none;
+	}
+
+	.menu-sub {
+		position: absolute;
+		top: 21px;
+		left: 0;
+		width: 150px;
+		border: 1px solid #888;
+		box-shadow: 3px 3px 3px rgba(0,0,0,0.4);
+		background-color: #fff;
+		z-index: 1;
+		overflow: visible;
+	}
+
+	.menu-container {
+		position: relative;
+	}
+
+/* /menubar */

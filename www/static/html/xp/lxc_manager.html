@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Command output">
+		<meta name="author" content="max1220">
+		<title>⮻ LXC manager</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<style>
+			#container_table {
+				border-radius: 3px;
+				background-color: #fff;
+				border: 1px solid #999;
+				margin: 1em;
+				max-height: 300px:
+			}
+			#container_table tbody tr {
+				height: 20px;
+			}
+			#container_table tbody tr td:first-child {
+				border-top: 1px solid #999;
+			}
+			#container_table tbody tr td a {
+				text-decoration: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="margin: 1em;">
+			<p>You can manage LXC contaiers using the controls below.<br>
+			Click on the links to get a shell on the container, or click Details to edit the container.<br>
+			You can also create a new container from a template, or restore a container backup.</p>
+			<p>
+				<a class="btn" href="/static/html/xp/lxc_new.html" target="make_new_win">New container</a>
+				<a class="btn" href="/static/html/xp/lxc_new.html" target="make_new_win">Restore container</a>
+			</p>
+		</div>
+		<h3>Containers</h3>
+		<table id="container_table">
+			<thead>
+				<tr>
+					<th style="width: 100%; text-align: left;">Container name</th>
+					<th style="width: 100%; text-align: left;">Status</th>
+					<th><button class="btn" onclick="update_table()">Refresh</button></th>
+				</tr>
+			</thead>
+			<tbody id="container_table_content">
+				<!--tr>
+					<td>test-session</td>
+					<td><button class="btn">x</button></td>
+				</tr-->
+			</tbody>
+		</table>
+
+		<script src="/static/js/fix_link_targets_iframe.js"></script>
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/xp/lxc_manager.js"></script>
+	</body>
+	<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=500}}}
+{{{window_height=300}}}
+-->
+</html>

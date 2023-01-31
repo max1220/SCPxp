@@ -1,0 +1,130 @@
+/* taskbar */
+
+	/* The bottom task bar */
+	#taskbar {
+		position: fixed;
+		left: 0; right: 0; bottom: 0;
+		height: var(--taskbar-height);
+
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+
+		background:
+			linear-gradient(
+				180deg,
+				#0997ff,
+				#0053ee 8%,
+				#0050ee 40%,
+				#0066ff 88%,
+				#0066ff 93%,
+				#005bff 95%,
+				#003dd7 96%,
+				#003dd7
+			)
+		;
+	}
+
+	#taskbar-left {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	/* The buttons in the taskbar for minimizing/restoring a window */
+	.windowbutton {
+		height: 23px;
+		background:
+			linear-gradient(
+				180deg,
+				#0997ff,
+				#0053ee 8%,
+				#0050ee 40%,
+				#06f 88%,
+				#06f 93%,
+				#005bff 95%,
+				#003dd7 96%,
+				#003dd7
+			) !important
+		;
+		border: 1px outset #003dd7;
+		border-radius: 3px;
+		color: #eee;
+		padding: 0px 10px;
+		width: 10em;
+		text-align: left;
+		margin-left: 4px;
+	}
+	.windowbutton:hover {
+		border: 1px solid #0997ff;
+	}
+	.windowbutton:active {
+		border: 1px solid #003dd7;
+	}
+	/* version for the currently active window */
+	.windowbutton-visible {
+		background:
+			linear-gradient(
+				180deg,
+				#003dd7,
+				#044bff 8%,
+				#005bff 40%,
+				#06f 88%,
+				#06f 93%,
+				#0050ee 95%,
+				#0053ee 96%,
+				#0997ff
+			) !important
+		;
+		border: 1px inset #003dd7;
+	}
+
+	/* The clock at the right corner of the taskbar */
+	#clock {
+		color: #eee;
+		font-family: monospace;
+		text-shadow: 0px 0px 3px #000;
+		padding-right: 0.5em;
+	}
+
+	/* The start button with the Tux icon */
+	#start-button {
+		background:
+			linear-gradient(
+				180deg,
+				#5DE35D,
+				#1AC713 86%,
+				#32C907
+			)
+			!important
+		;
+		height: 26px;
+		font-size: 125%;
+		border: 0;
+		padding-right: 0.5em;
+		border-radius: 0;
+		border-top-right-radius: 7px 50%;
+		border-bottom-right-radius: 7px 50%;
+		box-shadow:
+			inset -5px -5px 2px #292,
+			inset 5px 5px 2px #52f952,
+			2px 0px 2px #003dd7
+		;
+		color: #fff;
+		text-shadow: 0px 0px 3px #000;
+
+	}
+	#start-button:hover {
+		background: linear-gradient(180deg,#9f9,#5cff55 86%,#68ff24) !important;
+	}
+	#start-button:active {
+		background: linear-gradient(180deg,#afa,#7cff75 86%,#88ff44) !important;
+	}
+	#start-icon {
+		width: 20px;
+		height: 20px;
+		display: inline-block;
+		background: url("/static/tux.svg");
+	}
+
+/* /taskbar */
