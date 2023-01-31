@@ -3,7 +3,7 @@ set -eu
 # This scritp set the required configuration variables for the host
 # setup interactively, and optionally writes them to a config file.
 
-DIALOG_BACKTITLE="Configuration Wizard"
+DIALOG_BACKTITLE="Host Configuration Wizard"
 REQUIRE_CONFIRM=false
 DRYRUN=false
 WAIT_AFTER_COMMAND=true
@@ -17,7 +17,7 @@ ASK_EVERY_QUESTION=false
 function write_to_config() { return; }
 
 # Show the configuration wizard welcome screen
-msgbox "Welcome to the Configuration Wizard!
+msgbox "Welcome to the Host Configuration Wizard!
 
 This program will interactively set all the required
 envirioment variables for the host setup,
@@ -28,7 +28,7 @@ You can cancel anytime by pressing escape.
 
 ASK_EVERY_QUESTION="$(yesno_bool "Ask for envirioment variables that are already set?")"
 
-CONFIG_FILE="$(inputbox "Please enter filename to save the config:" "config/magic_configuration.sh")"
+CONFIG_FILE="$(inputbox "Please enter filename to save the config:" "config/generated_configuration.sh")"
 function write_to_config() {
 	 echo "${1}" >> "${CONFIG_FILE}"
 }
@@ -50,6 +50,8 @@ function set_env_variable() {
 	# if variable is already set, use the previous value as the new value
 	NEW_VALUE="${!VARNAME-}"
 
+	printf " <%q> " "${VARNAME}" "${DESCRIPTION}" "${IS_BOOLEAN}" "${NEW_VALUE}"
+
 	# if we should ask every question or we don't have a value, ...
 	if [ -z "${NEW_VALUE}" ] || [ "${ASK_EVERY_QUESTION}" = true ]; then
 		# ... get new value interactively from user
@@ -57,11 +59,6 @@ function set_env_variable() {
 		if [ "${IS_BOOLEAN}" = true ]; then
 			NEW_VALUE="$(yesno_bool "${INTERACTIVE_PROMPT}")"
 		else
-			clear
-			echo "testfoo"
-			if true; then
-				exit 1
-			fi
 			NEW_VALUE="$(inputbox "${INTERACTIVE_PROMPT}" "${NEW_VALUE}")"
 		fi
 	fi
@@ -72,7 +69,7 @@ function set_env_variable() {
 	fi
 
 	# write variable to configuration file
-	write_to_config "# ${DESCRIPTION}" > "CONFIG_FILE"
+	write_to_config "# ${DESCRIPTION}"
 	write_to_config "${VARNAME}=\"${NEW_VALUE}\""
 
 	# set envirioment variable

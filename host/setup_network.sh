@@ -27,10 +27,12 @@ fi
 # setup hostname
 LOG "Setting up hostname: ${HOSTNAME}.${DOMAINNAME}..."
 hostnamectl set-hostname "${HOSTNAME}.${DOMAINNAME}"
-echo "" >> /etc/hosts
-echo "# FQDN:  ${HOSTNAME}.${DOMAINNAME}" >> /etc/hosts
-echo "127.0.1.1 ${HOSTNAME}.${DOMAINNAME} ${HOSTNAME}" >> /etc/hosts
-echo "${IPV4_ADDR} ${HOSTNAME}.${DOMAINNAME} ${HOSTNAME}" >> /etc/hosts
+cat << EOF >> /etc/hosts
+
+# FQDN:  ${HOSTNAME}.${DOMAINNAME}"
+127.0.1.1 ${HOSTNAME}.${DOMAINNAME} ${HOSTNAME}
+${IPV4_ADDR} ${HOSTNAME}.${DOMAINNAME} ${HOSTNAME}
+EOF
 if [ "${IPV6_ENABLE}" = true ] ; then
 	echo "${IPV6_HOST_ADDR} ${HOSTNAME}.${DOMAINNAME} ${HOSTNAME}" >> /etc/hosts
 fi

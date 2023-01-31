@@ -28,7 +28,7 @@ apt-get install -y apt-utils gnupg2 apt-transport-https ca-certificates
 
 LOG "Setting up temporary sources.list entries..."
 # use the debian https mirror for now. (will be disabled once apt-cacher-ng is installed)
-cat << EOF > /etc/apt/sources.list.d/debian_https.list
+cat << EOF > /etc/apt/sources.list.d/01_debian_https.list
 deb https://deb.debian.org/debian bullseye main contrib non-free
 deb https://deb.debian.org/debian bullseye-updates main contrib non-free
 deb https://deb.debian.org/debian bullseye-backports main contrib non-free
@@ -37,11 +37,12 @@ deb http://security.debian.org/debian-security bullseye-security main contrib no
 EOF
 
 # will be enabled once apt-cacher-ng is setup
-cat << EOF > /etc/apt/sources.list.d/debian_cached.list.disabled
+cat << EOF > /etc/apt/sources.list.d/00_debian_cached.list.disabled
 deb http://10.0.3.1:3142/deb.debian.org/debian bullseye main contrib non-free
 deb http://10.0.3.1:3142/deb.debian.org/debian bullseye-updates main contrib non-free
 deb http://10.0.3.1:3142/deb.debian.org/debian bullseye-backports main contrib non-free
 deb http://10.0.3.1:3142/security.debian.org/debian-security bullseye-security main contrib non-free
+
 EOF
 
 # disable current(reduntant) sources.list
@@ -73,12 +74,66 @@ apt-get install -y --no-install-recommends \
 
 if [ "${ENABLE_LIBVIRT}" = true ]; then
 	# Also setup libvirt for QEMU based VMs
-	apt-get install -y --no-install-recommends qemu-system-x86 qemu-kvm libvirt-daemon-system libvirt-clients netcat-openbsd
+	apt-get install -y --no-install-recommends qemu-system-x86 qemu-kvm \
+	 libvirt-daemon-system libvirt-clients netcat-openbsd qemu-utils \
+	 virtinst di-netboot-assistant
 	LOG "Configuring libvirtd..."
+
 	# add user to libvirt group(allow using system libvirt)
 	adduser "${USERNAME}" libvirt
-	# auto-start libvirt default network
+
+	# modify the default libvirtd network to match the configuration
+	LIBVIRT_BR_IP_ADDR="192.168.123.1"
+
+	# generate network parameters based on the LIBVIRT_BR_IP_ADDR(use a /24 network)
+	MASKED="$(echo "${LIBVIRT_BR_IP_ADDR}" | cut -d "." -f 1-3)"
+	NETWORK="$(echo "${LIBVIRT_BR_IP_ADDR}" | cut -d "." -f 4)"
+	DHCP_START="${MASKED}.$(( NETWORK+1 ))"
+	DHCP_END="${MASKED}.254"
+
+	# generate new default configuration
+	# TODO: It would be nicer to just edit the config in-place using
+	#  net-update, but that doesn't work, see below:
+	cat << EOF > /tmp/default.xml
+<network>
+	<name>default</name>
+	<forward mode='nat'>
+		<nat>
+			<port start='1024' end='65535'/>
+		</nat>
+	</forward>
+	<bridge name='virbr0' stp='on' delay='0'/>
+	<ip address='${LIBVIRT_BR_IP_ADDR}' netmask='255.255.255.0'>
+		<dhcp>
+			<range start='${DHCP_START}' end='${DHCP_END}'/>
+		</dhcp>
+	</ip>
+</network>
+EOF
+
+	# change the default network configuration
+	if virsh -c "${LIBVIRT_CONNECTION}" net-info default; then
+		# delete existing default network, if any
+		virsh -c "${LIBVIRT_CONNECTION}" net-destroy default || true
+		virsh -c "${LIBVIRT_CONNECTION}" net-undefine default
+	fi
+	virsh -c "${LIBVIRT_CONNECTION}" net-define /tmp/default.xml
+	rm /tmp/default.xml
+
+	# TODO: This doesn't work for some reason :O
+	#virsh -c "${LIBVIRT_CONNECTION}" net-update default modify ip \
+	# "<ip address='${LIBVIRT_BR_IP_ADDR}' netmask='255.255.255.0'><dhcp><range start='${DHCP_START}' end='${DHCP_END}'/></dhcp></ip>" \
+	# --live --config
+	# This doesn't work either:
+	#virsh -c "${LIBVIRT_CONNECTION}" net-update default modify ip \
+	# "<ip address='${LIBVIRT_BR_IP_ADDR}' netmask='255.255.255.0' />" \
+	# --live --config
+
+	# auto-start libvirt network
 	virsh --connect=qemu:///system net-autostart default
+
+	# also start the network immediatly
+	virsh --connect=qemu:///system net-start default
 fi
 
 LOG "Updating kernel cmdline..."
@@ -117,6 +172,11 @@ chown 1001000:1001000 /data/shared/
 LOG "Setting up subuid/subgid for root..."
 echo "root:1000000:65536" >> /etc/subuid
 echo "root:1000000:65536" >> /etc/subgid
+
+
+# allow sudo without password(this user has password login disabled)
+#echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user_nopasswd
+#chmod 0440 /etc/sudoers.d/user_nopasswd
 
 
 if [ "${ENABLE_UNPRIVILEGED}" = true ]; then
@@ -180,6 +240,8 @@ lxc.net.0.type = veth
 lxc.net.0.link = lxcbr0
 lxc.net.0.flags = up
 
+# access to shared directory
+lxc.mount.entry=/data/shared data/shared none bind,optional,create=dir 0 0
 
 EOF
 
@@ -237,8 +299,8 @@ systemctl restart apt-cacher-ng.service
 
 # switch apt to to local apt-cacher-ng
 LOG "Switching APT to apt-cacher-ng..."
-mv /etc/apt/sources.list.d/debian_cached.list.disabled /etc/apt/sources.list.d/debian_cached.list
-mv /etc/apt/sources.list.d/debian_https.list /etc/apt/sources.list.d/debian_https.list.disabled
+mv /etc/apt/sources.list.d/00_debian_cached.list.disabled /etc/apt/sources.list.d/00_debian_cached.list
+mv /etc/apt/sources.list.d/01_debian_https.list /etc/apt/sources.list.d/01_debian_https.list.disabled
 apt-get update -y
 
 

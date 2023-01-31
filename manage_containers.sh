@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 # This script show a graphical menu for managing LXC containers.
 # It can be run as root to manage "priviledged" containers,
 # and can be run as a regular user to manage "unprivileged" containers.
@@ -113,8 +113,8 @@ function running_container_action() {
 # first, let the user select a container from the list of running
 # containers, then show a menu for the specified running container.
 function menu_running() {
-	IFS=$'\n' running_containers=( $(lxc_list_running) )
-	container="$(menu_single "Running LXC containers:" "${stopped_containers[@]}")"
+	readarray -t running_containers < <( lxc_list_running )
+	container="$(menu_single "Running LXC containers:" "${running_containers[@]}")"
 	[ "${container}" = "" ] && return;
 
 	while true; do
@@ -190,7 +190,7 @@ function stopped_container_action() {
 # first, let the user select a container from the list of stopped
 # containers, then show a menu for the specified stopped container.
 function menu_stopped() {
-	IFS=$'\n' stopped_containers=( $(lxc_list_stopped) )
+	readarray -t stopped_containers < <( lxc_list_stopped )
 	container="$(menu_single "Stopped LXC containers:" "${stopped_containers[@]}")"
 	[ "${container}" = "" ] && return;
 
@@ -251,10 +251,10 @@ function menu_stopped() {
 # the container creation "wizard"
 function menu_create() {
 	container="$(inputbox "Please enter a name for the new container:")"
-	["${container}" = ""] && return
+	[ "${container}" = "" ] && return
 	template="$(inputbox "Enter the LXC template to use:" "${DEFAULT_LXC_TEMPLATE}")"
 	template_args="$(inputbox "Extra arguments for template:" "${DEFAULT_LXC_TEMPLATE_ARGS}")"
-	ask_confirm_exec lxc-create -B best -n "${container}" -t "${template}" -- ${template_args}
+	ask_confirm_exec lxc-create -B best -n "${container}" -t "${template}" -- ${template_args[@]}
 	if yesno "Start container now?"; then
 		ask_confirm_exec lxc-unpriv-start -n "${container}"
 		post_install_script="$(inputbox "Run post-install script?" "${DEFAULT_POST_INSTALL_SCRIPT}")"

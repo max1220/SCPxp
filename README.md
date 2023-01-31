@@ -1,144 +1,197 @@
-# LXC
+# lxc-scripts
 
-This repository contains my scripts for my Debian-based
-LXC container hosting.
+This repository contains my scripts for my administrating Debian
+servers, specifically the installation and management
+of LXC containers and libvirtd VMs.
 
-My goal is for this to completely automate my setup used for my hosting,
-to the point that I just need to create a Debian 11 server in a VM or on a
-shared hoster that is reachable via SSH, and have the rest of the setup done
-automatically.
+My goal is for this to completely automate my setup used for my hosting
+my own website and services, including managing all the configuration
+in a central place, so that I can easily spin up a copy in a VM for testing.
 
-There are three sets of scripts:
- * Scripts for setting up the host system are in the `host/` directory.
- * Scripts for setting up a container are in the `scripts/` directory.
- * Scripts for backing up and restoring containers in the `backups/` directory.
- * Scripts for setting up a VM(not a container)
-   as a host are in the `libvirt/` directory.
+The test setup is fully automated, including the installation of Debian
+in a libvirtd VM using PXE(no user interaction required).
 
-Together, these scripts are used to host my own website and other services.
+Also included is a script for graphically managing containers,
+a script for backing up a LXC container and a LXC template for restoring,
+and a graphical configuration wizard for the host setup and container
+setup.
 
-A dialog-based terminal tool for managing LXC containers interactively is also
-provided(just requires a workign LXC setup).
+Ideally, the entire setup can be done without having to manually run any
+shell commands for configuration/setup.
+
+
+
+
+
+# Features
+
+Some important things these scripts do:
+
+ * Setup a host system(`host/`)
+   * (optional) btrfs setup(`host/setup_btrfs.sh`)
+     * move rootfs to a new btrfs snapshot
+     * bootable snapshots using grub-btrfs
+   * network setup(`host/setup_network.sh`)
+     * static IPv4 and IPv6 configuration
+     * hostname
+     * iptables
+     * ndppd for containers
+   * host setup(`host/setup_host.sh`)
+     * LXC
+     * libvirtd
+     * unprivileged user
+     * apt-cacher-ng
+     * fail2ban
+     * install ssh public key
+     * systemd-journal-remote
+     * cmdline with `apparmor=1 security=apparmor systemd.unified_cgroup_hierarchy=1`
+ * manage LXC containers(`manage_containers.sh`)
+   * start/stop container
+   * create/destroy container
+   * backup/restore container(`backups/`)
+   * clone/rename container
+   * edit container configuration
+   * info about container
+   * copy files to/from container
+   * run a shell script in the container
+   * root/user shell
+
+
+
+
+
+# Documentation
+
+**Documentation is currently work-in-progress**
+
+This file serves as the main documentation for now.
+
+All directories should have a `README.md` file describing the
+content in that directory.
+
+
+
+
+
+# libvirt setup guide
+
+This setup guide will help you install a host system for the scripts
+on your development machine in a libvirtd VM, intended for testing
+these scripts and configuration.
+
+(This is *not* about running libvirtd on such a host system, allthough
+that is supported as well.)
+
+
+## Preparations
+
+You need any host that runs libvirtd. This example assumes Debian 11.
+
+```
+# TODO Figure out dependencies for running the dev VM on Debian 11
+```
+
+
+## Configuration
+
+You also need to edit the libvirtd host configuration `host/config/libvirt.sh`.
+While it *should* "just work" on Debian based systems, you still might
+want to perform some customizations, and you'll likely want to change
+the username and SSH public key.
+
+
+## Installation
+
+The installation is super easy and runs fully automatic, but might
+take a while to complete depending on your hardware and network connection.
+
+There are two steps to the installation in a libvirt VM:
+
+The preparation phase which creates the VM with a temporary boot network,
+sets up the PXE envirioment, and triggers the automatic Debian
+installation. A snapshot of the running VM is taken when the preparation
+completes.
+
+And the installation phase, which just installs the scripts using SSH.
+(described in more detail below).
+
+```
+./libvirt/prepare_libvirt.sh
+```
+
 
 
 # Host setup guide
 
-First, read this *entire* README.
+This setup guide will help you setup the server for "production use".
+If you just want to test a configuration, you should use the fully
+automated libvirtd test setup(see ABOVE).
+
+
+## Debian installation
 
 On the server, perform a fresh install of Debian 11:
 
-*Do not* setup a password for the root user when asked
-(uses sudo automatically if you leave it blank)!
+ 1. *Do not* setup a password for the root user when asked
+    (first user gets sudo group automatically)!
+ 2. Don't select any additional packages when asked
 
-You don't need any additional packages when asked,
-uncheck *all* package options.
+After logging into the newly installed server,
+you should run `sudo apt-get update` and `sudo apt-get upgrade`
+at least once, and probably `sudo apt-get install openssh-server`.
 
-Login as regular user, perform `sudo apt-get update` and `sudo apt-get upgrade`
-manually at least once.
+**Note that SSH password login will be disabled automatically during
+the setup, and that fail2ban is setup to check SSH.**
 
-(optionally) install SSH server for easy access during setup.
-Note that during the setup fail2ban is installed and configured to watch SSH,
-and that password login will be disabled!
-`sudo apt install openssh-server`
+The server is now ready to installed as a host system using my scripts.
 
-(optionally) setup sudo so you don't need to enter a password.
 
-Now you can use my scripts to perform the actual installation of the
-host system.
+## Configuration
 
-First, download the current version of my scripts on the server.
-Git has the advantage that you can easily update the scripts
-(git has to be installed: `sudo apt install git`):
+To use my scripts to setup a host, you need a host configuration file.
+This file contains all the information needed to setup the host system.
 
-```
-git clone https://github.com/max1220/lxc-scripts
-cd lxc-scripts/
-```
-
-Alternatively:
+You can generate one interactively using the config wizard.
+It will ask you a series of questions and write a commented
+configuration file:
 
 ```
-wget https://github.com/max1220/lxc-scripts/archive/refs/heads/main.zip
-unzip main.zip && rm main.zip
-cd lxc-scripts/
+./host/config/config_wizard.sh
 ```
 
-## host/setup_btrfs.sh
 
-If you have setup Debian on btrfs and wish to automatically setup
-bootable btrfs snapshots, modify and run the `host/setup_btrfs.sh` script first.
-```
-# configure disk etc.
-editor ./host/setup_btrfs.sh
+## Installation
 
-# run to create a current snapshot, and prepare for bootable snapshots,
-# enable btrfsmaintenance services etc.
-./host/setup_btrfs.sh
-```
+When you have your configuration, you only need to copy this
+configuration file to your server and run the host setup.
 
-After running the script it is highly recommended to reboot!
-The default btrfs subvolume has changed to allow for bootable snapshots,
-if you don't reboot your changes will be lost!
-
-
-## host/setup_host.sh
-
-To start the setup of the host system first review and modify the
-`host/setup_host.sh` script:
-```
-# configure username etc.
-editor ./host/setup_host.sh
-
-# run to install packages and configure system:
-./host/setup_host.sh
-```
-
-This will setup all the required packages for using the host system with
-LXC containers, and configure the system.
-
-Some of the things this script does:
-* install a lot of packages
-* setup sub*id mapping
-* install libvirt and allow default user access
-* install and configure apt-cacher-ng for container updates
-* enable apparmor in grub config
-* sets up default LXC container config
-* setup fail2ban for SSH
-* Configure SSH securely(no password login!)
-* setup journal-remote to listen using HTTP on bridge IP
-
-After running the script it is recommended to reboot, since we've modified the
-default cmdline(to enable apparmor support, and to set
-`systemd.unified_cgroup_hierarchy` to an appropriate value).
-Without a reboot you're likely not able to use containers!
-
-Before rebooting you can however run the network setup script:
-`host/setup_network.sh`.
+This can easily be done by using SCP to copy this entire directory:
 
 ```
-# copy example config file
-cp ./host/network_config_libvirt.sh my_network_config.sh
+# on local device
+# assuming my_remote_server is reachable via ssh
 
-# configure network interface, IP address, hostname etc.
-editor my_network_config.sh
-
-# install networking-related packages and apply network configuration
-./host/setup_network.sh my_network_config.sh
+scp -rp "${PWD}" my_remote_server
 ```
 
-You should run this script *after* the `setup_host.sh` script!
+Then you can start the host setup process:
 
-It will configure the specified interface with a static IP address,
-setup firewall rules for containers and the host, sets up `sysctl` for
-containers, sets the system hostname, etc.
-See `host/network_config_libvirt.sh` as an example
-(configuration for libvirt VM with the IP 192.168.100.254 on
-the default libvirt bridge)
+```
+# on my_remote_server
 
-You should reboot now. Afterwards the setup is complete.
+cd lxc-scripts
+./host/setup_all
+```
 
-You have now setup a Debian 11 server for containers using my scripts.
-See below for the features of your new server.
+Depending on the configuration, the server needs to reboot at least once,
+up to two times.
+
+Afterwards, the setup is completed. Enjoy your new server!
+
+
+
+
+########################################################################
 
 
 ## Libvirt setup guide

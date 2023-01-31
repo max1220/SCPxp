@@ -154,7 +154,7 @@ adduser "${USERNAME}" --disabled-password --gecos ""
 adduser "${USERNAME}" sudo
 
 # allow sudo without password(this user has password login disabled)
-echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user_nopasswd
+echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user_nopasswd
 chmod 0440 /etc/sudoers.d/user_nopasswd
 
 # copy host SSH public key to user authorized_keys

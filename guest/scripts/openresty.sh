@@ -87,7 +87,7 @@ listen 80 default_server;
 listen [::]:80 default_server;
 
 server_name www.${domainname} ${domainname};
-expires 365d;
+expires 30d;
 return 301 https://\$host\$request_uri;
 }
 EOF

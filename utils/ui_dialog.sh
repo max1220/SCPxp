@@ -45,7 +45,7 @@ function msgbox() {
 # 255 if escape was pressed.
 # Writes entered text to stdout
 function inputbox() {
-	"${DIALOG}" --backtitle "${DIALOG_BACKTITLE}" --stdout --inputbox "${1}" "${UI_HEIGHT}" "${UI_WIDTH}" "${2}"
+	"${DIALOG}" --backtitle "${DIALOG_BACKTITLE}" --stdout --inputbox "${1}" "${UI_HEIGHT}" "${UI_WIDTH}" "${2-}"
 }
 
 
