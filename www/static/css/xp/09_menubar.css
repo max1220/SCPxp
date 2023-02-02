@@ -7,6 +7,11 @@
 		right: 0;
 		height: var(--menubar-height);
 		display: flex;
+		background: linear-gradient(
+			90deg,
+			#F2F5F6,
+			#EEEAD6
+		);
 		border-bottom: 1px solid #888;
 	}
 	.menu-item {
