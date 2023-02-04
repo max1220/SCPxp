@@ -9,7 +9,9 @@ function make_xhr(url, method, content_type, body, cb) {
 		}
 	}
 	req.open(method, url)
-	req.setRequestHeader("Content-type", content_type)
+	if (content_type) {
+		req.setRequestHeader("Content-type", content_type)
+	}
 	req.send(body)
 	return req
 }
