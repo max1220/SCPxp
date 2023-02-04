@@ -56,6 +56,9 @@ document.body.onmousedown = function(mousedown_ev) {
 			mouse_x = mousedown_ev.clientX
 			mouse_y = mousedown_ev.clientY
 			mousedown_ev.preventDefault()
+			if (window_obj.iframe) {
+				window_obj.iframe.style.pointerEvents = "none"
+			}
 		}
 	}
 }
@@ -77,6 +80,9 @@ document.body.onmousemove = function(mousemove_ev) {
 }
 document.body.onmouseup = function(mouseup_ev) {
 	if (drag_window) {
+		if (drag_window.iframe) {
+			drag_window.iframe.style.pointerEvents = "auto"
+		}
 		drag_window = undefined
 		mouse_x = undefined
 		mouse_y = undefined
