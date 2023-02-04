@@ -87,7 +87,7 @@
 
 			<a class="start-menu-item" target="make_new_win" href="/cgi-bin/xp/info.sh"><span class="start-menu-icon">ℹ</span>System Info</a>
 			<div class="start-menu-spacer"></div>
-			<!--a class="start-menu-item" target="make_new_win" href="/cgi-bin/settings.sh"><span class="start-menu-icon">⚙</span>Settings...</a-->
+			<a class="start-menu-item" onclick="show_settings_window()"><span class="start-menu-icon">⚙</span>Settings...</a>
 
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/run.html"><span class="start-menu-icon">➔</span>Run...</a>
 			<div class="start-menu-spacer"></div>
@@ -96,6 +96,7 @@
 
 		<!-- Load the window manager and stuff last -->
 		<script src="/static/js/fix_link_targets_iframe.js"></script>
+		<script src="/static/js/make_xhr.js"></script>
 		<script src="/static/js/xp/desktop.js"></script>
 	</body>
 </html>

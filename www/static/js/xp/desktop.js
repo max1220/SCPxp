@@ -206,6 +206,50 @@ function make_iframe_window(title, url, resizeable, width, height, pre_iframe_el
 	return window_obj
 }
 
+// Make the settings window(can't use iframe)
+function make_settings_window() {
+	let window_obj = make_window("Settings", true, 600, 400)
+	// create a style element and a textarea element
+	let style_editor = document.createElement("style")
+	let style_editor_textarea = document.createElement("textarea")
+	style_editor_textarea.id = "css_editor"
+
+	// on change to the <textarea>, change content of the >style>
+	style_editor_textarea.oninput = function() {
+		style_editor.textContent = style_editor_textarea.value
+	}
+
+	// never close the window, as this would remove the <style> element
+	window_obj.close.onclick = close_settings_window
+
+	// set the content of the style_editor_textarea to the settings.css file
+	make_xhr("/static/css/xp/settings.css", "GET", undefined, undefined, function(url, resp) {
+		style_editor_textarea.value = resp
+	})
+
+	// add <textarea> and <style>
+	window_obj.body.appendChild(style_editor_textarea)
+	window_obj.body.appendChild(style_editor)
+	return window_obj
+}
+
+// make or unhide settings window
+let settings_window = undefined
+function show_settings_window() {
+	if (settings_window) {
+		settings_window.window.hidden = false
+		settings_window.taskbar_button.hidden = false
+	} else {
+		settings_window = make_settings_window()
+		add_window(settings_window)
+	}
+}
+// The settings window can't be closed, only "hidden"
+function close_settings_window() {
+	settings_window.window.hidden = true
+	settings_window.taskbar_button.hidden = true
+}
+
 // Add a window(show it)
 function add_window(window_obj) {
 	windows_list.push(window_obj)
