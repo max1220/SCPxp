@@ -18,40 +18,193 @@
 				src: url('/static/font/perfect_dos_vga_437.ttf');
 			}
 			#terminal-content {
-				padding: 0 0;
 				margin: 0 0;
 				padding: 3px;
-				font-family: perfect_dos_vga_437, monospace;
-				font-size: 16px;
+				margin-top: var(--menubar-height);
 			}
-			.term-fg-30 {
-				color: #000;
+			#popups {
+				position: absolute;
+				color: #111;
+				top: var(--menubar-height); left: 0; right: 0; bottom: 0;
 			}
-			.term-fg-31 {
-				color: #a00;
+			#popups .window {
+				margin: 10px auto;
+				position: relative;
 			}
-			.term-fg-32 {
-				color: #0a0;
-			}
-			.term-fg-33 {
-				color: #0a5;
-			}
-			.term-fg-34 {
-				color: #00a;
-			}
-			.term-fg-35 {
-				color: #a0a;
-			}
-			.term-fg-36 {
-				color: #0aa;
-			}
-			.term-fg-37 {
-				color: #aaa;
+			#css_editor {
+				display: block;
+				font-family: monospace;
+				white-space: pre;
+				background-color: #fff;
+				color: #111;
+				outline: none;
+				border: 1px solid #333;
 			}
 		</style>
+
+
+
 	</head>
 	<body>
-		<pre id="terminal-content">No session.<a href="#new-session" onclick="setTimeout(function() { window.location.reload(); }, 0);">new session</a></pre>
+		<div id="menu-bar">
+			<div style="position: relative;">
+				<a class="menu-category">File</a>
+				<div class="menu-sub" hidden>
+					<a href="#new-session" class="menu-item">New session</a>
+					<a onclick="show_theme()" class="menu-item">Edit colors</a>
+					<div class="menu-spacer"></div>
+					<a href="about:blank#close" class="menu-item">Exit</a>
+				</div>
+			</div>
+			<div style="position: relative;">
+				<a class="menu-category">Send</a>
+				<div class="menu-sub" hidden>
+					<a onclick="send_key('F1')" class="menu-item">F1</a>
+					<a onclick="send_key('F2')" class="menu-item">F2</a>
+					<a onclick="send_key('F3')" class="menu-item">F3</a>
+					<a onclick="send_key('F4')" class="menu-item">F4</a>
+					<a onclick="send_key('F5')" class="menu-item">F5</a>
+					<a onclick="send_key('F6')" class="menu-item">F6</a>
+					<a onclick="send_key('F7')" class="menu-item">F7</a>
+					<a onclick="send_key('F8')" class="menu-item">F8</a>
+					<a onclick="send_key('F9')" class="menu-item">F9</a>
+					<a onclick="send_key('F10')" class="menu-item">F10</a>
+					<a onclick="send_key('F11')" class="menu-item">F11</a>
+					<a onclick="send_key('F12')" class="menu-item">F12</a>
+					<a onclick="send_key('End')" class="menu-item">End</a>
+					<a onclick="send_key('Home')" class="menu-item">Home</a>
+					<a onclick="send_key('IC')" class="menu-item">Insert</a>
+					<a onclick="send_key('PageDown')" class="menu-item">PageDown</a>
+					<a onclick="send_key('PageUp')" class="menu-item">PageUp</a>
+					<!--div class="menu-spacer"></div>
+					<a href="about:blank" class="menu-item">Custom...</a-->
+				</div>
+			</div>
+			<div style="position: relative;">
+				<a class="menu-category">Panes</a>
+				<div class="menu-sub" hidden id="panes_list">
+				</div>
+			</div>
+			<div style="position: relative;">
+				<a class="menu-category">Help</a>
+				<div class="menu-sub" hidden>
+					<a onclick="show_about()" class="menu-item">About</a>
+				</div>
+			</div>
+		</div>
+
+		<pre id="terminal-content">(No session)</pre>
+
+		<div id="popup-blanker" hidden></div>
+
+		<div id="popups">
+			<div id="about" class="window" style="width: 400px; height: 215px" hidden>
+				<div class="title-bar">
+					<div class="title-bar-text">About terminal</div>
+					<div class="title-bar-controls">
+						<button aria-label="Close" onclick="close_about()"></button>
+					</div>
+				</div>
+				<div class="window-body">
+					<h3>Terminal</h3>
+					<p>Just a Terminal emulator</p>
+					<ul>
+						<li>CGI API written in bash</li>
+						<li>Uses tmux to for persistent sessions and rendering</li>
+						<li>Front-end written in plain Javascript</li>
+					</ul>
+					<br>
+					<br>
+					<button class="btn" onclick="close_about()" style="float: right; margin-right: 10px;">Close</button>
+				</div>
+			</div>
+			<div id="set_size" class="window" style="width: 400px; height: 300px" hidden>
+				<div class="title-bar">
+					<div class="title-bar-text">Set size</div>
+					<div class="title-bar-controls">
+						<button onclick="close_set_size()" aria-label="Close"></button>
+					</div>
+				</div>
+				<div class="window-body">
+					<p>Please enter the new dimensions of the terminal:</p>
+
+					<div>
+						<div style="display: flex:">
+							<label for="rows">Rows</label>
+							<input type="text" name="rows" style="width: 100%;">
+						</div>
+						<div style="display: flex:">
+							<label for="cols">Columns</label>
+s							<input type="text" name="cols" style="width: 100%;">
+						</div>
+						<br>
+						<br>
+						<button onclick="set_size()">Ok</button>
+					</div>
+				</div>
+			</div>
+
+			<div id="theme" class="window" style="width: 400px; height: 300px" hidden>
+				<div class="title-bar">
+					<div class="title-bar-text">Theme</div>
+					<div class="title-bar-controls">
+						<button onclick="close_theme()()" aria-label="Close"></button>
+					</div>
+				</div>
+				<div class="window-body" style="overflow: scroll;">
+					<p>Here you can live-adjust the CSS for this terminal emulator:</p>
+
+					<div>
+						<style id="css_editor" contenteditable>
+#terminal-content {
+	font-family: perfect_dos_vga_437, monospace;
+	font-size: 16px;
+}
+.term-bold { font-weight: bold; }
+.term-underline { text-decoration: underline; }
+
+.term-fg-30 { color: #000; }
+.term-fg-31 { color: #a00; }
+.term-fg-32 { color: #0a0; }
+.term-fg-33 { color: #aa0; }
+.term-fg-34 { color: #00a; }
+.term-fg-35 { color: #a0a; }
+.term-fg-36 { color: #0aa; }
+.term-fg-37 { color: #aaa; }
+
+.term-fg-90 { color: #555; }
+.term-fg-91 { color: #f55; }
+.term-fg-92 { color: #5f5; }
+.term-fg-93 { color: #ff5; }
+.term-fg-94 { color: #55f; }
+.term-fg-95 { color: #f5f; }
+.term-fg-96 { color: #5ff; }
+.term-fg-97 { color: #fff; }
+
+.term-bg-40 { background-color: #000; }
+.term-bg-41 { background-color: #a00; }
+.term-bg-42 { background-color: #0a0; }
+.term-bg-43 { background-color: #0a5; }
+.term-bg-44 { background-color: #00a; }
+.term-bg-45 { background-color: #a0a; }
+.term-bg-46 { background-color: #0aa; }
+.term-bg-47 { background-color: #aaa; }
+
+.term-bg-100 { background-color: #555; }
+.term-bg-101 { background-color: #f55; }
+.term-bg-102 { background-color: #5f5; }
+.term-bg-103 { background-color: #ff5; }
+.term-bg-104 { background-color: #55f; }
+.term-bg-105 { background-color: #f5f; }
+.term-bg-106 { background-color: #5ff; }
+.term-bg-107 { background-color: #fff; }
+						</style>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
 		<script src="/static/js/make_xhr.js"></script>
 		<script src="/static/js/xp/terminal.js"></script>
 	</body>
@@ -59,7 +212,7 @@
 These values are read outside of the iframe
 to determine the prefered size of this window:
 {{{window_width=800}}}
-{{{window_height=400}}}
+{{{window_height=410}}}
 -->
 </html>
 
