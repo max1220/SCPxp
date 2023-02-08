@@ -2,7 +2,7 @@
 function fix_link_targets_iframe() {
 	for (let elem of document.getElementsByTagName("a")) {
 		if (elem.href && elem.target) {
-			console.log("Fixing:", elem)
+			//console.log("Fixing:", elem)
 			let original_onclick = elem.onclick
 			elem.onclick = function(e) {
 				// look in this document for iframe of this name
