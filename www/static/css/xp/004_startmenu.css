@@ -1,7 +1,7 @@
 /* startmenu */
 
 	/* The startmenu, positioned in the bottom,left corner. */
-	#start-menu {
+	.start-menu {
 		position: fixed;
 		left: 0;
 		bottom: 27px;
@@ -47,7 +47,7 @@
 	}
 
 	/* First level margin on the left side to view the gradient */
-	#start-menu > .start-menu-item {
+	.start-menu > .start-menu-item {
 		margin-left: 20px;
 	}
 

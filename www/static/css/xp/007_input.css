@@ -10,6 +10,10 @@ input {
 	width: 200px;
 	height: 23px;
 }
+input[type=checkbox] {
+	height: 12px;
+	width: 12px;
+}
 select {
 	box-sizing: border-box;
 	border: 1px solid #7f9db9;
@@ -18,6 +22,16 @@ select {
 	outline: none;
 	width: 200px;
 	height: 23px;
+}
+textarea {
+	outline: none;
+	resize: none;
+}
+
+.field-row {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
 }
 
 /* /input */

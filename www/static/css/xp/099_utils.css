@@ -1,9 +1,8 @@
-/* base */
+/* Utils */
 
-	body {
-		box-sizing: border-box !important;
-		margin: 0 0;
-		padding: 0 0;
+	/* Hide the content */
+	.hidden {
+		display: none;
 	}
 
 	/* Make elements non-selectable*/
@@ -18,9 +17,9 @@
 		white-space: nowrap;
 	}
 
-	/* Hide the content */
-	.hidden {
-		display: none !important;
+	/* don't wrap text */
+	.nowrap {
+		white-space: nowrap;
 	}
 
 	.left {
@@ -31,4 +30,8 @@
 		float: right;
 	}
 
-/* /base */
+	.clear {
+		clear: both;
+	}
+
+/* /Utils */

@@ -4,10 +4,13 @@
 		--desktop-bg-color: #004E98;
 		/* --desktop-bg-image: url("/static/bliss.png"); */
 
+		--windows-popup-window-width: 300px;
+		--windows-content-padding: 5px;
 		--windows-shadow-color: #333;
 		--windows-border-radius: 8px;
 		--windows-border-color1: #0831d9;
 		--windows-border-color2: #166aee;
+		--windows-fg-color: #040400;
 		--windows-bg-color: #ece9d8;
 		--windows-title-bar-height: 26px;
 		--windows-title-bar-background-image:
@@ -39,6 +42,7 @@
 		--windows-title-bar-text-color: #fff;
 		--statusbar-height: 18px;
 		--menubar-height: 22px;
+		--menubar-row-height: 22px;
 		--taskbar-height: 26px;
 	}
 

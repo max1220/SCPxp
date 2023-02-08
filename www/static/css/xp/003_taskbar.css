@@ -1,7 +1,7 @@
 /* taskbar */
 
 	/* The bottom task bar */
-	#taskbar {
+	.taskbar {
 		position: fixed;
 		left: 0; right: 0; bottom: 0;
 		height: var(--taskbar-height);
@@ -25,7 +25,7 @@
 		;
 	}
 
-	#taskbar-left {
+	.taskbar-left {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -80,7 +80,7 @@
 	}
 
 	/* The clock at the right corner of the taskbar */
-	#clock {
+	.clock {
 		color: #eee;
 		font-family: monospace;
 		text-shadow: 0px 0px 3px #000;
@@ -88,7 +88,7 @@
 	}
 
 	/* The start button with the Tux icon */
-	#start-button {
+	.start-button {
 		background:
 			linear-gradient(
 				180deg,
@@ -114,13 +114,13 @@
 		text-shadow: 0px 0px 3px #000;
 
 	}
-	#start-button:hover {
+	.start-button:hover {
 		background: linear-gradient(180deg,#9f9,#5cff55 86%,#68ff24) !important;
 	}
-	#start-button:active {
+	.start-button:active {
 		background: linear-gradient(180deg,#afa,#7cff75 86%,#88ff44) !important;
 	}
-	#start-icon {
+	.start-icon {
 		width: 20px;
 		height: 20px;
 		display: inline-block;

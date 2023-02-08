@@ -1,7 +1,7 @@
 /* status bar */
 
 	.status-bar {
-		position: absolute;
+		position: fixed;
 		left: 0;
 		bottom: 0;
 		right: 0;
@@ -11,6 +11,8 @@
 		padding: 0 0;
 		display: flex;
 		border-top: 1px solid #888;
+		background-color: #EEEAD6;
+		z-index: 1000;
 	}
 
 	.status-bar-field {

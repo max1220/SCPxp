@@ -1,7 +1,7 @@
 /* windows */
 
 	/* The container for all windows */
-	#windows {
+	.windows {
 		position: absolute;
 		left: 0;
 		right: 0;
@@ -22,18 +22,45 @@
 		border-top-left-radius: var(--windows-border-radius);
 		border-top-right-radius: var(--windows-border-radius);
 		border: 1px solid var(--windows-border-color1);
+		display: flex;
+		flex-direction: column;
 	}
 
+	/* Support for simpler popup-windows */
+	.popups {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 3000;
+		background-color: rgba(0,0,0,0.5);
+		display: flex;
+	}
+	.popups .window {
+		z-index: 4000;
+		top: 50px;
+		left: calc( 50% - calc( var(--windows-popup-window-width) / 2 ) );
+		width: var(--windows-popup-window-width);
+		--windows-content-padding: 5px;
+	}
+	.popups .window .window-body {
+		position: relative;
+		top: 0;
+	}
+	.popups .window .window-body .window-content {
+		height: auto;
+	}
+
+	/* The container of the window body(it's content, without titlebars/borders )*/
 	.window .window-body {
 		border: 2px outset var(--windows-border-color2);
 		border-top: none;
 		background-color: var(--windows-bg-color);
-		position: absolute;
-		top: calc(var(--windows-title-bar-height) + 1px);
-		left: 0;
-		right: 0;
-		bottom: 0;
+		color: var(--windows-fg-color);
+		position: relative;
 	}
+	/* The titlebar of the window */
 	.window .title-bar {
 		display: flex;
 		height: var(--windows-title-bar-height);
@@ -53,18 +80,21 @@
 		font-family: sans-serif;
 		text-shadow: 1px 1px #0f1089;
 	}
+	/* Container for the controls on the right */
 	.window .title-bar .title-bar-controls {
-		padding-right: 4px;
+		padding-right: 3px;
 		display: flex;
 		align-items: center;
 	}
+	/* The actual titlebar controls */
 	.window .title-bar .title-bar-controls * {
-		margin: 0 1px;
+		display: block;
+		margin: 0 0.5px;
 		padding: 0 0;
 		width: 21px;
 		height: 21px;
 		border-radius: 3px;
-		border: 1px solid #eee;
+		border: 1px solid #D3DAFF;
 		color: #fff;
 		background-color: #0050ee;
 		box-shadow: 0px 0px 2px inset rgba(0,0,0,0.5);
@@ -145,24 +175,24 @@
 		;
 	}
 
+	/* Add window icons to buttons */
 	.window .title-bar .title-bar-controls button[aria-label=Minimize]::after{
 		content: "▁";
 	}
-
 	.window .title-bar .title-bar-controls [aria-label=Maximize]::after {
 		content: "⮻";
 	}
 	.window .title-bar .title-bar-controls [aria-label=Close]::after {
 		content: "🞮";
 	}
+
+	/* Recolor close button */
 	.window .title-bar .title-bar-controls [aria-label=Close] {
 		background-color: #ED3315;
 	}
 	.window .title-bar .title-bar-controls [aria-label=Close]:hover {
 		background-color: #FF4021;
 	}
-
-
 
 	/* Decolor the unfocused window */
 	.window-unfocused .title-bar {
@@ -174,17 +204,33 @@
 	}
 
 	/* Make a window resizeable */
-	.window-resizeable {
+	.window-resizeable .window-body {
 		resize: both;
 		overflow: hidden;
 	}
 
-	/* Class for the body of an iframe window */
-	.window-body-iframe {
-		height: calc(100% - 27px);
+	/* The container for the actual window content, excluding menu bars and such */
+	.window-content {
+		padding: var(--windows-content-padding);
+		height: 100vh;
+		padding-bottom:
+			calc(
+				var(--statusbar-height) + var(--windows-content-padding) + 1px
+			)
+		;
 		box-sizing: border-box;
 	}
-	.window-body-iframe iframe {
+
+	/* Support a menubar/statusbar for the window content */
+	.menu-bar+.window-content {
+		padding-top:
+			calc(
+				var(--menubar-height) + var(--windows-content-padding) + 1px
+			)
+		;
+	}
+
+	.window-body-iframe {
 		width: 100%;
 		height: 100%;
 		border: none;
