@@ -8,158 +8,189 @@
 		<title>🖵 Terminal</title>
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<link rel="stylesheet" href="/static/css/xp/term_attrs.css">
 		<style>
 			body {
 				background-color: #000;
-				color: #fff;
 			}
 			@font-face {
 				font-family: 'perfect_dos_vga_437';
 				src: url('/static/font/perfect_dos_vga_437.ttf');
 			}
-			#terminal-content {
-				margin: 0 0;
-				padding: 3px;
-				margin-top: var(--menubar-height);
-			}
-			#popups {
+			.terminal-content, .cursor-content {
 				position: absolute;
-				color: #111;
-				top: var(--menubar-height); left: 0; right: 0; bottom: 0;
+				top: calc(var(--menubar-height) + var(--windows-content-padding) + 1px);
+				left: var(--windows-content-padding);
+				right: var(--windows-content-padding);
+				bottom: var(--windows-content-padding);
+				margin: 0 0;
+				background-color: #000;
+				color: #fff;
+				font-family: monospace;
+				font-size: 14px;
+				line-height: 1.3333333;
 			}
-			#popups .window {
-				margin: 10px auto;
-				position: relative;
+			.cursor-content {
+				background-color: rgba(0,0,0,0);
 			}
-			#css_editor {
+			.css_editor {
 				display: block;
 				font-family: monospace;
 				white-space: pre;
+				overflow: auto;
+				max-height: 400px;
 				background-color: #fff;
 				color: #111;
-				outline: none;
 				border: 1px solid #333;
 			}
+			.term-cursor {
+				animation: blinker 2s linear infinite;
+			}
+			@keyframes blinker {
+				50% { opacity: 0; }
+			}
 		</style>
-
-
-
 	</head>
 	<body>
-		<div id="menu-bar">
-			<div style="position: relative;">
-				<a class="menu-category">File</a>
-				<div class="menu-sub" hidden>
-					<a href="#new-session" class="menu-item">New session</a>
-					<a onclick="show_theme()" class="menu-item">Edit colors</a>
-					<div class="menu-spacer"></div>
-					<a href="about:blank#close" class="menu-item">Exit</a>
+		<div class="menu-bar">
+			<div class="menu-row">
+				<div class="menu-container">
+					<a class="menu-category">File</a>
+					<div class="menu-sub" hidden>
+						<a onclick="btn_new_window()" class="menu-item">New window</a>
+						<a onclick="btn_kill_session()" class="menu-item">Kill session</a>
+						<a onclick="btn_kill_window()" class="menu-item">Kill window</a>
+						<a onclick="show_popup('resize_window')" class="menu-item">Resize window...</a>
+						<a onclick="show_popup('theme_window')" class="menu-item">Edit theme...</a>
+						<div class="menu-spacer"></div>
+						<a href="about:blank#close" class="menu-item">Exit</a>
+					</div>
 				</div>
-			</div>
-			<div style="position: relative;">
-				<a class="menu-category">Send</a>
-				<div class="menu-sub" hidden>
-					<a onclick="send_key('F1')" class="menu-item">F1</a>
-					<a onclick="send_key('F2')" class="menu-item">F2</a>
-					<a onclick="send_key('F3')" class="menu-item">F3</a>
-					<a onclick="send_key('F4')" class="menu-item">F4</a>
-					<a onclick="send_key('F5')" class="menu-item">F5</a>
-					<a onclick="send_key('F6')" class="menu-item">F6</a>
-					<a onclick="send_key('F7')" class="menu-item">F7</a>
-					<a onclick="send_key('F8')" class="menu-item">F8</a>
-					<a onclick="send_key('F9')" class="menu-item">F9</a>
-					<a onclick="send_key('F10')" class="menu-item">F10</a>
-					<a onclick="send_key('F11')" class="menu-item">F11</a>
-					<a onclick="send_key('F12')" class="menu-item">F12</a>
-					<a onclick="send_key('End')" class="menu-item">End</a>
-					<a onclick="send_key('Home')" class="menu-item">Home</a>
-					<a onclick="send_key('IC')" class="menu-item">Insert</a>
-					<a onclick="send_key('PageDown')" class="menu-item">PageDown</a>
-					<a onclick="send_key('PageUp')" class="menu-item">PageUp</a>
-					<!--div class="menu-spacer"></div>
-					<a href="about:blank" class="menu-item">Custom...</a-->
+				<div class="menu-container">
+					<a class="menu-category">Send</a>
+					<div class="menu-sub" hidden>
+						<a onclick="cmd_send_key('F1')" class="menu-item">F1</a>
+						<a onclick="cmd_send_key('F2')" class="menu-item">F2</a>
+						<a onclick="cmd_send_key('F3')" class="menu-item">F3</a>
+						<a onclick="cmd_send_key('F4')" class="menu-item">F4</a>
+						<a onclick="cmd_send_key('F5')" class="menu-item">F5</a>
+						<a onclick="cmd_send_key('F6')" class="menu-item">F6</a>
+						<a onclick="cmd_send_key('F7')" class="menu-item">F7</a>
+						<a onclick="cmd_send_key('F8')" class="menu-item">F8</a>
+						<a onclick="cmd_send_key('F9')" class="menu-item">F9</a>
+						<a onclick="cmd_send_key('F10')" class="menu-item">F10</a>
+						<a onclick="cmd_send_key('F11')" class="menu-item">F11</a>
+						<a onclick="cmd_send_key('F12')" class="menu-item">F12</a>
+						<a onclick="cmd_send_key('End')" class="menu-item">End</a>
+						<a onclick="cmd_send_key('Home')" class="menu-item">Home</a>
+						<a onclick="cmd_send_key('IC')" class="menu-item">Insert</a>
+						<a onclick="cmd_send_key('PageDown')" class="menu-item">PageDown</a>
+						<a onclick="cmd_send_key('PageUp')" class="menu-item">PageUp</a>
+						<div class="menu-spacer"></div>
+						<a onclick="show_popup('input_window')" class="menu-item">Text...</a>
+					</div>
 				</div>
-			</div>
-			<div style="position: relative;">
-				<a class="menu-category">Panes</a>
-				<div class="menu-sub" hidden id="panes_list">
+				<div class="menu-container">
+					<a class="menu-category">Windows</a>
+					<div class="menu-sub" hidden id="windows_list">
+					</div>
 				</div>
-			</div>
-			<div style="position: relative;">
-				<a class="menu-category">Help</a>
-				<div class="menu-sub" hidden>
-					<a onclick="show_about()" class="menu-item">About</a>
+				<div class="menu-container">
+					<a class="menu-category">Help</a>
+					<div class="menu-sub" hidden>
+						<a onclick="show_popup('about_window')" class="menu-item">About</a>
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<pre id="terminal-content">(No session)</pre>
+		<div class="window-content">
+			<pre id="terminal-content" class="terminal-content">(No session)</pre>
+			<pre id="cursor-content" class="cursor-content"><!--
+				--><span id="cursor-indent"></span><!--
+				--><span id="term-cursor" class="term-cursor">_</span><!--
+			--></pre>
+		</div>
 
-		<div id="popup-blanker" hidden></div>
+		<div id="popups" class="popups hidden">
 
-		<div id="popups">
-			<div id="about" class="window" style="width: 400px; height: 215px" hidden>
+			<!-- About window -->
+			<div id="about_window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">About terminal</div>
 					<div class="title-bar-controls">
-						<button aria-label="Close" onclick="close_about()"></button>
+						<button aria-label="Close" onclick="close_popup()"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<h3>Terminal</h3>
-					<p>Just a Terminal emulator</p>
-					<ul>
-						<li>CGI API written in bash</li>
-						<li>Uses tmux to for persistent sessions and rendering</li>
-						<li>Front-end written in plain Javascript</li>
-					</ul>
-					<br>
-					<br>
-					<button class="btn" onclick="close_about()" style="float: right; margin-right: 10px;">Close</button>
+					<div class="window-content">
+						<h3>Terminal</h3>
+						<p>Just a Terminal emulator</p>
+						<ul>
+							<li>CGI API written in bash</li>
+							<li>Uses tmux to for persistent sessions and rendering</li>
+							<li>Front-end written in plain Javascript</li>
+						</ul>
+						<br>
+						<br>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="close_popup()">Close</button>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div id="set_size" class="window" style="width: 400px; height: 300px" hidden>
+
+			<!-- Resize pane window -->
+			<div id="resize_window" class="window hidden">
 				<div class="title-bar">
-					<div class="title-bar-text">Set size</div>
+					<div class="title-bar-text">Resize current pane</div>
 					<div class="title-bar-controls">
-						<button onclick="close_set_size()" aria-label="Close"></button>
+						<button onclick="close_popup()" aria-label="Close"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<p>Please enter the new dimensions of the terminal:</p>
+					<div class="window-content">
+						<p>Provide the new dimensions of the current window:</p>
+						<button class="btn" onclick="btn_resize_window()" style="float: right;">Resize to window</button>
+						<p>
+							Set the dimensions based on the terminal window:
+							<input type="checkbox" onchange="checkbox_auto_resize()">
+						</p>
 
-					<div>
-						<div style="display: flex:">
-							<label for="rows">Rows</label>
-							<input type="text" name="rows" style="width: 100%;">
+						<div style="clear: both;">
+							<div class="field-row">
+								<label for="rows">Rows</label>
+								<input type="number" id="rows" name="rows" style="width: 50px;" value="24">
+							</div>
+							<div class="field-row">
+								<label for="cols">Columns</label>
+								<input type="number" id="cols" name="cols" style="width: 50px;" value="80">
+							</div>
+							<br>
+							<div class="btn-panel">
+								<span></span>
+								<button class="btn" onclick="btn_resize()">Resize</button>
+							</div>
 						</div>
-						<div style="display: flex:">
-							<label for="cols">Columns</label>
-s							<input type="text" name="cols" style="width: 100%;">
-						</div>
-						<br>
-						<br>
-						<button onclick="set_size()">Ok</button>
 					</div>
 				</div>
 			</div>
 
-			<div id="theme" class="window" style="width: 400px; height: 300px" hidden>
+			<!-- CSS editor -->
+			<div id="theme_window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">Theme</div>
 					<div class="title-bar-controls">
-						<button onclick="close_theme()()" aria-label="Close"></button>
+						<button onclick="close_popup()" aria-label="Close"></button>
 					</div>
 				</div>
-				<div class="window-body" style="overflow: scroll;">
-					<p>Here you can live-adjust the CSS for this terminal emulator:</p>
+				<div class="window-body">
+					<div class="window-content">
+						<p>Here you can live-adjust the CSS for this terminal emulator:</p>
 
-					<div>
-						<style id="css_editor" contenteditable>
-#terminal-content {
-	font-family: perfect_dos_vga_437, monospace;
-	font-size: 16px;
-}
+						<div>
+							<style id="css_editor" contenteditable="plaintext-only">
 .term-bold { font-weight: bold; }
 .term-underline { text-decoration: underline; }
 
@@ -198,21 +229,45 @@ s							<input type="text" name="cols" style="width: 100%;">
 .term-bg-105 { background-color: #f5f; }
 .term-bg-106 { background-color: #5ff; }
 .term-bg-107 { background-color: #fff; }
-						</style>
+							</style>
+						</div>
 					</div>
 				</div>
 			</div>
+
+			<!-- text input -->
+			<div id="input_window" class="window hidden">
+				<div class="title-bar">
+					<div class="title-bar-text">Text input</div>
+					<div class="title-bar-controls">
+						<button onclick="close_popup()" aria-label="Close"></button>
+					</div>
+				</div>
+				<div class="window-body">
+					<div class="window-content">
+						<p>Enter the text that is to be sent to the current pane.</p>
+						<textarea id="input" rows="10" cols="28"></textarea>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="btn_input()">Send</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
 		</div>
 
-
 		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/popups.js"></script>
 		<script src="/static/js/xp/terminal.js"></script>
 	</body>
 <!--
 These values are read outside of the iframe
 to determine the prefered size of this window:
-{{{window_width=800}}}
-{{{window_height=410}}}
+{{{window_width=690}}}
+{{{window_height=500}}}
+{{{window_resizeable}}}
 -->
 </html>
 
