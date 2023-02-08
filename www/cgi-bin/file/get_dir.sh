@@ -19,7 +19,7 @@ file_path="${query_parms_arr[file_path]:-}"
 [ "${file_path}" = "" ] && exit_with_status_message "400" "Bad request"
 
 # check that $file_path is a directory
-[ -d "${file_path}" ] || exit_with_status_message "400" "Bad request"
+[ -d "${file_path}" -a -r "${file_path}" ] || exit_with_status_message "400" "Bad request"
 
 # get the maximum depth argument
 max_depth_arg=""

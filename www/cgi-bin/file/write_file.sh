@@ -19,19 +19,16 @@ file_path="${query_parms_arr[file_path]:-}"
 [ "${file_path}" = "" ] && exit_with_status_message "400" "Bad request"
 
 # check that $file_path can be written to or created
-if ! [ -f "${file_path}" ]; then
-	# file does not exist,
-	# TODO: check directory write permisisons here, instead of error further below
-	#dir="$(dirname "${file_path}")"
-elif ! [ -w "${file_path}" ]; then
-	# file exists, but is not writeable
+if [ -f "${file_path}" ] && [ ! -w "${file_path}" ]; then
+	# is a file, but can't be written
+	exit_with_status_message "400" "Bad request"
+elif ! touch "${file_path}"; then
+	# file not found and can't be created
 	exit_with_status_message "400" "Bad request"
 fi
 
 # get append argument
 append="${query_parms_arr[append]:-}"
-append_arg=""
-[ "${append}" = "true" ] && append_arg="-a"
 
 # enable base64-decoding the content first?
 enable_base64_decode="${query_parms_arr[base64_decode]:-}"
@@ -41,18 +38,24 @@ data="${query_parms_arr[data]:-}"
 
 # function that writes to a file, and counts the bytes written
 function writer() {
-	tee $append_arg "${file_path}" | wc -c
+	if [ "${append}" = "true" ]; then
+		cat >> "${file_path}"
+	else
+		cat > "${file_path}"
+	fi
 }
 
 # write the data
-bytes_written=""
 if [ "${enable_base64_decode}" = "true" ]; then
 	# pass the base64-decoded data to the writer
-	bytes_written="$(base64 -d - <<< "${data}" | writer)"
+	base64 -d - <<< "${data}" | writer
 else
 	# pass the data as-is to the writer
-	bytes_written="$(echo -n "${data}" | writer)"
+	echo -n "${data}" | writer
 fi
+
+# get the new filesize
+new_bytes="$(wc -c < "${file_path}")"
 
 # Respond with the ammount of bytes written to the browser
 cat << EOF
@@ -60,6 +63,6 @@ Content-type: application/json
 
 {
 	"success": true,
-	"written": ${bytes_written}
+	"new_bytes": ${new_bytes}
 }
 EOF

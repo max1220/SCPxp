@@ -23,7 +23,8 @@ file_path="${query_parms_arr[file_path]:-}"
 
 # Enable base64-encoding the file first?
 enable_base64_encode="${query_parms_arr[base64_encode]:-}"
-content_type="${query_parms_arr[content_type]:application/octet-stream}"
+#content_type="${query_parms_arr[content_type]:-application/octet-stream}"
+content_type="${query_parms_arr[content_type]:-text/plain}"
 
 if [ "${enable_base64_encode}" = "true" ]; then
 	# output the file base64-encoded
@@ -34,6 +35,6 @@ else
 	# output the file as-is
 	echo "Content-Type: ${content_type}"
 	echo
-	<"${file_path}"
+	cat "${file_path}"
 fi
 
