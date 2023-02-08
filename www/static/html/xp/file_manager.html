@@ -9,178 +9,278 @@
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
-			.window-popup {
-				position: absolute;
-				top: 33%;
-				left: calc(50% - 150px);
-				width: 300px;
+			:root {
+				--windows-content-padding: 1px;
+				--menubar-height: 44px;
 			}
 
-			#popup-blanker {
-				position: absolute;
-				left: 0;
-				top: 0;
-				right: 0;
-				bottom: 0;
-				background-color: rgba(0,0,0,0.5);
-				z-index: 2;
-			}
-			#popups * {
-				z-index: 3;
+			.splitview {
+				height: 100%;
+				width: 100%;
+				display: flex;
 			}
 
-			#file-tree, #file-tree ul {
-				background-color: #fff;
+			.file-tree {
+				padding: 3px 3px;
 				margin: 0 0;
+
 				max-width: 250px;
 				min-width: 100px;
 				width: 150px;
 				height: 100%;
+
 				resize: horizontal;
 				box-sizing: border-box;
 				overflow: auto;
-				white-space: nowrap;
-				list-style-type: none;
-				padding-inline-start: 10px;
-			}
-			#file-table {
-				background-color: #fff;
-				width: 100%;
-			}
-			#file-table thead {
-				background-color: #EDEADA;
-				font-weight: bold;
-			}
-			#file-table tbody {
-				background-color: #fff;
-			}
-			#file-table tbody tr td {
-				border-right: 1px solid #EDEADA;
-				border-bottom: 1px solid #EDEADA;
-			}
 
-			details > summary {
+				border-right: 1px solid #888;
+				background-color: #fff;
+				list-style-type: none;
+				white-space: nowrap;
+				padding-inline-start: 32px;
+
+			}
+			.base-link {
+				margin-left: -30px;
+				margin-bottom: 2px;
+				padding: 4px;
+				font-weight: bold;
+				background-color: #ece9d8;
+			}
+			.file-tree ul {
+				padding-inline-start: 16px;
+				list-style-type: none;
+				white-space: nowrap;
+			}
+			.file-tree li {
+				position: relative;
+			}
+			.file-tree summary {
+				height: 16px;
 				list-style: none;
 			}
+			.file-tree summary span {
+				padding: 0 2px;
+			}
+			/* closed directory with files */
+			.file-tree summary[data-empty=false]:before {
+				content: "+";
+				display: block;
+				line-height: 10px;
+				padding-left: 1px;
+				box-sizing: border-box;
 
-			.resizeable {
-				resize: both;
+				position: absolute;
+				top: 0;
+				left: -32px;
+				width: 12px;
+				height: 12px;
+				border: 1px solid #888;
+			}
+			/* Opened directory */
+			details[open] > summary[data-empty=false]:before {
+				padding-left: 2px;
+				line-height: 8px;
+				content: "-";
+			}
+			/* Add the icon */
+			.file-tree [data-icon]:after {
+				content: attr(data-icon);
+				display: block;
+
+				position: absolute;
+				top: 0;
+				left: -16px;
+				width: 16px;
+				height: 16px;
+			}
+			.tree-file-selected * {
+				background-color: #316AC5;
+				color: #f5f5f5
 			}
 
-			.splitpane {
-				position: absolute;
-				top: calc(var(--menubar-height) + 1px);
+
+			.file-content {
+				width: 100%;
+				max-height: 100%;
+				overflow: auto;
+				background:
+					linear-gradient(
+						135deg,
+						#ffffff 10%,
+						#ece9d8 50%
+					)
+				;
+				position: relative;
+			}
+			.file-table {
+				width: 100%;
+				max-height: 100%;
+				overflow: scroll;
+				border: none;
+				border-spacing: 0px;
+				border-collapse: collapse;
+			}
+			.file-table tr[data-selected=true] {
+				background-color: #316AC5;
+				color: #f5f5f5;
+			}
+			.select-cell {
+				background-color: rgba(255,255,255, 0.2);
+			}
+			.header-row {
+				background-color: #EEEAD6;
+				height: 25px;
+				border-bottom: 1px solid #888;
+				position: sticky;
+				top: 0;
 				left: 0;
 				right: 0;
-				bottom: calc(var(--statusbar-height) + 1px);
-				display: flex;
+
+			}
+			.file-table tr {
+				height: 25px;
+			}
+			.header:after {
+				font-weight: bold;
+			}
+			.header-select {
+				width: 0;
+			}
+			.header-file-name {
+				width: 100%;
+			}
+			.header-file-name:after {
+				content: "File name";
+			}
+			.header-mode:after {
+				content: "Mode";
+			}
+			.header-user:after {
+				content: "User";
+			}
+			.header-group:after {
+				content: "Group";
+			}
+			.header-size:after {
+				content: "Size";
+			}
+			.file-table [data-icon]:before {
+				content: attr(data-icon);
+				display: inline-block;
+				width: 16px;
 			}
 		</style>
 	</head>
 	<body>
-		<div id="menu-bar">
-			<div class="menu-category">File</div>
-			<div class="menu-sub hidden">
-				<a onclick="show_open()" class="menu-item">Open</a>
-				<a onclick="save('${file_path}')"class="menu-item">Save</a>
-				<a onclick="show_saveas()" class="menu-item">Save as</a>
-				<div class="menu-spacer"></div>
-				<a href="about:blank" class="menu-item">Exit</a>
-			</div>
-			<div class="menu-container">
-				<div class="menu-category">Help</div>
-				<div class="menu-sub hidden">
-					<a onclick="show_about()" class="menu-item">About</a>
+		<div class="menu-bar">
+			<div class="menu-row">
+				<div class="menu-container">
+					<div class="menu-category">File</div>
+					<div class="menu-sub hidden">
+						<a onclick="show_popup('open-window')" class="menu-item">Open directory...</a>
+						<div class="menu-spacer"></div>
+						<a href="about:blank" class="menu-item">Exit</a>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Help</div>
+					<div class="menu-sub hidden">
+						<a onclick="show_popup('about-window')" class="menu-item">About</a>
+					</div>
 				</div>
 			</div>
-			<div class="menu-category">Edit</div>
-			<div class="menu-category" style="margin: 0 0; padding: 0 0; display: flex; width: 100%;">
-				<input type="text" id="file_path_text_input" style="width: 100%;">
-				<button class="btn" id="file_path_text_input_go" style="min-width: 30px;">go</button>
-				<button class="btn" id="menubar_go_up_button" style="min-width: 30px;">..</button>
+			<div class="menu-row">
+				<label for="file_path_text_input">Address</label>
+				<input type="text" id="menubar_file_path" name="menubar_file_path" style="width: 100%;">
+				<button id="menubar_go_button" class="btn">Go</button>
+				<button id="menubar_up_button" class="btn">Up</button>
 			</div>
-
-
 		</div>
 
-		<div class="splitpane">
-			<div style="border-right: 1px solid #888;">
-				<!-- Updated by JS -->
-				<ul id="file-tree" class="tree-view"></ul>
-			</div>
-			<div style="width: 100%; overflow: auto;">
-				<table id="file-table">
-					<thead>
-						<tr>
-							<td>File name</td>
-							<td>Mode</td>
-							<td>User</td>
-							<td>Group</td>
-							<td>Size</td>
-						</tr>
-					</thead>
-					<tbody id="file-list">
-					</tbody>
-				</table>
+		<div class="window-content">
+			<div class="splitview">
+				<ul id="file-tree" class="file-tree"></ul>
+				<div class="file-content">
+					<table id="file-table">
+						<thead>
+							<tr>
+								<td>File name</td>
+								<td>Mode</td>
+								<td>User</td>
+								<td>Group</td>
+								<td>Size</td>
+							</tr>
+						</thead>
+						<tbody id="file-list">
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 
 		<div class="status-bar">
-			<p class="status-bar-field">${file_path_html}</p>
+			<p class="status-bar-field"></p>
 			<p class="status-bar-field" id="status_text"></p>
 		</div>
 
-		<div id="popup-blanker" class="hidden"></div>
+		<div id="popups" class="popups hidden">
 
-		<div id="popups">
-			<div id="about-window" class="window window-popup hidden">
+			<div id="about-window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">About text editor</div>
 					<div class="title-bar-controls">
-						<button aria-label="Close" onclick="close_about()"></button>
+						<button aria-label="Close" onclick="close_popup()"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<h3>File manager</h3>
-					<p>A simple file manager</p>
-					<ul>
-						<li>CGI part written in bash</li>
-						<li>Front-end written in plain Javascript</li>
-					</ul>
-					<br>
-					<br>
-					<section class="field-row" style="justify-content: flex-end">
-						<button onclick="close_about()">Close</button>
-					</section>
+					<div class="window-content">
+						<h3>File manager</h3>
+						<p>A simple file manager</p>
+						<ul>
+							<li>CGI API written in bash</li>
+							<li>Front-end written in plain Javascript</li>
+						</ul>
+						<br>
+						<br>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="close_popup()">Close</button>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div id="open-window" class="window window-popup hidden">
+
+			<div id="open-window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">Open file...</div>
 					<div class="title-bar-controls">
-						<button onclick="close_open()" aria-label="Close"></button>
+						<button aria-label="Close" onclick="close_popup()"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<p>Please enter the path of the file to open:</p>
-
-					<!-- This form is submitted as-is(no javascript needed) -->
-					<form method="GET" action="/cgi-bin/xp/text_editor.sh">
-						<section class="field-row">
+					<div class="window-content">
+						<p>Please enter the path of the file to open:</p>
+						<div class="field-row">
 							<label for="file_path">File&nbsp;path:</label>
 							<input type="text" name="file_path" style="width: 100%;">
-						</section>
+						</div>
 						<br>
 						<br>
-						<section class="field-row" style="justify-content: flex-end">
-							<button>Ok</button>
-						</section>
-					</form>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="btn_open_go()">Go</button>
+						</div>
+					</div>
 				</div>
 			</div>
+
 		</div>
 
+		<script src="/static/js/fix_link_targets_iframe.js"></script>
+		<script src="/static/js/fix_open_target.js"></script>
 		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/popups.js"></script>
 		<script src="/static/js/xp/file_manager.js"></script>
 	</body>
 
