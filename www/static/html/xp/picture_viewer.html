@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>🖵 Picture viewer</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<link rel="stylesheet" href="/static/css/xp/term_attrs.css">
+		<style>
+			body {
+				background-color: #000;
+				/* background-image: url(/static/tux.svg); */
+				background-position: center;
+				background-repeat: no-repeat;
+				background-size: contain;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/popups.js"></script>
+		<script>
+			let image_path_arg = location.hash.substr(1)
+			if (image_path_arg !== "") {
+				let image_path = decodeURIComponent(image_path_arg)
+				let content_type
+				if (image_path.toLowerCase().endsWith(".jpg") || image_path.toLowerCase().endsWith(".jpeg")) {
+					content_type = "image/jpeg"
+				} else if (image_path.toLowerCase().endsWith(".gif")) {
+					content_type = "image/gif"
+				} else if (image_path.toLowerCase().endsWith(".png")) {
+					content_type = "image/png"
+				} else if (image_path.toLowerCase().endsWith(".svg")) {
+					content_type = "image/svg+xml"
+				}
+				if (content_type) {
+					let background_url =
+						"/cgi-bin/file/read_file.sh?" +
+						"file_path=" + image_path_arg +
+						"&content_type=" + encodeURIComponent(content_type)
+					console.log("Changing background image: ", background_url)
+					document.body.style.backgroundImage = "url(" + background_url + ")"
+				}
+			}
+		</script>
+	</body>
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=640}}}
+{{{window_height=480}}}
+{{{window_resizeable}}}
+-->
+</html>
+
+
+
+
