@@ -182,6 +182,7 @@ function make_window(title, resizeable, width, height) {
 function make_iframe_window(title, url, resizeable, width, height, pre_iframe_elem) {
 	let window_obj = make_window(title, resizeable, width, height)
 	let iframe_elem = pre_iframe_elem || document.createElement("iframe")
+	iframe_elem.classList.add("window-body-iframe")
 
 	iframe_elem.onload = function() {
 		let inner_source = iframe_elem.contentDocument.documentElement.outerHTML
@@ -207,7 +208,6 @@ function make_iframe_window(title, url, resizeable, width, height, pre_iframe_el
 		iframe_elem.src = url
 	}
 	window_obj.iframe = iframe_elem
-	window_obj.body.classList.add("window-body-iframe")
 	window_obj.body.appendChild(iframe_elem)
 	return window_obj
 }
@@ -286,8 +286,11 @@ function remove_window(window_obj) {
 function update_window(window_obj) {
 	window_obj.taskbar_button.classList.add("windowbutton-visible")
 	window_obj.taskbar_button.innerHTML = window_obj.title
-	window_obj.window.style.width = window_obj.width+"px"
-	window_obj.window.style.height = window_obj.height+"px"
+	//window_obj.window.style.width = window_obj.width+"px"
+	//window_obj.window.style.height = window_obj.height+"px"
+	window_obj.body.style.width = window_obj.width+"px"
+	window_obj.body.style.height = window_obj.height+"px"
+
 	window_obj.window.style.left = window_obj.x+"px"
 	window_obj.window.style.top = window_obj.y+"px"
 
@@ -311,8 +314,10 @@ function make_next_window() {
 	let window_obj = make_iframe_window("unloaded", false, false, 640, 480)
 	let original_onload = window_obj.iframe.onload
 	window_obj.iframe.name = "make_new_win"
-	window_obj.window.hidden = true
-	window_obj.taskbar_button.hidden = true
+	//window_obj.window.hidden = true
+	//window_obj.taskbar_button.hidden = true
+	window_obj.window.classList.add("hidden")
+	window_obj.taskbar_button.classList.add("hidden")
 	add_window(window_obj)
 
 	// when this iframe loads a page, show the window, rename it, and create a new "make_new_win"
@@ -322,8 +327,10 @@ function make_next_window() {
 			return
 		}
 		window_obj.iframe.removeAttribute("name");
-		window_obj.window.hidden = false
-		window_obj.taskbar_button.hidden = false
+		//window_obj.window.hidden = false
+		//window_obj.taskbar_button.hidden = false
+		window_obj.window.classList.remove("hidden")
+		window_obj.taskbar_button.classList.remove("hidden")
 		window_obj.iframe.onload = original_onload
 		focus_window(window_obj)
 		original_onload()
