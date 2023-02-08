@@ -23,9 +23,13 @@ echo "Content-Type: text/event-stream"
 echo
 
 # stream the output of tmux control-mode as event-stream
-while true; do
-	tmux -C attach-session -t "${session_name}" < /dev/zero | while IFS="" read -r data; do
-		echo "data: ${data}"
-		echo
-	done
+
+# create a pipe that never has any data, because stdin in closed
+sleep 9999999 | tmux -C attach-session -t "${session_name}" | while IFS="" read -r data; do
+	echo "data: ${data}"
+	echo
 done
+
+echo "event: ended"
+echo "data: ret: $?"
+echo
