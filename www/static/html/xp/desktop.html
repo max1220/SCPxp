@@ -11,60 +11,70 @@
 	</head>
 	<body>
 		<!-- The container for the moveable windows(managed by javascript) -->
-		<div id="windows">
-			<a class="desktop-link" href="/static/html/xp/l1t.html" target="make_new_win">
+		<div id="windows" class="windows">
+			<!--a class="desktop-link" href="/static/html/xp/l1t.html" target="make_new_win">
 				<span class="desktop-icon">L1</span>
 				l1t
-			</a>
+			</a-->
 
 			<a class="desktop-link" href="/static/html/xp/terminal.html" target="make_new_win">
 				<span class="desktop-icon">🖵</span>
-				Terminal
+				Bash
 			</a>
 
-			<a class="desktop-link" href="/static/html/xp/browser.html" target="make_new_win">
+			<a class="desktop-link" href="/static/html/xp/terminal.html#new-session:./bin/dialog_manage_containers.sh" target="make_new_win">
+				<span class="desktop-icon">🖵</span>
+				LXC Manager
+			</a>
+
+			<!--a class="desktop-link" href="/static/html/xp/browser.html" target="make_new_win">
 				<span class="desktop-icon">🌐</span>
 				Browser
-			</a>
+			</a-->
 
-			<a class="desktop-link" href="/static/html/xp/terminal_manager.html" target="make_new_win">
+			<!--a class="desktop-link" href="/static/html/xp/terminal_manager.html" target="make_new_win">
 				<span class="desktop-icon">🖵</span>
 				Terminal manager
-			</a>
+			</a-->
 
-			<a class="desktop-link" href="/static/html/xp/lxc_manager.html" target="make_new_win">
+			<!--a class="desktop-link" href="/static/html/xp/lxc_manager.html" target="make_new_win">
 				<span class="desktop-icon">⮻</span>
 				LXC manager
-			</a>
+			</a-->
 
 			<a class="desktop-link" href="/static/html/xp/file_manager.html" target="make_new_win">
 				<span class="desktop-icon">🗀</span>
 				File manager
 			</a>
+
+			<a class="desktop-link" href="/static/html/xp/text_editor.html" target="make_new_win">
+				<span class="desktop-icon">🖹</span>
+				Text editor
+			</a>
 		</div>
 
 		<!-- the taskbar with the start button -->
-		<nav id="taskbar" class="noselect">
+		<nav id="taskbar" class="taskbar noselect">
 			<!-- left side: Start button, window buttons -->
-			<div id="taskbar-left">
-				<button id="start-button">
-					<span id="start-icon" aria-label "Tux">&nbsp;</span>start
+			<div class="taskbar-left">
+				<button id="start-button" class="start-button">
+					<span class="start-icon" aria-label "Tux">&nbsp;</span>start
 				</button>
 
 
 				<!-- the list of windows in the taskbar is managed by js -->
-				<div id="windowlist"></div>
+				<div id="windowlist" class="windowlist"></div>
 			</div>
 
 			<!-- right side: the clock/notification area -->
-			<div id="taskbar-right">
+			<div class="taskbar-right">
 				<!-- the clock is updated by js -->
-				<div id="clock">??:??:??</div>
+				<div id="clock" class="clock">??:??:??</div>
 			</div>
 		</nav>
 
 		<!-- The start menu, containing the list of programs -->
-		<div id="start-menu" hidden>
+		<div id="start-menu" class="start-menu" hidden>
 			<a class="start-menu-item"><span class="start-menu-icon">&nbsp;</span>Programs ></a>
 			<div class="start-menu-sub" hidden>
 				<a class="start-menu-item" target="make_new_win" href="/static/html/xp/l1t.html"><span class="start-menu-icon">L1</span>L1T</a>
