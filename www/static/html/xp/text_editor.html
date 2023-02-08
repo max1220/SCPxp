@@ -9,325 +9,149 @@
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
-			html {
-				height: 100%;
+			:root {
+				--windows-content-padding: 1px;
 			}
-			body {
-				min-height: 100%;
-				user-select: none;
-				margin: 0 0;
-				padding: 0 0;
-				box-sizing: border-box;
-				background-color: #EDEADA;
-			}
-			pre {
-				overflow: auto;
-				height: 15em;
-			}
-			.hidden {
-				display: none;
-			}
-			.window-body-embedded {
-				position: absolute;
-				top: 23px;
-				left: 1px;
-				right: 1px;
-				bottom: 18px;
-				border-bottom: 1px solid #888;
-				border-top: 1px solid #888;
-			}
-			.window-popup {
-				position: absolute;
-				top: 33%;
-				left: calc(50% - 150px);
-				width: 300px;
-			}
-			.status-bar {
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				right: 0;
-				margin: 0 0;
-			}
-
-			#menu-bar {
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				height: 22px;
-				display: flex;
-			}
-			.menu-item {
-				color: #111;
-				display: block;
-				padding: 4px;
-				margin: 1px 2px;
-				text-decoration: none !important;
-				cursor: pointer;
-			}
-
-			.menu-category {
-				color: #111;
-				display: block;
-				padding: 4px;
-				margin: 0px;
-				text-decoration: none !important;
-			}
-			.menu-category:hover {
-				background-color: #46f;
-				color: #eee;
-			}
-
-			.menu-spacer {
-				height: 1px;
-				background-color: #888;
-				margin: 0 2px;
-			}
-			.menu-item:hover {
-				background-color: #46f;
-				color: #eee;
-			}
-
-			.menu-category:hover + .menu-sub {
-				display: block;
-			}
-			.menu-category + .menu-sub:hover {
-				display: block;
-			}
-
-			.menu-sub ~ menu-category {
-				background-color: #f0f !important;
-			}
-
-
-			.menu-item:hover + .menu-sub {
-				display: block;
-			}
-			.menu-item + .menu-sub:hover {
-				display: block;
-
-
-			}
-			.disabled {
-				display: none;
-			}
-
-			.menu-sub {
-				position: absolute;
-				top: 21px;
-				left: 0;
-				width: 150px;
-				border: 1px solid #888;
-				box-shadow: 3px 3px 3px rgba(0,0,0,0.4);
-				background-color: #fff;
-				z-index: 1;
-				overflow: visible;
-			}
-
-			#popup-blanker {
-				position: absolute;
-				left: 0;
-				top: 0;
-				right: 0;
-				bottom: 0;
-				background-color: rgba(0,0,0,0.5);
-				z-index: 2;
-			}
-			#popups * {
-				z-index: 3;
-			}
-			textarea {
-				font-family: monospace;
-				resize: none;
-			}
-			#file_content {
+			.text_content {
 				width: 100%;
 				height: 100%;
+				border: none;
+				outline: none;
 			}
-
+			.preview_content {
+				border-left: 1px solid #888;
+				resize: horizontal;
+				padding: 15px;
+			}
+			.splitview {
+				height: 100%;
+				width: 100%;
+				display: flex;
+			}
 		</style>
 	</head>
 	<body>
-		<div id="menu-bar">
-			<div style="position: relative;">
-			<a class="menu-category">File</a>
-			<div class="menu-sub hidden">
-				<a onclick="show_open()" class="menu-item">Open</a>
-				<a onclick="save('${file_path}')"class="menu-item">Save</a>
-				<a onclick="show_saveas()" class="menu-item">Save as</a>
-				<div class="menu-spacer"></div>
-				<a href="about:blank" class="menu-item">Exit</a>
-			</div>
-			</div>
-			<!--a class="menu-category">Edit</a>
-			<a class="menu-category">Format</a>
-			<a class="menu-category">View</a-->
-			<div style="position: relative;">
-			<a class="menu-category">Help</a>
-			<div class="menu-sub hidden">
-				<a onclick="show_about()" class="menu-item">About</a>
-			</div>
+		<div class="menu-bar">
+			<div class="menu-row">
+				<div style="position: relative;">
+					<a class="menu-category">File</a>
+					<div class="menu-sub" hidden>
+						<a onclick="show_popup('open-window')" class="menu-item">Open</a>
+						<a onclick="btn_save()"class="menu-item hiddenx">Save</a>
+						<a onclick="show_popup('saveas-window')" class="menu-item">Save as</a>
+						<div class="menu-spacer"></div>
+						<a href="about:blank" class="menu-item">Exit</a>
+					</div>
+				</div>
+				<div style="position: relative;">
+					<a class="menu-category">View</a>
+					<div class="menu-sub" hidden>
+						<a onclick="btn_toggle_wrap()" class="menu-item">Toggle line wrap</a>
+						<a onclick="btn_toggle_preview()" class="menu-item">Toggle preview</a>
+					</div>
+				</div>
+				<div style="position: relative;">
+					<a class="menu-category">Help</a>
+					<div class="menu-sub" hidden>
+						<a onclick="show_popup('about-window')" class="menu-item">About</a>
+					</div>
+				</div>
 			</div>
 		</div>
 
 		<!-- This form is submitted from JS -->
-		<form id="text-form" class="window-body-embedded" method="POST" action="/cgi-bin/xp/text_editor.sh">
-			<textarea name="file_content" id="file_content" onchange="update_statusbar()" onkeyup="update_statusbar()">${file_content_html}</textarea>
-		</form>
-
-		<div class="status-bar">
-			<p class="status-bar-field">${file_path_html}</p>
-			<p class="status-bar-field" id="status_text"></p>
-			<p class="status-bar-field" id="cursor_text"></p>
+		<div class="window-content">
+			<div class="splitview">
+				<textarea name="text_content" id="text_content" class="text_content"></textarea>
+				<div id="preview_content" class="preview_content hidden"></div>
+			</div>
 		</div>
 
-		<div id="popup-blanker" class="hidden"></div>
+		<div class="status-bar">
+			<span class="status-bar-field" id="status_left"></span>
+			<span class="status-bar-field" id="status_middle"></span>
+			<span class="status-bar-field" id="cursor_right"></span>
+		</div>
 
-		<div id="popups">
-			<div id="about-window" class="window window-popup hidden">
+		<div id="popups" class="popups hidden">
+			<div id="about-window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">About text editor</div>
 					<div class="title-bar-controls">
-						<button aria-label="Close" onclick="close_about()"></button>
+						<button aria-label="Close" onclick="close_popup()"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<h3>Text editor</h3>
-					<p>Just a simple text editor</p>
-					<ul>
-						<li>CGI part written in bash</li>
-						<li>Front-end written in plain Javascript</li>
-					</ul>
-					<br>
-					<br>
-					<section class="field-row" style="justify-content: flex-end">
-						<button onclick="close_about()">Close</button>
-					</section>
+					<div class="window-content">
+						<h3>Text editor</h3>
+						<p>Just a simple text editor</p>
+						<ul>
+							<li>CGI API written in bash</li>
+							<li>Front-end written in plain Javascript</li>
+						</ul>
+						<br>
+						<br>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="close_popup()">Close</button>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div id="open-window" class="window window-popup hidden">
+
+			<div id="open-window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">Open file...</div>
 					<div class="title-bar-controls">
-						<button onclick="close_open()" aria-label="Close"></button>
+						<button onclick="close_popup()" aria-label="Close"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<p>Please enter the path of the file to open:</p>
+					<div class="window-content">
+						<p>Please enter the path of the file to open:</p>
 
-					<!-- This form is submitted as-is(no javascript needed) -->
-					<form method="GET" action="/cgi-bin/xp/text_editor.sh">
-						<section class="field-row">
-							<label for="file_path">File&nbsp;path:</label>
-							<input type="text" name="file_path" style="width: 100%;">
-						</section>
+						<div class="field-row">
+							<label for="open_file_path">File&nbsp;path:</label>
+							<input type="text" id="open_file_path" name="open_file_path">
+						</div>
 						<br>
 						<br>
-						<section class="field-row" style="justify-content: flex-end">
-							<button>Ok</button>
-						</section>
-					</form>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="btn_open()">Ok</button>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div id="saveas-window" class="window window-popup hidden">
+
+			<div id="saveas-window" class="window hidden">
 				<div class="title-bar">
 					<div class="title-bar-text">Save file as...</div>
 					<div class="title-bar-controls">
-						<button onclick="close_saveas()" aria-label="Close"></button>
+						<button onclick="close_popup()" aria-label="Close"></button>
 					</div>
 				</div>
 				<div class="window-body">
-					<p>Please enter the path to save the file as:</p>
+					<div class="window-content">
+						<p>Please enter the path to save the file as:</p>
 
-					<div>
-						<section class="field-row">
-							<label for="file_path">File&nbsp;path:</label>
-							<input type="text" name="file_path" style="width: 100%;">
-						</section>
+						<div class="field-row">
+							<label for="saveas_file_path">File&nbsp;path:</label>
+							<input type="text" id="saveas_file_path" name="saveas_file_path">
+						</div>
 						<br>
 						<br>
-						<section class="field-row" style="justify-content: flex-end">
-							<button>Ok</button>
-						</section>
+						<div class="btn-panel">
+							<span></span>
+							<button class="btn" onclick="btn_saveas()">Save as</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<script>
-			let about_window_elem = document.getElementById("about-window")
-			let open_window_elem = document.getElementById("open-window")
-			let saveas_window_elem = document.getElementById("saveas-window")
-			let file_content_elem = document.getElementById("file_content")
-			let status_text_elem = document.getElementById("status_text")
-			let cursor_text_elem = document.getElementById("cursor_text")
-			let popup_blanker_elem = document.getElementById("popup-blanker")
-			let text_form_elem = document.getElementById("text-form")
-
-			function update_statusbar() {
-				let text = file_content_elem.value
-				if (!text || text=="") { return; }
-				let lines=text.match(/\r\n|\r|\n/g)
-				let linecount = 1
-				if (lines) {
-					linecount = text.match(/\r\n|\r|\n/g).length + 1
-				}
-				let sel_start = file_content_elem.selectionStart
-				let current_lineno = text.substr(1, sel_start-1).split(/\r\n|\r|\n/).length
-				let size_text = "Length: " + text.length + ", Lines: " + linecount
-				let cursor_text = "Position: " + sel_start + ", Line: " + current_lineno
-				status_text_elem.innerHTML = size_text
-				cursor_text_elem.innerHTML = cursor_text
-			}
-			update_statusbar()
-
-			function close_about() {
-				about_window_elem.classList.add("hidden")
-				popup_blanker_elem.classList.add("hidden")
-			}
-			function show_about() {
-				about_window_elem.classList.remove("hidden")
-				popup_blanker_elem.classList.remove("hidden")
-			}
-			function close_open() {
-				open_window_elem.classList.add("hidden")
-				popup_blanker_elem.classList.add("hidden")
-			}
-			function show_open() {
-				open_window_elem.classList.remove("hidden")
-				popup_blanker_elem.classList.remove("hidden")
-			}
-			function close_saveas() {
-				saveas_window_elem.classList.add("hidden")
-				popup_blanker_elem.classList.add("hidden")
-			}
-			function show_saveas() {
-				saveas_window_elem.classList.remove("hidden")
-				popup_blanker_elem.classList.remove("hidden")
-			}
-
-			function save(file_path) {
-				let text = file_content_elem.value
-				if (!text || text=="") { return; }
-
-				let text_input_elem = document.createElement("input");
-				text_input_elem.name="text_content"
-				text_input_elem.value=text
-				text_input_elem.type="hidden"
-
-				let filepath_input_elem = document.createElement("input");
-				text_input_elem.name="file_path"
-				text_input_elem.value=file_path
-				text_input_elem.type="hidden"
-
-				text_form_elem.appendChild(text_input_elem)
-				text_form_elem.appendChild(filepath_input_elem)
-				text_form_elem.submit()
-				text_form_elem.removeChild(text_input_elem)
-				text_form_elem.removeChild(filepath_input_elem)
-			}
-
-		</script>
+		<script src="/static/js/popups.js"></script>
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/xp/text_editor.js"></script>
 	</body>
 
 <!--
