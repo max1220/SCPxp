@@ -25,16 +25,18 @@ file_path="${query_parms_arr[file_path]:-}"
 enable_base64_encode="${query_parms_arr[base64_encode]:-}"
 #content_type="${query_parms_arr[content_type]:-application/octet-stream}"
 content_type="${query_parms_arr[content_type]:-text/plain}"
+content_disposition="${query_parms_arr[content_disposition]:-}"
+
+echo "Content-Type: ${content_type}"
+if ! [ "${content_disposition}" = "" ]; then
+	echo "Content-Disposition: ${content_disposition}"
+fi
+echo
 
 if [ "${enable_base64_encode}" = "true" ]; then
 	# output the file base64-encoded
-	echo "Content-Type: text/plain"
-	echo
 	base64 "${file_path}"
 else
 	# output the file as-is
-	echo "Content-Type: ${content_type}"
-	echo
 	cat "${file_path}"
 fi
-
