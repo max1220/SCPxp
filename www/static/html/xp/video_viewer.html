@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>📹 Video viewer</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<link rel="stylesheet" href="/static/css/xp/term_attrs.css">
+		<style>
+			body {
+				background-color: #000;
+			}
+			video {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<video controls id="video"></video>
+
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/popups.js"></script>
+		<script>
+			let video_path_arg = location.hash.substr(1)
+			if (video_path_arg !== "") {
+				let video_path = decodeURIComponent(video_path_arg)
+				let content_type
+				if (video_path.toLowerCase().endsWith(".webm") || video_path.toLowerCase().endsWith(".mkv")) {
+					content_type = "video/webm"
+				} else if (video_path.toLowerCase().endsWith(".mp4") || video_path.toLowerCase().endsWith(".m4v")) {
+					content_type = "video/mp4"
+				}
+				if (content_type) {
+					let video_url =
+						"/cgi-bin/file/read_file.sh?" +
+						"file_path=" + video_path_arg +
+						"&content_type=" + encodeURIComponent(content_type)
+					let source_elem = document.createElement("source")
+					source_elem.src = video_url
+					source_elem.type = content_type
+					document.getElementById("video").appendChild(source_elem)
+				}
+			}
+		</script>
+	</body>
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=640}}}
+{{{window_height=480}}}
+{{{window_resizeable}}}
+-->
+</html>
+
+
+
+
