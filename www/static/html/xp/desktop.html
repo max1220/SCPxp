@@ -12,44 +12,19 @@
 	<body>
 		<!-- The container for the moveable windows(managed by javascript) -->
 		<div id="windows" class="windows">
-			<!--a class="desktop-link" href="/static/html/xp/l1t.html" target="make_new_win">
+			<a class="desktop-link" href="/static/html/xp/l1t.html" target="make_new_win">
 				<span class="desktop-icon">L1</span>
-				l1t
-			</a-->
+				L1T
+			</a>
 
 			<a class="desktop-link" href="/static/html/xp/terminal.html" target="make_new_win">
 				<span class="desktop-icon">🖵</span>
-				Bash
+				Terminal
 			</a>
-
-			<a class="desktop-link" href="/static/html/xp/terminal.html#new-session:./bin/dialog_manage_containers.sh" target="make_new_win">
-				<span class="desktop-icon">🖵</span>
-				LXC Manager
-			</a>
-
-			<!--a class="desktop-link" href="/static/html/xp/browser.html" target="make_new_win">
-				<span class="desktop-icon">🌐</span>
-				Browser
-			</a-->
-
-			<!--a class="desktop-link" href="/static/html/xp/terminal_manager.html" target="make_new_win">
-				<span class="desktop-icon">🖵</span>
-				Terminal manager
-			</a-->
-
-			<!--a class="desktop-link" href="/static/html/xp/lxc_manager.html" target="make_new_win">
-				<span class="desktop-icon">⮻</span>
-				LXC manager
-			</a-->
 
 			<a class="desktop-link" href="/static/html/xp/file_manager.html" target="make_new_win">
 				<span class="desktop-icon">🗀</span>
 				File manager
-			</a>
-
-			<a class="desktop-link" href="/static/html/xp/text_editor.html" target="make_new_win">
-				<span class="desktop-icon">🖹</span>
-				Text editor
 			</a>
 		</div>
 
@@ -74,31 +49,19 @@
 		</nav>
 
 		<!-- The start menu, containing the list of programs -->
-		<div id="start-menu" class="start-menu" hidden>
-			<a class="start-menu-item"><span class="start-menu-icon">&nbsp;</span>Programs ></a>
-			<div class="start-menu-sub" hidden>
-				<a class="start-menu-item" target="make_new_win" href="/static/html/xp/l1t.html"><span class="start-menu-icon">L1</span>L1T</a>
-				<a class="start-menu-item" target="make_new_win" href="/static/html/xp/desktop.html"><span class="start-menu-icon">🗔</span>Desktop window</a>
-				<a class="start-menu-item" target="make_new_win" href="/static/html/xp/browser.html"><span class="start-menu-icon">🌐</span>Browser</a>
-				<a class="start-menu-item" target="make_new_win" href="/cgi-bin/xp/text_editor.sh"><span class="start-menu-icon">🖹</span>Text editor</a>
-				<a class="start-menu-item" target="make_new_win" href="/static/html/xp/FreeDOS.html"><span class="start-menu-icon">🖵</span>DOS prompt</a>
-				<a class="start-menu-item" target="make_new_win" href="https://www.shadertoy.com/embed/lslSDS?gui=false&t=10&paused=false&muted=true"><span class="start-menu-icon">🔭</span>Starfield</a>
-			</div>
-			<a class="start-menu-item"><span class="start-menu-icon">&nbsp;</span>Containers ></a>
-			<div class="start-menu-sub" hidden>
-				<a class="start-menu-item overflow-ellipsis">Spam</a>
-				<a class="start-menu-item overflow-ellipsis">Ham</a>
-				<a class="start-menu-item overflow-ellipsis">Bam</a>
-			</div>
-
-
+		<div id="start-menu" class="start-menu hidden">
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/browser.html"><span class="start-menu-icon">🌐</span>Browser</a>
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/desktop.html"><span class="start-menu-icon">🗔</span>Desktop window</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/file_manager.html"><span class="start-menu-icon">🗀</span>File manager</a>
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/FreeDOS.html"><span class="start-menu-icon">🖵</span>FreeDOS prompt</a>
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/l1t.html"><span class="start-menu-icon">L1</span>L1T</a>
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/lxc_manager.html"><span class="start-menu-icon">🖹</span>LXC Manager</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/terminal.html"><span class="start-menu-icon">🖵</span>Terminal</a>
-
+			<!--a class="start-menu-item" target="make_new_win" href="/static/html/xp/terminal_manager.html"><span class="start-menu-icon">🖵</span>Terminal Manager</a-->
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/text_editor.sh"><span class="start-menu-icon">🖹</span>Text editor</a>
 			<a class="start-menu-item" target="make_new_win" href="/cgi-bin/xp/info.sh"><span class="start-menu-icon">ℹ</span>System Info</a>
 			<div class="start-menu-spacer"></div>
 			<a class="start-menu-item" onclick="show_settings_window()"><span class="start-menu-icon">⚙</span>Settings...</a>
-
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/run.html"><span class="start-menu-icon">➔</span>Run...</a>
 			<div class="start-menu-spacer"></div>
 			<a class="start-menu-item overflow-ellipsis" href="about:blank"><span class="start-menu-icon">⏻</span>Turn off computer...</a>
