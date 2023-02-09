@@ -214,7 +214,7 @@ function make_iframe_window(title, url, resizeable, width, height, pre_iframe_el
 
 // Make the settings window(can't use iframe)
 function make_settings_window() {
-	let window_obj = make_window("Settings", true, 600, 400)
+	let window_obj = make_window("🔧 Settings", true, 600, 400)
 	// create a style element and a textarea element
 	let style_editor = document.createElement("style")
 	let style_editor_textarea = document.createElement("textarea")
@@ -370,9 +370,24 @@ function focus_window(window_obj) {
 	window_obj.window.classList.remove("window-unfocused")
 }
 
+// get the parsed server environment variables
+let server_env = {}
+function parse_env() {
+	make_xhr("/cgi-bin/env.sh", "GET", undefined, undefined, function(url, resp) {
+		let lines = resp.split("\n")
+		lines.forEach(function(e) {
+			let kv = e.split("=")
+			let k = kv[0]
+			let v = kv.slice(1).join("=")
+			server_env[k] = v
+		})
+	})
+}
 
 
 // create the initial hidden iframe window that acts as a link target
 make_next_window()
 
+// get the server environment variables
+parse_env()
 

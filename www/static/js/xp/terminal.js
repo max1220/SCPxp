@@ -421,7 +421,8 @@ function handle_terminal_key_event(e) {
 		":",
 		"_",
 		"-",
-		"#"
+		"#",
+		" "
 	]
 
 	if (key=="Enter") {
@@ -723,7 +724,7 @@ function btn_input() {
 
 
 
-/* Checkbox handlers */
+/* --- CHECKBOX HANDLERS --- */
 
 let auto_resize_enable = false
 function checkbox_auto_resize() {

@@ -257,8 +257,6 @@ function generate_content_table(files_list) {
 		let icon_str = (file.type=="directory") ? "🗀" : "🖹"
 		icon_str = (file.type=="link") ? "⮫" : icon_str
 
-
-
 		if (content_show_select) {
 			let select_cell = row.insertCell()
 			let select_checkbox = document.createElement("input")
@@ -282,6 +280,7 @@ function generate_content_table(files_list) {
 		filename_cell.innerText = basename(file.name)
 		filename_cell.classList = "file-name-cell"
 		filename_cell.ondblclick = content_file_double_click(file)
+		filename_cell.onclick = content_file_click(file)
 
 		if (content_show_mode) { row.insertCell().innerText = file.mode }
 		if (content_show_user) { row.insertCell().innerText = file.user }
@@ -377,7 +376,12 @@ function update_selected_files() {
 	for (let i=0; i<rows.length; i++) {
 		let row = rows[i]
 		let decoded_path = decodeURIComponent(row.getAttribute("data-path"))
-		row.setAttribute("data-selected", selected_files.includes(decoded_path))
+		let checkbox = row.querySelector("input[type=checkbox]")
+		let is_selected = selected_files.includes(decoded_path)
+		if (checkbox) {
+			checkbox.checked = is_selected
+		}
+		row.setAttribute("data-selected", is_selected)
 	}
 }
 
@@ -462,7 +466,19 @@ function content_file_double_click(file) {
 	}
 }
 
-
+// wne a file in the file table was clicked
+function content_file_click(file) {
+	return function() {
+		console.log("content_file_click", file)
+		if (selected_files.includes(file.name)) {
+			selected_files.splice(selected_files.indexOf(file.name), 1)
+			update_selected_files()
+		} else {
+			selected_files = [file.name]
+			update_selected_files()
+		}
+	}
+}
 
 /* --- FILE ACTIONS --- */
 
@@ -679,7 +695,7 @@ function btn_refresh() {
 function btn_rename() {
 	for (let selected_file of selected_files) {
 		let new_file_name = prompt("Enter a new name for the file:\n"+selected_file)
-		if (new_file_name=="") { continue; }
+		if ((!new_file_name) || (new_file_name=="")) { continue; }
 		new_file_name = new_file_name.startsWith("/") ? new_file_name : content_dir_path + "/" + new_file_name
 		api_file_move(selected_file, new_file_name, function() {
 			navigate_content(content_dir_path)
@@ -692,7 +708,17 @@ function btn_download_tar() {
 	api_create_tar(selected_files)
 }
 
+
+
 /* --- INITIALIZATION --- */
 
-navigate_tree("/")
-navigate_content("/", false)
+// navigate to hash part of URL, or /
+let hash_loc = location.hash.substr(1)
+if ((!hash_loc) || (hash_loc=="")) {
+	navigate_tree("/")
+	navigate_content("/", false)
+} else {
+	let decoded_loc = decodeURIComponent(hash_loc)
+	navigate_tree(decoded_loc)
+	navigate_content(decoded_loc, false)
+}
