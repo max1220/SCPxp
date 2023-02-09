@@ -16,16 +16,16 @@ start_buttton_elem.onclick = function(e) {
 	show_start_menu()
 }
 function show_start_menu() {
-	if (start_menu_elem.hidden) {
-		start_menu_elem.hidden = false
+	if (start_menu_elem.classList.contains("hidden")) {
+		start_menu_elem.classList.remove("hidden")
 		start_buttton_elem.onclick = function(e) {
 			hide_start_menu()
 		}
 	}
 }
 function hide_start_menu() {
-	if (!start_menu_elem.hidden) {
-		start_menu_elem.hidden = true
+	if (!start_menu_elem.classList.contains("hidden")) {
+		start_menu_elem.classList.add("hidden")
 		start_buttton_elem.onclick = function(e) {
 			show_start_menu()
 		}
@@ -243,8 +243,8 @@ function make_settings_window() {
 let settings_window = undefined
 function show_settings_window() {
 	if (settings_window) {
-		settings_window.window.hidden = false
-		settings_window.taskbar_button.hidden = false
+		settings_window.window.classList.remove("hidden")
+		settings_window.taskbar_button.classList.remove("hidden")
 	} else {
 		settings_window = make_settings_window()
 		add_window(settings_window)
@@ -252,8 +252,8 @@ function show_settings_window() {
 }
 // The settings window can't be closed, only "hidden"
 function close_settings_window() {
-	settings_window.window.hidden = true
-	settings_window.taskbar_button.hidden = true
+	settings_window.window.classList.add("hidden")
+	settings_window.taskbar_button.classList.add("hidden")
 }
 
 // Add a window(show it)
@@ -314,8 +314,6 @@ function make_next_window() {
 	let window_obj = make_iframe_window("unloaded", false, false, 640, 480)
 	let original_onload = window_obj.iframe.onload
 	window_obj.iframe.name = "make_new_win"
-	//window_obj.window.hidden = true
-	//window_obj.taskbar_button.hidden = true
 	window_obj.window.classList.add("hidden")
 	window_obj.taskbar_button.classList.add("hidden")
 	add_window(window_obj)
@@ -327,8 +325,6 @@ function make_next_window() {
 			return
 		}
 		window_obj.iframe.removeAttribute("name");
-		//window_obj.window.hidden = false
-		//window_obj.taskbar_button.hidden = false
 		window_obj.window.classList.remove("hidden")
 		window_obj.taskbar_button.classList.remove("hidden")
 		window_obj.iframe.onload = original_onload
@@ -341,7 +337,7 @@ function make_next_window() {
 
 /* Minimize/unminimize a window */
 function unminimize_window(window_obj) {
-	window_obj.window.hidden = false
+	window_obj.window.classList.remove("hidden")
 	window_obj.taskbar_button.classList.add("windowbutton-visible")
 	window_obj.taskbar_button.onclick = function(e) {
 		minimize_window(window_obj)
@@ -350,7 +346,7 @@ function unminimize_window(window_obj) {
 }
 function minimize_window(window_obj) {
 	window_obj.taskbar_button.classList.remove("windowbutton-visible")
-	window_obj.window.hidden = true
+	window_obj.window.classList.add("hidden")
 	window_obj.taskbar_button.onclick = function(e) {
 		unminimize_window(window_obj)
 		e.preventDefault()
