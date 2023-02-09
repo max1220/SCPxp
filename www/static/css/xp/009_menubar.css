@@ -22,20 +22,20 @@
 		display: flex;
 		align-items: center;
 		width: 100%;
-		background-color: #EEEAD6;
+		background-color: var(--menubar-row-bg-color);
+		color: var(--menubar-row-fg-color);
 	}
 
 	.menu-item {
-		color: #111;
 		display: block;
 		padding: 4px;
-		margin: 1px 2px;
+		margin: 1px 1px;
 		text-decoration: none !important;
+		color: var(--menubar-row-fg-color);
 		cursor: pointer;
 	}
 
 	.menu-category {
-		color: #111;
 		display: block;
 		padding: 4px;
 		margin: 0px;
@@ -77,10 +77,10 @@
 		position: absolute;
 		top: calc(var(--menubar-row-height) - 2px);
 		left: 0;
-		width: 150px;
+		width: var(--menubar-sub-width);
 		border: 1px solid #888;
 		box-shadow: 3px 3px 3px rgba(0,0,0,0.4);
-		background-color: #fafafa;
+		background-color: var(--menubar-sub-bg-color);
 		z-index: 1100;
 		overflow: visible;
 	}

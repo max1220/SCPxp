@@ -36,6 +36,7 @@
 		font-family: sans-serif;
 		text-decoration: none;
 		color: #eee;
+		cursor: pointer;
 		text-shadow: 1px 1px rgba(0,0,0,0.3);
 	}
 
@@ -53,6 +54,22 @@
 		outline: none;
 		border: 1px solid #333;
 		overflow: auto;
+	}
+
+	body {
+		animation: fadeInBodyAnimation linear 0.5s;
+		animation-iteration-count: 1;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes fadeInBodyAnimation {
+		0% {
+			opacity: 0;
+			background-color: #000;
+		}
+		100% {
+			opacity: 1;
+		}
 	}
 
 /* /desktop */

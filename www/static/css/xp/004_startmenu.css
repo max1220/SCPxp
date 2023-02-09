@@ -4,12 +4,13 @@
 	.start-menu {
 		position: fixed;
 		left: 0;
-		bottom: 27px;
-		width: 200px;
+		bottom: calc(var(--taskbar-height) + 1px);
+		width: var(--startmenu-width);
 		background: linear-gradient(180deg,#000, #000,#11f) !important;
 		border: 1px solid #888;
 		box-shadow: 1px 1px 5px #000;
 		font-family: sans-serif;
+		z-index: 10000;
 	}
 	.start-menu-icon {
 		display: inline-block;
@@ -35,6 +36,9 @@
 		background-color: #aaa;
 		margin-left: 20px;
 	}
+	.startmenu-container {
+		position: relative;
+	}
 	.start-menu-item:hover {
 		background-color: #46f;
 		color: #eee;
@@ -59,6 +63,7 @@
 		width: 150px;
 		border: 1px solid #888;
 		box-shadow: 1px 1px 5px #000;
+		z-index: 10000;
 	}
 
 /* /startmenu */

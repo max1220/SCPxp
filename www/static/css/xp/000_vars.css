@@ -6,24 +6,24 @@
 
 		--windows-popup-window-width: 300px;
 		--windows-content-padding: 5px;
-		--windows-shadow-color: #333;
+		--windows-shadow-color: #333333;
 		--windows-border-radius: 8px;
-		--windows-border-color1: #0831d9;
-		--windows-border-color2: #166aee;
+		--windows-border-color1: #0831D9;
+		--windows-border-color2: #166AEE;
 		--windows-fg-color: #040400;
-		--windows-bg-color: #ece9d8;
+		--windows-bg-color: #ECE9D8;
 		--windows-title-bar-height: 26px;
 		--windows-title-bar-background-image:
 			linear-gradient(
 				180deg,
-				#0997ff,
-				#0053ee 8%,
-				#0050ee 40%,
-				#06f 88%,
-				#06f 93%,
-				#005bff 95%,
-				#005bff 96%,
-				#005bff
+				#0997FF,
+				#0053EE 8%,
+				#0050EE 40%,
+				#0066FF 88%,
+				#0066FF 93%,
+				#005BFF 95%,
+				#005BFF 96%,
+				#005BFF
 			)
 		;
 		--windows-title-bar-background-image-unfocused:
@@ -43,7 +43,15 @@
 		--statusbar-height: 18px;
 		--menubar-height: 22px;
 		--menubar-row-height: 22px;
+		--menubar-sub-width: 150px;
+		--menubar-row-bg-color: #EEEAD6;
+		--menubar-row-fg-color: #111111;
+		--menubar-sub-bg-color: #FAFAFAFA;
+		--menubar-hover-fg-color: #EEEEEE;
+		--menubar-hover-bg-color: #4466FF;
 		--taskbar-height: 26px;
+
+		--startmenu-width: 200px;
 	}
 
 /* /vars */
