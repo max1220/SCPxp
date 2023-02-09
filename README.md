@@ -184,6 +184,9 @@ Some features didn't make it in time. Here is my TODO list:
  * Desktop
    - Use the correct unicode "icons" for the titlebar: 🗕  🗖  🗗  🗙
    - Implement Maximize/unmaximize
+   - creatable/editable/moveable desktop icons
+   - Fix Startmenu sub-menus occuring at unconvenient location
+   - Add boot screen with some animations and stuff
  * File manager
    - Implement view-menu
  * Browser
@@ -194,4 +197,7 @@ Some features didn't make it in time. Here is my TODO list:
    - Creation wizard
  * Terminal
    - Fix terminal manager(still uses old API)
+   - Copy screen content to clipboard
+   - Mouse support
+   - Scrollback buffer?
  * Run dialog styling
