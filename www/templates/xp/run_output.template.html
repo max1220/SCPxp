@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="Command output">
 		<meta name="author" content="max1220">
-		<title>➔ Command output - ${command_str}</title>
+		<title>➔ Run Command - ${command_str}</title>
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
@@ -24,13 +24,15 @@
 		</style>
 	</head>
 	<body>
-		<pre>${command_output_html}</pre>
+		<div class="window-content">
+			<pre>${command_output_html}</pre>
+		</div>
 	</body>
 	<!--
 These values are read outside of the iframe
 to determine the prefered size of this window:
-{{{window_width=600}}}
-{{{window_height=400}}}
+{{{window_width=640}}}
+{{{window_height=480}}}
 {{{window_resizeable}}}
 -->
 </html>

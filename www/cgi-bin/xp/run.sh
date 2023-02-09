@@ -25,4 +25,4 @@ command_output_html="$(html_encode_stdin <<< "${command_output}")"
 
 # reply with rendered template
 echo -e "Content-type: text/html\n"
-template_eval www/templates/xp/cmd.template.html
+template_eval www/templates/xp/run_output.template.html
