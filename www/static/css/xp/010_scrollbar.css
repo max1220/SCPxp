@@ -34,16 +34,16 @@
 }
 
 ::-webkit-scrollbar-button:vertical:decrement {
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%235F6E96' stroke-width='1'>▲</text></svg>");
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%23B7C4E6' stroke-width='1'>▲</text></svg>");
 }
 ::-webkit-scrollbar-button:vertical:increment {
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%235F6E96' stroke-width='1'>▼</text></svg>");
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%23B7C4E6' stroke-width='1'>▼</text></svg>");
 }
 ::-webkit-scrollbar-button:horizontal:decrement {
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%235F6E96' stroke-width='1'>◄</text></svg>");
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%23B7C4E6' stroke-width='1'>◄</text></svg>");
 }
 ::-webkit-scrollbar-button:horizontal:increment {
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%235F6E96' stroke-width='1'>►</text></svg>");
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><text x='1' y='11' style='font-size: 75%' fill='%231E2D54' stroke='%23B7C4E6' stroke-width='1'>►</text></svg>");
 }
 ::-webkit-scrollbar-thumb {
 	background-color: #c8d6fb;

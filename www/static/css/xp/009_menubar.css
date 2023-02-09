@@ -75,7 +75,7 @@
 
 	.menu-sub {
 		position: absolute;
-		top: 21px;
+		top: calc(var(--menubar-row-height) - 2px);
 		left: 0;
 		width: 150px;
 		border: 1px solid #888;
