@@ -188,15 +188,12 @@ Some features didn't make it in time. Here is my TODO list:
    - Fix Startmenu sub-menus occuring at unconvenient location
    - Add boot screen with some animations and stuff
  * File manager
+   - Implement upload file
    - Implement view-menu
- * Browser
-   - support for hash-URL provided links
-   - Multiple tabs?
  * LXC
    - Connect in terminal
    - Creation wizard
  * Terminal
-   - Fix terminal manager(still uses old API)
    - Copy screen content to clipboard
    - Mouse support
    - Scrollback buffer?
