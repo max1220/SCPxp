@@ -11,7 +11,7 @@
 		<style>
 			:root {
 				--windows-content-padding: 1px;
-				--menubar-height: 44px;
+				--menubar-height: 88px;
 			}
 
 			.splitview {
@@ -170,6 +170,73 @@
 				display: inline-block;
 				width: 16px;
 			}
+
+			.toolbar-btn {
+				display: flex;
+				align-items: baseline;
+				position: relative;
+
+				text-decoration: none;
+				font-family: sans-serif;
+				cursor: pointer;
+				border: none;
+				outline: none;
+				padding: 0 10px;
+				margin: 0 10px;
+				background-color: transparent;
+				appearance: none;
+			}
+			.toolbar-icon {
+				position: absolute;
+				font-size: 32px;
+				top: -16px;
+				bottom: -16px;
+				left: 0;
+			}
+			.toolbar-icon-small {
+				position: absolute;
+				font-size: 20px;
+				top: -6px;
+				bottom: -6px;
+				left: 0;
+			}
+			.toolbar-text {
+				padding-left: 15px;
+			}
+			.toolbar-spacer {
+				border-right: 1px solid #888;
+				width: 1px;
+				height: 30px;
+			}
+			progress {
+				height: 20px;
+				appearance: none;
+				border-radius: 6px;
+				border: 1px solid #888;
+				width: 100%;
+			}
+			progress[value]::-webkit-progress-bar {
+				background-color: #fff;
+				border-radius: 6px;
+			}
+			progress[value]::-webkit-progress-value {
+				border-radius: 6px;
+				border-top-right-radius: 0;
+				border-bottom-right-radius: 0;
+				box-shadow: inset 0 0 5px 3px #fff;
+				background-image:
+					repeating-linear-gradient(
+						90deg,
+						#fff,
+						#2DC411,
+						#2DC411 7px,
+						#2DC411 7px,
+						#fff 10px
+					)
+				;
+			}
+
+
 		</style>
 	</head>
 	<body>
@@ -179,8 +246,48 @@
 					<div class="menu-category">File</div>
 					<div class="menu-sub hidden">
 						<a onclick="show_popup('open-window')" class="menu-item">Open directory...</a>
+						<a onclick="btn_new_file()" class="menu-item">New file</a>
+						<a onclick="btn_new_folder()" class="menu-item">New Folder</a>
+						<a onclick="btn_refresh()" class="menu-item">Refresh</a>
 						<div class="menu-spacer"></div>
 						<a href="about:blank" class="menu-item">Exit</a>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Edit</div>
+					<div class="menu-sub hidden">
+						<a onclick="btn_copy()" class="menu-item">Copy</a>
+						<a onclick="btn_cut()" class="menu-item">Cut</a>
+						<a onclick="btn_paste()" class="menu-item">Paste</a>
+						<div class="menu-spacer"></div>
+						<a onclick="btn_rename()" class="menu-item">Rename...</a>
+						<a onclick="btn_delete()" class="menu-item">Delete...</a>
+						<a onclick="show_dialog('setmode-window')" class="menu-item">Set mode...</a>
+						<div class="menu-spacer"></div>
+						<a onclick="btn_download_tar()" class="menu-item">Download as tar</a>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">View</div>
+					<div class="menu-sub hidden">
+						<a onclick="" class="menu-item">Clipboard</a>
+						<div class="menu-spacer"></div>
+						<a onclick="" class="menu-item">Select</a>
+						<a onclick="" class="menu-item">Mode</a>
+						<a onclick="" class="menu-item">User</a>
+						<a onclick="" class="menu-item">Group</a>
+						<a onclick="" class="menu-item">Size</a>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Sort</div>
+					<div class="menu-sub hidden">
+						<a onclick="btn_sort_alphabetically()" class="menu-item">Alphabetically</a>
+						<a onclick="btn_sort_modification()" class="menu-item">Modification</a>
+						<a onclick="btn_sort_creation()" class="menu-item">Creation</a>
+						<a onclick="btn_sort_size()" class="menu-item">Size</a>
+						<div class="menu-spacer"></div>
+						<a onclick="btn_sort_reverse()" class="menu-item">Reverse</a>
 					</div>
 				</div>
 				<div class="menu-container">
@@ -190,11 +297,37 @@
 					</div>
 				</div>
 			</div>
+			<div class="menu-row" style="height: 44px;">
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_back()">
+					<span class="toolbar-icon">🠸</span>
+					<span class="toolbar-text">Back</span>
+				</button>
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_forward()">
+					<span class="toolbar-icon">🠺</span>
+					<span class="toolbar-text">Forward</span>
+				</button>
+				<button id="menubar_up_button" class="toolbar-btn" onclick="btn_up()">
+					<span class="toolbar-icon">🠹</span>
+					<span class="toolbar-text">Up</span>
+				</button>
+				<div class="toolbar-spacer"></div>
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_copy()">
+					<span class="toolbar-icon-small">🗐</span>
+					<span class="toolbar-text">Copy</span>
+				</button>
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_cut()">
+					<span class="toolbar-icon-small">✄</span>
+					<span class="toolbar-text">Cut</span>
+				</button>
+				<button id="menubar_up_button" class="toolbar-btn" onclick="btn_paste()">
+					<span class="toolbar-icon-small">📋</span>
+					<span class="toolbar-text">Paste</span>
+				</button>
+			</div>
 			<div class="menu-row">
 				<label for="file_path_text_input">Address</label>
-				<input type="text" id="menubar_file_path" name="menubar_file_path" style="width: 100%;">
-				<button id="menubar_go_button" class="btn">Go</button>
-				<button id="menubar_up_button" class="btn">Up</button>
+				<input type="text" id="menubar_file_path" name="menubar_file_path" style="width: 100%;" onkeyup="menubar_file_path_keyup()">
+				<button id="menubar_go_button" class="btn" onclick="btn_menubar_go()">Go</button>
 			</div>
 		</div>
 
@@ -262,8 +395,8 @@
 					<div class="window-content">
 						<p>Please enter the path of the file to open:</p>
 						<div class="field-row">
-							<label for="file_path">File&nbsp;path:</label>
-							<input type="text" name="file_path" style="width: 100%;">
+							<label for="open_file_path">File&nbsp;path:</label>
+							<input type="text" id="open_file_path" name="open_file_path" style="width: 100%;">
 						</div>
 						<br>
 						<br>
@@ -271,6 +404,29 @@
 							<span></span>
 							<button class="btn" onclick="btn_open_go()">Go</button>
 						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="progress-window" class="window hidden">
+				<div class="title-bar">
+					<div class="title-bar-text" id="progress_title">Progress</div>
+				</div>
+				<div class="window-body">
+					<div class="window-content">
+						<p id="progress_text"></p>
+						<p>Please wait for the completion of your action:</p>
+						<div class="field-row">
+							<span>Last copied file:</span>
+							<span class="overflow-ellipsis" style="max-width: 100px;" id="progress_last_file"></span>
+						</div>
+						<div class="field-row">
+							<span>Progress:</span>
+							<span class="overflow-ellipsis" style="max-width: 100px;" id="progress_text_status"></span>
+						</div>
+						<br>
+						<br>
+						<progress id="progress_bar" max="100" value="0"></progress>
 					</div>
 				</div>
 			</div>
