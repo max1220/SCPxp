@@ -1,4 +1,5 @@
 // fix the link target problem by overriding the onclick behaviour of <a> elements with a target= attribute set.
+let orig_open = open
 function fixed_open(url, target, specs, replace) {
 	let iframe_elem
 	if (target) {
@@ -9,7 +10,7 @@ function fixed_open(url, target, specs, replace) {
 		iframe_elem.src = url
 		return
 	} else {
-		return open(url, target, specs, replace)
+		return orig_open(url, target, specs, replace)
 	}
 }
 
