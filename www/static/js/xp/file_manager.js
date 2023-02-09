@@ -113,7 +113,7 @@ function api_make_dir(target_dir_path, cb) {
 function api_make_file(target_file_path, cb) {
 	let req_body =
 		"file_path=" + encodeURIComponent(target_file_path) +
-		"append=true&data="
+		"&append=true&data="
 	make_xhr(
 		"/cgi-bin/file/write_file.sh",
 		"POST",
