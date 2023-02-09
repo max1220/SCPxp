@@ -18,10 +18,10 @@ parse_query_parms_arr true
 file_path="${query_parms_arr[file_path]:-}"
 [ "${file_path}" = "" ] && exit_with_status_message "400" "Bad request"
 
-# check that $file_path is a file
-[ -f "${file_path}" ] || exit_with_status_message "400" "Bad request"
+# check that $file_path exists
+[ -f "${file_path}" -o -d "${file_path}" ] || exit_with_status_message "400" "Bad request"
 
-rm -f -- "${file_path}"
+rm -rf -- "${file_path}"
 
 # respond with success
 cat << EOF
