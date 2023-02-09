@@ -15,7 +15,6 @@ parse_query_parms_list "$(</dev/stdin)"
 parse_query_parms_arr true
 
 # get the command to run
-command_args_list="${query_parms_list[@]:2}"
 command_args=()
 for ((i=0; i<"${#query_parms_list[@]}"; i=i+2)); do
 	[ "${query_parms_list[i]}" = "arg" ] || exit_with_status_message "400" "Bad request"
