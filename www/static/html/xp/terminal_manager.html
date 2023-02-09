@@ -9,44 +9,63 @@
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
-			#sessions_list {
+			.container {
 				border-radius: 3px;
 				background-color: #fff;
 				border: 1px solid #999;
-				margin: 1em;
-				max-height: 300px:
+				padding: 8px 8px;
 			}
-			#sessions_list tbody tr {
+
+			.sessions_list tbody tr {
 				height: 20px;
 			}
-			#sessions_list tbody tr td:first-child {
+			.sessions_list tbody tr td:first-child {
 				border-top: 1px solid #999;
 			}
-			#sessions_list tbody tr td a {
+			.sessions_list tbody tr td a {
 				text-decoration: none;
 			}
 		</style>
 	</head>
 	<body>
-		<div style="margin: 1em;">
-			<p>Below is a list of currently running terminal sessions.</p>
-			<p>Click on the links to view the terminal, or click Stop to terminate the session.</p>
-			<p><a class="btn" href="/static/html/xp/terminal.html#new-session" target="make_new_win" onclick="update_table_delay();">New terminal</a></p>
+		<div class="window-content">
+			<p>
+				The terminal emulator allows you to run shell commands,<br>
+				and display the resulting terminal output.
+			</p>
+			<p><code>tmux</code> is used for session management and escape sequence parsing.</p>
+
+			<div class="container">
+				<h3>New Terminal</h3>
+				<p>Please enter the command to run in the terminal:</p>
+				<div class="field-row">
+					<label for="command">Command</label>
+					<input type="text" name="command" id="command" value="bash">
+				</div>
+				<br>
+				<div class="field-row">
+					<span></span>
+					<a style="float: right;" class="btn" href="/static/html/xp/terminal.html#new-session" target="make_new_win" onclick="update_table_delay();">Create</a>
+				</div>
+			</div>
+
+			<br>
+
+			<div class="container">
+				<h3>Running sessions</h3>
+				<p>Click the session name to open the terminal session.</p>
+				<p>The kill button will stop a session and all it's child windows.</p>
+				<table id="sessions_list" class="sessions_list">
+					<thead>
+						<tr>
+							<th style="width: 100%; text-align: left;">Session name</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="session_list_content"></tbody>
+				</table>
+			</div>
 		</div>
-		<table id="sessions_list">
-			<thead>
-				<tr>
-					<th style="width: 100%; text-align: left;">Session name</th>
-					<th><button class="btn" onclick="update_table()">Refresh</button></th>
-				</tr>
-			</thead>
-			<tbody id="session_list_content">
-				<!--tr>
-					<td>test-session</td>
-					<td><button class="btn">x</button></td>
-				</tr-->
-			</tbody>
-		</table>
 
 		<script src="/static/js/fix_link_targets_iframe.js"></script>
 		<script src="/static/js/make_xhr.js"></script>
@@ -55,8 +74,8 @@
 	<!--
 These values are read outside of the iframe
 to determine the prefered size of this window:
-{{{window_width=500}}}
-{{{window_height=300}}}
+{{{window_width=350}}}
+{{{window_height=500}}}
 {{{window_resizeable}}}
 -->
 </html>

@@ -8,43 +8,37 @@
 		<title>➔ Run dialog</title>
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
-		<style>
-			#cmd-form section {
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				padding: 3px 0px;
-			}
-		</style>
 	</head>
-	<body style="user-select: none;">
-		<p>Type a Linux command to be run:</p>
-
-		<form id="cmd-form" method="POST" action="/cgi-bin/xp/cmd.sh">
-			<section>
-				<label for="command_str">Command:</label>
-				<input name="command_str" id="command_str" type="text"/>
-			</section>
-			<section>
-				<label for="timeout">Timeout:</label>
-				<select name="timeout" id="timeout">
-					<option>1</option>
-					<option selected>5</option>
-					<option>15</option>
-					<option>30</option>
-				</select>
-			</section>
-
-			<section style="justify-content: flex-end; padding-top: 15px;">
-				<button class="btn" style="padding-right: 10px;">OK</button>
-				<button class="btn" onclick="location.href='about:blank#close'; event.preventDefault()">Cancel</button>
-			</section>
-		</form>
+	<body>
+		<div class="window-content">
+			<p>Type a Linux command to be run:</p>
+			<form method="POST" action="/cgi-bin/xp/run.sh">
+				<div class="field-row">
+					<label for="command_str">Command:</label>
+					<input name="command_str" id="command_str" type="text"/>
+				</div>
+				<div class="field-row">
+					<label for="timeout">Timeout:</label>
+					<select name="timeout" id="timeout">
+						<option>1</option>
+						<option selected>5</option>
+						<option>15</option>
+						<option>30</option>
+					</select>
+				</div>
+				<br>
+				<br>
+				<div style="float: right">
+					<button class="btn" style="padding-right: 10px;">OK</button>
+					<button class="btn" onclick="location.href='about:blank#close'; event.preventDefault()">Cancel</button>
+				</div>
+			</form>
+		</div>
 	</body>
 <!--
 These values are read outside of the iframe
 to determine the prefered size of this window:
 {{{window_width=300}}}
-{{{window_height=180}}}
+{{{window_height=165}}}
 -->
 </html>

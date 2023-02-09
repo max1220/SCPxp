@@ -9,110 +9,141 @@
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
-			html, body {
-				padding: 0 0;
-				margin: 0 0;
-				box-sizing: border-box;
-				user-select: none;
+			:root {
+				--windows-content-padding: 0px;
+				--menubar-height: 29px;
 			}
-			html {
-				height: 100%;
-			}
-			body {
-				min-height: 100%;
-			}
-
-			menu {
-				display: flex;
-				position: relative;
-				margin: 0 0;
-				padding: 0 0;
-			}
-			menuitem {
-				padding: 0.3em;
-			}
-
 			iframe {
 				box-sizing: border-box;
 				background-color: #fff;
 				width: 100%;
 				height: 100%;
 			}
-			.outer {
-				padding: 0 0;
-				margin: 0 0;
+			.urlbar {
 				width: 100%;
-				height: 100%;
-				position: absolute;
+				margin: 0 5px;
 			}
-			.inner-menu {
-				height: 30px;
 
+			.toolbar-btn {
+				display: flex;
+				align-items: baseline;
+				position: relative;
+
+				text-decoration: none;
+				font-family: sans-serif;
+				cursor: pointer;
+				border: none;
+				outline: none;
+				padding: 0 10px;
+				margin: 0 10px;
+				background-color: transparent;
+				appearance: none;
 			}
-			.inner-full {
-				height: calc(100% - 50px);
+			.toolbar-icon {
+				position: absolute;
+				font-size: 32px;
+				top: -16px;
+				bottom: -16px;
+				left: 0;
+			}
+			.toolbar-icon-small {
+				position: absolute;
+				font-size: 20px;
+				top: -6px;
+				bottom: -6px;
+				left: 0;
+			}
+			.toolbar-text {
+				padding-left: 15px;
+			}
+			.toolbar-spacer {
+				border-right: 1px solid #888;
+				width: 1px;
+				height: 30px;
 			}
 		</style>
 	</head>
 	<body>
-		<div class="outer">
-			<div class="inner">
-				<menu>
-					<menuitem>
-						<button id="back">Back</button>
-					</menuitem>
-					<menuitem>
-						<button id="forward">Forward</button>
-					</menuitem>
-					<menuitem>
-						<button id="home">Home</button>
-					</menuitem>
-					<menuitem style="width: 100%;">
-						<input type="text" id="urlbar" style="width: 100%">
-					</menuitem>
-					<menuitem>
-						<button id="go">Go</button>
-					</menuitem>
-				</menu>
+		<div class="menu-bar">
+			<div class="menu-row" style="height: 44px;">
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_back()">
+					<span class="toolbar-icon">🠸</span>
+					<span class="toolbar-text">Back</span>
+				</button>
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_forward()">
+					<span class="toolbar-icon">🠺</span>
+					<span class="toolbar-text">&nbsp;</span>
+				</button>
+				<div class="toolbar-spacer"></div>
+				<input type="text" id="urlbar" class="urlbar" onkeyup="onkeyup_urlbar()" style="width: 100%">
+				<div class="toolbar-spacer"></div>
+				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_go()">
+					<span class="toolbar-icon-small">🌐</span>
+					<span class="toolbar-text">Go</span>
+				</button>
 			</div>
-			<div class="inner-full">
+		</div>
+
+		<div class="window-content">
 				<iframe id="browser-content"></iframe>
-			</div>
-			<div class="status-bar">
+			<div id="status-bar">
 				<p class="status-bar-field" id="urlstatus"></p>
 			</div>
 		</div>
+
+		<div class="status-bar">
+			<span class="status-bar-field" id="status_left"></span>
+			<span class="status-bar-field" id="status_middle"></span>
+			<span class="status-bar-field" id="status_right"></span>
+		</div>
+
 		<script>
 			let iframe_elem = document.getElementById("browser-content")
 			let urlbar_elem = document.getElementById("urlbar")
-			let urlstatus_elem = document.getElementById("urlstatus")
-			let back_elem = document.getElementById("back")
-			let forward_elem = document.getElementById("forward")
-			let home_elem = document.getElementById("home")
-			let go_elem = document.getElementById("go")
+
+			function btn_back() {
+				iframe_elem.contentWindow.history.back()
+			}
+			function btn_forward() {
+				iframe_elem.contentWindow.history.forward()
+			}
+			function btn_home() {
+				home_elem.onclick = function() {
+					iframe_elem.src = "about:blank"
+				}
+			}
+			function btn_go() {
+				let url_text = urlbar_elem.value
+				if (url_text.startsWith("http://") || url_text.startsWith("https://")) {
+					iframe_elem.src = urlbar_elem.value
+				} else {
+					iframe_elem.src = "http://" + urlbar_elem.value
+				}
+			}
+			function onkeyup_urlbar() {
+				if (event.key == "Enter" || event.keyCode == 13) {
+					btn_go()
+				}
+			}
+
+			iframe_elem.onreadystatechange = function(e) {
+				console.log("readystatechange", e)
+				status_elem.innerHTML = "readystatechange: " + document.readyState
+			}
 
 			iframe_elem.onload = function() {
 				let current_url = iframe_elem.contentWindow.location.href
-				urlstatus_elem.innerHTML = "Loaded: " + current_url
+				let status_left_elem = document.getElementById("status_left")
+				status_left_elem.innerText = "Loaded: " + current_url
+				urlbar_elem.value = current_url
 			}
 
-			go_elem.onclick = function() {
-				iframe_elem.src = urlbar.value
+			let hash_loc = location.hash.substr(1)
+			if (hash_loc=="") {
+				iframe_elem.src = location.origin;
+			} else {
+				iframe_elem.src = decodeURIComponent(hash_loc);
 			}
-
-			back_elem.onclick = function() {
-				iframe_elem.contentWindow.history.back()
-			}
-
-			forward_elem.onclick = function() {
-				iframe_elem.contentWindow.history.forward()
-			}
-
-			home_elem.onclick = function() {
-				iframe_elem.src = "about:blank"
-			}
-
-
 		</script>
 	</body>
 <!--

@@ -17,32 +17,28 @@
 				margin: 0 0;
 				width: 100%;
 				height: 100%;
-				box-sizing: border-box;
-				overflow: auto;
 				display: flex;
 				justify-content: center;
 				align-items: center;
 			}
-			#screen {
-				padding: 1em;
-			}
 			#screen-text {
 				white-space: pre;
-				font-family: monospace;
+				font: 14px monospace;
 				line-height: 17px;
-				text-transform: full-width;
 			}
 			#screen-gfx {
 				display: none;
+				width: 640px;
 			}
 		</style>
 	</head>
 	<body>
-
-		<div id="screen-container">
-			<div id="screen">
-				<div id="screen-text"></div>
-				<canvas id="screen-gfx"></canvas>
+		<div class="window-content">
+			<div id="screen-container">
+				<div id="screen">
+					<div id="screen-text"></div>
+					<canvas id="screen-gfx"></canvas>
+				</div>
 			</div>
 		</div>
 
@@ -74,8 +70,8 @@
 <!--
 These values are read outside of the iframe
 to determine the prefered size of this window:
-{{{window_width=640}}}
-{{{window_height=500}}}
+{{{window_width=680}}}
+{{{window_height=450}}}
 {{{window_resizeable}}}
 -->
 </html>

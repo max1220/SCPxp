@@ -17,14 +17,14 @@
 				L1T
 			</a>
 
-			<a class="desktop-link" href="/static/html/xp/terminal.html" target="make_new_win">
-				<span class="desktop-icon">🖵</span>
-				Terminal
+			<a class="desktop-link" onclick="fixed_open('/static/html/xp/file_manager.html#'+encodeURIComponent(server_env['HOME']), 'make_new_win'); event.preventDefault()">
+				<span class="desktop-icon">🗀</span>
+				Home
 			</a>
 
-			<a class="desktop-link" href="/static/html/xp/file_manager.html" target="make_new_win">
-				<span class="desktop-icon">🗀</span>
-				File manager
+			<a class="desktop-link" href="/static/html/xp/terminal_manager.html" target="make_new_win">
+				<span class="desktop-icon">🖵</span>
+				Terminal
 			</a>
 		</div>
 
@@ -56,10 +56,9 @@
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/FreeDOS.html"><span class="start-menu-icon">🖵</span>FreeDOS prompt</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/l1t.html"><span class="start-menu-icon">L1</span>L1T</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/lxc_manager.html"><span class="start-menu-icon">🖹</span>LXC Manager</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/terminal.html"><span class="start-menu-icon">🖵</span>Terminal</a>
-			<!--a class="start-menu-item" target="make_new_win" href="/static/html/xp/terminal_manager.html"><span class="start-menu-icon">🖵</span>Terminal Manager</a-->
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/text_editor.sh"><span class="start-menu-icon">🖹</span>Text editor</a>
 			<a class="start-menu-item" target="make_new_win" href="/cgi-bin/xp/info.sh"><span class="start-menu-icon">ℹ</span>System Info</a>
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/terminal_manager.html"><span class="start-menu-icon">🖵</span>Terminal</a>
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/text_editor.sh"><span class="start-menu-icon">🖹</span>Text editor</a>
 			<div class="start-menu-spacer"></div>
 			<a class="start-menu-item" onclick="show_settings_window()"><span class="start-menu-icon">⚙</span>Settings...</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/run.html"><span class="start-menu-icon">➔</span>Run...</a>
@@ -68,6 +67,7 @@
 		</div>
 
 		<!-- Load the window manager and stuff last -->
+		<script src="/static/js/fix_open_target.js"></script>
 		<script src="/static/js/fix_link_targets_iframe.js"></script>
 		<script src="/static/js/make_xhr.js"></script>
 		<script src="/static/js/xp/desktop.js"></script>
