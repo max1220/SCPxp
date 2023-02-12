@@ -122,6 +122,7 @@ function btn_toggle_preview() {
 		text_content_elem.style.width = "100%"
 		text_content_elem.style.resize = "none"
 	}
+	update_preview()
 }
 function btn_toggle_wrap() {
 	text_content_elem.classList.toggle("nowrap")
