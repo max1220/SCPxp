@@ -1,23 +1,49 @@
 #!/bin/bash
 set -euo pipefail
-cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")"/..
+cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")"/../..
 
 . utils/cgi.sh
 
-# only POST allowed
-[ "${REQUEST_METHOD}" = "POST" ] || exit_with_status_message "405" "Method not allowed"
-
-# get the $query_parms_arr array from POST body
-parse_query_parms_list "$(</dev/stdin)"
-# parse into array and URL-decode
+# Run an arbitrary command(allows custom headers and content-type, all methods)
+parse_query_parms_list "${QUERY_STRING}"
 parse_query_parms_arr true
 
-# get the command_str argument
+# check if command_str was provided
 command_str="${query_parms_arr[command_str]:-}"
 [ "${command_str}" = "" ] && exit_with_status_message "400" "Bad request"
 
+# get the command to run and the HTTP headers to include
+command_args=()
+headers=()
+env_key=""
+# TODO: Add envirioment variables?
+for ((i=0; i<"${#query_parms_list[@]}"; i=i+2)); do
+	if [ "${query_parms_list[i]}" = "arg" ]; then
+		command_arg="$(url_decode "${query_parms_list[i+1]:-}")"
+		command_args+=("${command_arg}")
+	elif [ "${query_parms_list[i]}" = "header" ]; then
+		header="$(url_decode "${query_parms_list[i+1]:-}")"
+		headers+=("${header}")
+	elif [ "${query_parms_list[i]}" = "env_key" ]; then
+		env_key="$(url_decode "${query_parms_list[i+1]:-}")"
+	elif [ "${query_parms_list[i]}" = "env_value" ]; then
+		env_value="$(url_decode "${query_parms_list[i+1]:-}")"
+		export "${env_key}=${env_value}"
+	fi
+done
+
 # this script simply runs a command, and returns the output as-is.
-echo "Content-Type: text/plain"
+# output the content-type
+content_type="${query_parms_arr[content_type]:-text/plain}"
+echo "Content-Type: ${content_type}"
+
+# output other headers
+for ((i=0; i<"${#headers[@]}"; i++)); do
+	echo "${headers[i]}"
+done
+
+# begin body
 echo
 
-$command_str
+# run the command
+"${command_str}" "${command_args[@]}"
