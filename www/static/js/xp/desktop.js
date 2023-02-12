@@ -49,7 +49,12 @@ document.body.onmousedown = function(mousedown_ev) {
 
 	// check if mouse hit a window titlebar
 	for (let window_obj of windows_list) {
-		if ((mousedown_ev.target == window_obj.titlebar) || (mousedown_ev.target == window_obj.titlebar_text)) {
+		let should_drag_window =
+			(
+				(mousedown_ev.target == window_obj.titlebar) ||
+				(mousedown_ev.target == window_obj.titlebar_text)
+			) && (!window_obj.maximized)
+		if (should_drag_window) {
 			console.log("titlebar mouse down", window_obj)
 			drag_window = window_obj
 			focus_window(window_obj)
@@ -103,6 +108,7 @@ function make_window(title, resizeable, width, height) {
 	let titlebar_controls_elem = document.createElement("div")
 	let titlebar_controls_minimize_elem = document.createElement("button")
 	let titlebar_controls_maximize_elem = document.createElement("button")
+	let titlebar_controls_restore_elem = document.createElement("button")
 	let titlebar_controls_close_elem = document.createElement("button")
 	let taskbar_button_elem = document.createElement("button")
 
@@ -125,6 +131,7 @@ function make_window(title, resizeable, width, height) {
 		titlebar_text: titlebar_text_elem,
 		minimize: titlebar_controls_minimize_elem,
 		maximize: titlebar_controls_maximize_elem,
+		restore: titlebar_controls_restore_elem,
 		close: titlebar_controls_close_elem
 
 	}
@@ -149,9 +156,11 @@ function make_window(title, resizeable, width, height) {
 	titlebar_controls_elem.classList += " title-bar-controls"
 	titlebar_controls_elem.appendChild(titlebar_controls_minimize_elem)
 	titlebar_controls_elem.appendChild(titlebar_controls_maximize_elem)
+	titlebar_controls_elem.appendChild(titlebar_controls_restore_elem)
 	titlebar_controls_elem.appendChild(titlebar_controls_close_elem)
 	titlebar_controls_minimize_elem.setAttribute("aria-label", "Minimize")
 	titlebar_controls_maximize_elem.setAttribute("aria-label", "Maximize")
+	titlebar_controls_restore_elem.setAttribute("aria-label", "Restore")
 	titlebar_controls_close_elem.setAttribute("aria-label", "Close")
 
 	// The minimize/"_" button in the top-right corner was pressed
@@ -161,7 +170,14 @@ function make_window(title, resizeable, width, height) {
 
 	// The maximize button in the top-right corner was pressed
 	titlebar_controls_maximize_elem.onclick = function() {
+		console.log("maximize clicked")
+		maximize_window(window_obj)
+	}
 
+	// The restore button in the top-right corner was pressed
+	titlebar_controls_restore_elem.onclick = function() {
+		console.log("restore clicked")
+		restore_window(window_obj)
 	}
 
 	// The close/"X" button in the top-right corner was pressed
@@ -172,7 +188,6 @@ function make_window(title, resizeable, width, height) {
 	// the taskbar window button was pressed(overridden on minimize/unminimize)
 	window_obj.taskbar_button.onclick = function(e) {
 		minimize_window(window_obj)
-		e.preventDefault()
 	}
 
 	return window_obj
@@ -294,12 +309,25 @@ function update_window(window_obj) {
 	window_obj.window.style.left = window_obj.x+"px"
 	window_obj.window.style.top = window_obj.y+"px"
 
+	// update resizeable status of window
 	if (window_obj.resizeable) {
-		window_obj.window.classList.add("window-resizeable")
-		window_obj.maximize.classList.remove("hidden")
+		// hide/show the appropriate maximize/restore button
+		if (window_obj.maximized) {
+			window_obj.window.classList.remove("window-resizeable")
+			window_obj.window.classList.add("window-maximized")
+			window_obj.maximize.classList.add("hidden")
+			window_obj.restore.classList.remove("hidden")
+		} else {
+			window_obj.window.classList.add("window-resizeable")
+			window_obj.window.classList.remove("window-maximized")
+			window_obj.maximize.classList.remove("hidden")
+			window_obj.restore.classList.add("hidden")
+		}
 	} else {
+		// no maximize/restore button for fixed-size windows
 		window_obj.window.classList.remove("window-resizeable")
 		window_obj.maximize.classList.add("hidden")
+		window_obj.restore.classList.add("hidden")
 	}
 
 	window_obj.titlebar_text.innerHTML = window_obj.title
@@ -353,6 +381,30 @@ function minimize_window(window_obj) {
 	}
 }
 
+/* Maximize/restore a window */
+function maximize_window(window_obj) {
+	let maximized_width = window.innerWidth - 2
+	let maximized_height = window.innerHeight - 58
+	if (window_obj.restore_dimensions) { return; }
+	window_obj.restore_dimensions = [window_obj.x, window_obj.y, window_obj.width, window_obj.height]
+	window_obj.x = 0
+	window_obj.y = 0
+	window_obj.width = maximized_width
+	window_obj.height = maximized_height
+	window_obj.maximized = true
+	update_window(window_obj)
+}
+function restore_window(window_obj) {
+	if (!window_obj.restore_dimensions) { return; }
+	window_obj.x = window_obj.restore_dimensions[0]
+	window_obj.y = window_obj.restore_dimensions[1]
+	window_obj.width = window_obj.restore_dimensions[2]
+	window_obj.height = window_obj.restore_dimensions[3]
+	window_obj.maximized = false
+	window_obj.restore_dimensions = undefined
+	update_window(window_obj)
+}
+
 /* Focus a window */
 function focus_window(window_obj) {
 	for (let win_obj of windows_list) {
@@ -365,7 +417,6 @@ function focus_window(window_obj) {
 	for (let i=0; i<windows_list.length; i++) {
 		let win_obj = windows_list[i]
 		win_obj.window.style.zIndex = 1000 + (windows_list.length-i) * 100
-		console.log("new zindex:", 1000 + (i) * 100, win_obj.titlebar_text.innerHTML)
 	}
 	window_obj.window.classList.remove("window-unfocused")
 }
@@ -383,6 +434,7 @@ function parse_env() {
 		})
 	})
 }
+
 
 
 // create the initial hidden iframe window that acts as a link target
