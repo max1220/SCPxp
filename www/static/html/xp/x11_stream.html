@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>🖻 X11 stream</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<style>
+			:root {
+				--windows-content-padding: 0px;
+			}
+			body {
+				background-color: #000;
+			}
+			.menu {
+				border-bottom-left-radius: 3px;
+				border-bottom-right-radius: 3px;
+				background-color: #fff;
+				border: 1px solid #888;
+				border-top: none;
+				padding: 5px;
+				max-width: 300px;
+				margin: 0 auto;
+			}
+			.field-row input {
+				width: 70px;
+			}
+			.field-row input[type=checkbox] {
+				width: auto;
+			}
+		</style>
+	</head>
+	<body onload="onload('screen_img', 'width', 'height', 'menu')">
+		<div class="window-content">
+			<img id="screen_img" class="hidden"></img>
+			<video id="screen_video" class="hidden" autoplay></video>
+			<div id="menu" class="menu">
+				<h3>X11 stream</h3>
+				<p>
+					You can stream the content of an X11 screen.<br>
+					This uses ffmpegs mpjpeg output to encode the video.
+				</p>
+				<div class="field-row">
+					<label for="display">Display:</label>
+					<input type="text" name="display" data-update onchange="change_display(this)" value=":0">
+				</div>
+				<div class="field-row">
+					<label for="width">Capture width:</label>
+					<input type="number" name="width" id="width" data-update onchange="change_width(this)" value="640" min="320" max="1920">
+				</div>
+				<div class="field-row">
+					<label for="height">Capture height:</label>
+					<input type="number" name="height" id="height" data-update onchange="change_height(this)" value="480" min="240" max="1080">
+				</div>
+				<div class="field-row">
+					<label for="offset_x">Capture offset x:</label>
+					<input type="number" name="offset_x" data-update onchange="change_offset_x(this)" value="0" min="0" max="99999">
+				</div>
+				<div class="field-row">
+					<label for="offset_y">Capture offset y:</label>
+					<input type="number" name="height" data-update onchange="change_offset_y(this)" value="0" min="0" max="99999">
+				</div>
+				<div class="field-row">
+					<label for="framerate">Framerate:</label>
+					<input type="number" name="framerate" data-update onchange="change_framerate(this)" value="15" min="1" max="30">
+				</div>
+				<div class="field-row">
+					<label for="quality">Quality:</label>
+					<input type="number" name="quality" data-update onchange="change_quality(this)" value="5" min="1" max="30">
+				</div>
+				<div class="field-row">
+					<label for="enable_low_delay">Low delay:</label>
+					<input type="checkbox" name="enable_low_delay" data-update onchange="change_enable_low_delay(this)">
+				</div>
+				<div class="field-row">
+					<label for="enable_keyboard">Enable keyboard:</label>
+					<input type="checkbox" name="enable_keyboard" checked data-update onchange="change_enable_keyboard(this)">
+				</div>
+				<div class="field-row">
+					<label for="enable_mouse">Enable mouse:</label>
+					<input type="checkbox" name="enable_mouse" checked data-update onchange="change_enable_mouse(this)">
+				</div>
+				<div class="field-row">
+					<label for="capture_mouse">Capture mouse:</label>
+					<input type="checkbox" name="capture_mouse" data-update onchange="change_enable_capture_mouse(this)">
+				</div>
+				<div class="field-row">
+					<label for="auto_connect">Auto-connect:</label>
+					<input type="checkbox" name="auto_connect" data-update onchange="change_enable_auto_connect(this)">
+				</div>
+				<div class="field-row">
+					<label for="auto_resize_view">Auto-resize view:</label>
+					<input type="checkbox" name="auto_resize_view" checked data-update onchange="change_enable_auto_resize_view(this)">
+				</div>
+				<div class="field-row">
+					<label for="auto_resize">Auto-resize server:</label>
+					<input type="checkbox" name="auto_resize_server" checked data-update onchange="change_enable_auto_resize_server(this)">
+				</div>
+				<div class="field-row">
+					<span></span>
+					<button class="btn" onclick="btn_connect()">Connect</button>
+				</div>
+				<div class="field-row">
+					<label for="server_command">Server command:</label>
+					<input type="text" name="server_command" id="server_command" data-update onchange="change_server_command(this)" value="xterm">
+				</div>
+				<div class="field-row">
+					<label for="server_create_w">Server width:</label>
+					<input type="number" name="server_create_w" id="server_create_w" data-update onchange="change_server_create_w(this)" value="1920" min="320" max="1920">
+				</div>
+				<div class="field-row">
+					<label for="server_create_h">Server height:</label>
+					<input type="number" name="server_create_h" id="server_create_h" data-update onchange="change_server_create_h(this)" value="1080" min="240" max="1080">
+				</div>
+				<div class="field-row">
+					<label for="enable_auto_create">Auto create:</label>
+					<input type="checkbox" name="enable_auto_create" id="enable_auto_create" data-update onchange="change_enable_auto_create(this)">
+				</div>
+				<div class="field-row">
+					<span></span>
+					<button class="btn" onclick="btn_create()">Create</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="/static/js/make_xhr.js"></script>
+		<script src="/static/js/server_command.js"></script>
+		<script src="/static/js/cvt.js"></script>
+		<script src="/static/js/xp/x11_stream.js"></script>
+	</body>
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=800}}}
+{{{window_height=600}}}
+{{{window_resizeable}}}
+-->
+</html>
+
+
+
+
+
