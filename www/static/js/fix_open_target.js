@@ -6,7 +6,6 @@ function fixed_open(url, target, specs, replace) {
 		iframe_elem = document.getElementsByName(target)[0] || parent.document.getElementsByName(target)[0]
 	}
 	if (iframe_elem) {
-		console.log("fixed_open", url)
 		iframe_elem.src = url
 		return
 	} else {
