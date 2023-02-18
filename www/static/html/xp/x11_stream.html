@@ -44,6 +44,10 @@
 					This uses ffmpegs mpjpeg output to encode the video.
 				</p>
 				<div class="field-row">
+					<label for="session_id">Session ID:</label>
+					<input type="text" name="session_id" data-update onchange="change_session_id(this)" value=":0">
+				</div>
+				<div class="field-row">
 					<label for="display">Display:</label>
 					<input type="text" name="display" data-update onchange="change_display(this)" value=":0">
 				</div>
@@ -65,7 +69,7 @@
 				</div>
 				<div class="field-row">
 					<label for="framerate">Framerate:</label>
-					<input type="number" name="framerate" data-update onchange="change_framerate(this)" value="15" min="1" max="30">
+					<input type="number" name="framerate" data-update onchange="change_framerate(this)" value="15" min="1" max="60">
 				</div>
 				<div class="field-row">
 					<label for="quality">Quality:</label>
@@ -115,6 +119,12 @@
 					<label for="server_create_h">Server height:</label>
 					<input type="number" name="server_create_h" id="server_create_h" data-update onchange="change_server_create_h(this)" value="1080" min="240" max="1080">
 				</div>
+
+				<div class="field-row">
+					<label for="eenable_server_create_wm">Use Window manager:</label>
+					<input type="checkbox" name="enable_server_create_wm" id="enable_server_create_wm" data-update onchange="change_enable_server_create_wm(this)" checked>
+				</div>
+
 				<div class="field-row">
 					<label for="enable_auto_create">Auto create:</label>
 					<input type="checkbox" name="enable_auto_create" id="enable_auto_create" data-update onchange="change_enable_auto_create(this)">
@@ -126,9 +136,13 @@
 			</div>
 		</div>
 
+		<script src="/static/js/fix_radio_onchange.js"></script>
+		<script>add_onchange_radio_dispatch_others()</script>
 		<script src="/static/js/make_xhr.js"></script>
-		<script src="/static/js/server_command.js"></script>
+		<script src="/static/js/CgiCommands.js"></script>
+		<script src="/static/js/AppState.js"></script>
 		<script src="/static/js/cvt.js"></script>
+		<script src="/static/js/X11Streamer.js"></script>
 		<script src="/static/js/xp/x11_stream.js"></script>
 	</body>
 <!--

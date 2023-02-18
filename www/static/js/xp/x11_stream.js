@@ -1,397 +1,107 @@
 /* --- SETTINGS --- */
 
+// create a new wrapper to call CGI commands
+let cgi_commands = new CgiCommands("/cgi-bin/cgi_command.sh")
+
+// create an application state object
+let state = new AppState({})
+
+// create a X11 streamer object
+let x11_streamer = new X11Streamer(state.data, cgi_commands)
+
+// add a key that is serialized and kept between reloads
+function add_serialize(key, type) {
+	state.add_key_parameters(key, type, true, true)
+}
+// add a key that is only kept while the page lives
+function add_internal(key, type) {
+	state.add_key_parameters(key, type, true, false)
+}
+
+// The session ID
+add_serialize("session_id", "text")
+
 // X11 display grabbing settings
-let display = undefined
-let display_framerate = undefined
-let display_w = undefined
-let display_h = undefined
-let display_x = undefined
-let display_y = undefined
+add_serialize("display", "text")
+add_serialize("view_width", "integer")
+add_serialize("view_height", "integer")
+add_serialize("view_x_offset", "integer")
+add_serialize("view_y_offset", "integer")
+add_serialize("encode_framerate", "integer")
+add_serialize("encode_quality", "integer")
+add_serialize("encode_low_delay", "boolean")
+add_serialize("xauthority", "text")
 
-// the value of the $XAUTHORITY environment variable to use
-let xauthority = undefined
+// input settings
+add_serialize("enable_keyboard_input", "boolean")
+add_serialize("enable_mouse_input", "boolean")
+add_serialize("enable_mouse_capture", "boolean")
 
-// Encoding settings
-let encode_quality = undefined
-let encode_low_delay = undefined
+// auto resize
+add_serialize("enable_auto_resize_view", "boolean")
+add_serialize("enable_auto_resize_server", "boolean")
 
-// Input Settings
-let enable_keyboard_input = undefined
-let enable_mouse_input = undefined
-let enable_mouse_capture = undefined
+// auto-connect/auto-create from URL
+add_serialize("enable_auto_connect", "boolean")
+add_serialize("enable_auto_create", "boolean")
 
-// Auto resize visible portion of the display?
-let enable_auto_resize_view = undefined
-
-// Auto resize the X11 server?
-let enable_auto_resize_server = undefined
-
-// Auto connect from URL?
-let enable_auto_connect = undefined
-
-// command to run on the created server in the X session
-let server_command = undefined
-
-// initial width of the created server
-let server_create_w = undefined
-
-// initial height of the created server
-let server_create_h = undefined
-
-// Auto create server from URL?
-let enable_auto_create = undefined
-
-/* --- STATE --- */
+// configuration for creating a server
+add_serialize("server_create_width", "integer")
+add_serialize("server_create_height", "integer")
+add_serialize("server_create_wm", "text")
+add_serialize("server_create_command", "text")
 
 // Has the update_stream() function been called?
-let is_running = false
+add_internal("has_stream", "boolean")
 
 // current X11 Server dimensions
-let server_w = undefined
-let server_h = undefined
+add_internal("server_width", "boolean")
+add_internal("server_height", "boolean")
 
-// how long to wait between resize requests
-let auto_resize_timeout = 500
 
-// screen img element to use
-let screen_img_elem_id = undefined
-
-// element to indicate the current width
-let width_elem_id = undefined
-
-// element to indicate the current height
-let height_elem_id = undefined
-
-// element to hide when stream starts
-let hide_elem_id = undefined
-
-/* --- COMMAND ENCODING --- */
-
-function enc_ffmpeg_mpjpeg() {
-	let args = []
-	args.push(
-		"-loglevel", "fatal",
-		"-framerate", display_framerate,
-		"-video_size", display_w+"x"+display_h,
-		"-f", "x11grab",
-		"-i", display+"+"+display_x+","+display_y,
-		"-c:v", "mjpeg",
-	)
-	if (encode_quality) {
-		args.push("-q:v", encode_quality)
-	}
-	args.push(
-		"-pix_fmt", "yuv420p",
-		"-f", "mpjpeg",
-		"-strict", "experimental",
-		"-avioflags", "direct",
-		"-fflags", "nobuffer"
-	)
-	if (encode_low_delay) {
-		args.push("-flags", "low_delay")
-	}
-	args.push("-")
-
-	console.log("FFmpeg command: ", "ffmpeg "+args.join(" "))
-
-	return encode_command( "ffmpeg", args, "multipart/x-mixed-replace; boundary=--ffmpeg")
-}
-function enc_mousemove(x, y) {
-	return encode_command( "xdotool", [ "mousemove", "--", x, y ], undefined, undefined, [ ["DISPLAY", display] ] )
-}
-function enc_mousemove_rel(dx, dy) {
-	return encode_command( "xdotool", [ "mousemove_relative", "--", dx, dy ], undefined, undefined, [ ["DISPLAY", display] ] )
-}
-function enc_mousedown(btn) {
-	return encode_command( "xdotool", [ "mousedown", btn ], undefined, undefined, [ ["DISPLAY", display] ] )
-}
-function enc_mouseup(btn) {
-	return encode_command( "xdotool", [ "mouseup", btn ], undefined, undefined, [ ["DISPLAY", display] ] )
-}
-function enc_keyup(keysym) {
-	return encode_command( "xdotool", [ "keyup", keysym ], undefined, undefined, [ ["DISPLAY", display] ] )
-}
-function enc_keydown(keysym) {
-	return encode_command( "xdotool", [ "keydown", keysym ], undefined, undefined, [ ["DISPLAY", display] ] )
-}
-function enc_xvfb_run(random_id, cmd, args) {
-	return encode_command(
-		"bash",
-		[
-			"-c",
-			"xvfb-run " +
-			"-a " +
-			"-f \"${XAUTHORITY}\" " +
-			"--server-args=\"-screen 0 " + server_create_w + "x" + server_create_h + "x24\" " +
-			"bin/xvfb_runner.sh " +
-			random_id + " " +
-			escapeShellArg(cmd) + " " +
-			args.map(escapeShellArg).join(" ") + " "
-		]
-	)
+// start/update the stream
+function update_stream() {
+	x11_streamer.update_display()
+	screen_img_elem.width=state.data.view_w
+	screen_img_elem.height=state.data.view_h
+	screen_img_elem.classList.remove("hidden")
+	screen_img_elem.src = "/cgi-bin/cgi_command.sh?" + x11_streamer.enc_ffmpeg_mpjpeg_config()
+	state.data.has_stream = true
 }
 
-
-/* --- HELPER FUNCTIONS --- */
-
-// send the X11 keysym
-function send_key(keysym, down) {
-	if (down) {
-		make_xhr("/cgi-bin/command.sh?" + enc_keydown(keysym), "POST")
-	} else {
-		make_xhr("/cgi-bin/command.sh?" + enc_keyup(keysym), "POST")
-	}
-}
-
-// get the server dimensions
-function get_server_dimensions(cb) {
-	let url_args = encode_command( "xwininfo", [ "-root" ], undefined, undefined, [ ["DISPLAY", display] ] )
-	make_xhr("/cgi-bin/command.sh?" + url_args, "POST", undefined, undefined, function(url, resp, req) {
-		let new_server_w = undefined
-		let new_server_h = undefined
-		resp.split("\n").forEach(function(e) {
-			let kv = e.split(":")
-			let key = kv[0].trim()
-			if (key=="Width") {
-				new_server_w = parseInt(kv[1].trim())
-			} else if (key == "Height") {
-				new_server_h = parseInt(kv[1].trim())
-			}
-		})
-		if (new_server_w && new_server_h) {
-			server_w = new_server_w
-			server_h = new_server_h
-			if (cb) { cb(); }
-		}
-	})
-}
-
-// send a mouse move event
-function send_mouse(x,y, rel, cb) {
-	if (rel) {
-		make_xhr("/cgi-bin/command.sh?" + enc_mousemove_rel(x, y), "POST", undefined, undefined, cb)
-	} else {
-		make_xhr("/cgi-bin/command.sh?" + enc_mousemove(x, y), "POST", undefined, undefined, cb)
-	}
-}
-
-// send a mouse move event
-function send_mouse_btn(btn, down) {
-	if (down) {
-		make_xhr("/cgi-bin/command.sh?" + enc_mousedown(btn), "POST")
-	} else {
-		make_xhr("/cgi-bin/command.sh?" + enc_mouseup(btn), "POST")
-	}
-}
-
-// resolving JS key codes to X11 keysyms
-function get_code_to_keysym() {
-	let code_to_keysym = {
-		"Enter": "Return",
-		"ShiftLeft": "Shift_L",
-		"Backspace": "BackSpace",
-		"Tab": "Tab",
-		"Delete": "Delete",
-		"Space": "space",
-		"Period": "period",
-		"Comma": "comma",
-		"Slash": "slash",
-		"ArrowUp": "Up",
-		"ArrowDown": "Down",
-		"ArrowLeft": "Left",
-		"ArrowRight": "Right",
-		"AltLeft": "Alt_L",
-		"AltRight": "Alt_R",
-		"Minus": "minus",
-		"Equal": "equal",
-		"CapsLock": "Caps_Lock",
-		"MetaLeft": "Meta_L",
-		"BracketLeft": "bracketleft",
-		"BracketRight": "bracketright",
-		"Semicolon": "semicolon",
-		"Quote": "quotedbl",
-		"Backslash": "backslash",
-		"End": "End",
-		"PageUp": "Page_Up",
-		"PageDown": "Page_Down",
-		"Home": "Home",
-		"Insert": "Insert",
-	}
-	let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	for (let i=0; i<alphabet.length; i++) {
-		let ch = alphabet.charAt(i)
-		code_to_keysym["Key"+ch] = ch.toLowerCase()
-	}
-	for (let i=0; i<10; i++) {
-		code_to_keysym["Digit"+i] = i
-	}
-	return code_to_keysym
-}
-let code_to_keysym = get_code_to_keysym()
-
-// return the URL for the current settings
-function get_stream_url() {
-	return "/cgi-bin/command.sh?"+enc_ffmpeg_mpjpeg()
-}
-
-// update the URL of the stream screen image element with the current parameters.
-// This starts the stream.
-function update_stream(cb) {
-	get_server_dimensions(function() {
-		if ((display_w + display_x) > server_w) { display_w = server_w }
-		if ((display_h + display_y) > server_h) { display_h = server_h }
-
-		let screen_img_elem = document.getElementById(screen_img_elem_id)
-		screen_img_elem.classList.remove("hidden")
-		screen_img_elem.width=display_w
-		screen_img_elem.height=display_h
-		screen_img_elem.src = get_stream_url()
-		is_running = true
-		update_hash_location()
-		if (cb) { cb(); }
-	})
-}
-
-// parse parameter from hash part of URL
-function parse_hash_location() {
-	let hash_loc = location.hash.substr(1)
-	let hash_args = hash_loc.split("&").map(function(e) {
-		return e.split("=").map(decodeURIComponent)
-	})
-	for (let i=0; i<hash_args.length; i++) {
-		let hash_key = hash_args[i][0]
-		let hash_value = hash_args[i][1]
-		if (hash_key == "display") { display = hash_value }
-		else if (hash_key == "display_framerate") { display_framerate = parseInt(hash_value) }
-		else if (hash_key == "display_x") { display_x = parseInt(hash_value) }
-		else if (hash_key == "display_y") { display_y = parseInt(hash_value) }
-		else if (hash_key == "display_w") { display_w = parseInt(hash_value) }
-		else if (hash_key == "display_h") { display_h = parseInt(hash_value) }
-		else if (hash_key == "encode_quality") { encode_quality = parseInt(hash_value) }
-		else if (hash_key == "encode_low_delay") { encode_low_delay = (hash_value=="true") }
-		else if (hash_key == "enable_keyboard_input") { enable_keyboard_input = (hash_value=="true") }
-		else if (hash_key == "enable_mouse_input") { enable_mouse_input = (hash_value=="true") }
-		else if (hash_key == "enable_mouse_capture") { enable_mouse_capture = (hash_value=="true") }
-		else if (hash_key == "enable_auto_connect") { enable_auto_connect = (hash_value=="true") }
-		else if (hash_key == "enable_auto_resize_view") { enable_auto_resize_view = (hash_value=="true") }
-		else if (hash_key == "server_command") { server_command = hash_value }
-		else if (hash_key == "server_create_w") { server_create_w = parseInt(hash_value) }
-		else if (hash_key == "server_create_h") { server_create_h = parseInt(hash_value) }
-		else if (hash_key == "enable_auto_create") { enable_auto_create = (hash_value=="true") }
-	}
-}
-
-// update the hash part of the URL
-function update_hash_location() {
-	location.hash = [
-		"display=" + encodeURIComponent(display),
-		"display_framerate=" + encodeURIComponent(display_framerate),
-		"display_x=" + encodeURIComponent(display_x),
-		"display_y=" + encodeURIComponent(display_y),
-		"display_w=" + encodeURIComponent(display_w),
-		"display_h=" + encodeURIComponent(display_h),
-		"encode_quality=" + encodeURIComponent(encode_quality),
-		"encode_low_delay=" + encodeURIComponent(encode_low_delay),
-		"enable_keyboard_input=" + encodeURIComponent(enable_keyboard_input),
-		"enable_mouse_input=" + encodeURIComponent(enable_mouse_input),
-		"enable_mouse_capture=" + encodeURIComponent(enable_mouse_capture),
-		"enable_auto_connect=" + encodeURIComponent(enable_auto_connect),
-		"enable_auto_resize_view=" + encodeURIComponent(enable_auto_resize_view),
-		"server_command=" + encodeURIComponent(server_command),
-		"server_create_w=" + encodeURIComponent(server_create_w),
-		"server_create_h=" + encodeURIComponent(server_create_h),
-		"enable_auto_create=" + encodeURIComponent(enable_auto_create)
-	].join("&")
-	console.log("new hash location: ", location.hash)
-}
-
-// set client dimensions to window dimensions in onresize
-function update_window_size() {
-	console.log("update_window_size")
-	if (width_elem_id) {
-		let width_elem = document.getElementById(width_elem_id)
-		width_elem.value = window.innerWidth
-		if (width_elem.onchange) { width_elem.onchange(width_elem) }
-	}
-	if (height_elem_id) {
-		let height_elem = document.getElementById(height_elem_id)
-		height_elem.value = window.innerHeight
-		if (height_elem.onchange) { height_elem.onchange(height_elem) }
-	}
+// stop the stream
+function stop_stream() {
+	screen_img_elem.classList.add("hidden")
+	screen_img_elem.src = ""
+	state.data.has_stream = false
 }
 
 // generate a random id of len characters
-function generate_random_id(len) {
+function generate_random_hex(len) {
 	return Array.from(window.crypto.getRandomValues(new Uint8Array(Math.floor(len||8) / 2))).map(function(n) {
 		return n.toString(16).padStart(2, "0")
 	}).join("")
 }
 
-// create a new xvfb display and call callback with the new DISPLAY value
-function xvfb_create_display(cmd, args, cb) {
-	let random_id = generate_random_id()
-	let xvfb_run_url = "/cgi-bin/command.sh?" + enc_xvfb_run(random_id, cmd, args)
-	console.log("Creating display: ", random_id, xvfb_run_url)
+// create a new session by running xvfb-run with the session creation script
+function create_session() {
+	// generate new session ID
+	let new_session_id = generate_random_hex()
+	state.data.session_id = new_session_id
+
+	// encode the command to launch
+	let xvfb_cmd = x11_streamer.enc_xvfb_run(
+		new_session_id,
+		state.data.server_create_command,
+		state.data.server_create_wm,
+		state.data.server_create_width, state.data..server_create_height,
+		cgi_commands.get_env().XAUTHORITY
+	)
 
 	// start the X11 server(request only finishes when X11 server terminates)
-	let xvfb_run_req = make_xhr(xvfb_run_url, "POST", undefined, undefined, function() {
+	return x11_streamer.run_encoded_async(xvfb_cmd, function() {
 		// X11 server stopped
-		console.log("X11 server stopped!")
-		window.location = "about:blank#close"
-	})
-
-	// wait for X server to start and write it's DISPLAY variable to xsessions/$random_id
-	window.setTimeout(function() {
-		let get_display_url = "/cgi-bin/command.sh?" + encode_command("cat", [ "xsessions/" + random_id + ".display" ])
-		make_xhr(get_display_url, "POST", undefined, undefined, function(url, resp, req) {
-			if (resp !== "") {
-				console.log("Got display: ", "'"+resp+"'")
-				if (cb) { cb(resp); }
-			}
-		})
-	}, 1000)
-
-	// return the handler for the waiting request(can close to stop X11 server)
-	return xvfb_run_req
-}
-
-// change the server resolution by generating a new modeline, defining a new mode, adding the new mode, and setting the new mode.
-function xrandr_change_resolution(new_w, new_h, cb) {
-	let mode_line = get_mode_line(new_w, new_h)
-	console.log("mode_line", mode_line)
-	let xrandr_new_mode_url = "/cgi-bin/command.sh?" + encode_command(
-		"bash",
-		[
-			"-c",
-			"xrandr --newmode " + mode_line.slice(1).join(" ") + " && echo ok"
-		],
-		undefined, undefined, [ [ "DISPLAY", display ] ]
-	)
-	let xrandr_add_mode_url = "/cgi-bin/command.sh?" + encode_command(
-		"bash",
-		[
-			"-c",
-			"xrandr --addmode screen " + mode_line[1] + " && echo ok"
-		],
-		undefined, undefined, [ [ "DISPLAY", display ] ]
-	)
-	let xrandr_set_mode_url = "/cgi-bin/command.sh?" + encode_command(
-		"bash",
-		[
-			"-c",
-			"xrandr --output screen --mode " + mode_line[1] + " && echo ok"
-		],
-		undefined, undefined, [ [ "DISPLAY", display ] ]
-	)
-	make_xhr(xrandr_new_mode_url, "POST", undefined, undefined, function(_, new_resp) {
-		console.log("new mode ok:", new_resp)
-		make_xhr(xrandr_add_mode_url, "POST", undefined, undefined, function(_, add_resp) {
-			console.log("add mode ok:", add_resp)
-			make_xhr(xrandr_set_mode_url, "POST", undefined, undefined, function(_, set_resp) {
-				console.log("set mode ok:", set_resp)
-				if (cb) { cb(); }
-			})
-		})
+		stop_stream()
 	})
 }
 
@@ -427,6 +137,9 @@ function screen_img_elem_onmousemove(e) {
 			mouse_move_blocked = false
 		})
 	}
+	setTimeout(function() {
+		mouse_move_blocked = false
+	}, 50)
 	dx_acc = 0
 	dy_acc = 0
 	e.preventDefault()
@@ -454,87 +167,51 @@ function screen_img_elem_onclick(e) {
 		e.preventDefault()
 	}
 }
+function screen_img_elem_onwheel(e) {
+	let wheel_url = enc_mouseclick()
+	if (e.deltaY>0) {
+		send_mouse_btn(5, true, function() {
+			send_mouse_btn(5, false)
+		})
+	} else {
+		send_mouse_btn(4, true, function() {
+			send_mouse_btn(4, false)
+		})
+	}
+}
 
 
-
-// onChange handlers for the input elements(update config value)
-function change_display(elem) {
-	display = elem.value
-}
-function change_width(elem) {
-	display_w = parseInt(elem.value)
-}
-function change_height(elem) {
-	display_h = parseInt(elem.value)
-}
-function change_offset_x(elem) {
-	display_x = parseInt(elem.value)
-}
-function change_offset_y(elem) {
-	display_y = parseInt(elem.value)
-}
-function change_framerate(elem) {
-	display_framerate = parseInt(elem.value)
-}
-function change_quality(elem) {
-	encode_quality = parseInt(elem.value)
-}
-function change_enable_low_delay(elem) {
-	encode_low_delay = elem.checked
-}
-function change_enable_keyboard(elem) {
-	enable_keyboard_input = elem.checked
-}
-function change_enable_mouse(elem) {
-	enable_mouse_input = elem.checked
-}
-function change_enable_capture_mouse(elem) {
-	enable_mouse_capture = elem.checked
-}
-function change_enable_auto_connect(elem) {
-	enable_auto_connect = elem.checked
-}
-function change_enable_auto_resize_view(elem) {
-	enable_auto_resize_view = elem.checked
-}
-function change_enable_auto_resize_server(elem) {
-	enable_auto_resize_server = elem.checked
-}
-function change_server_command(elem) {
-	server_command = elem.value
-}
-function change_server_create_w(elem) {
-	server_create_w = parseInt(elem.value)
-	console.log("server_create_w", server_create_w)
-}
-function change_server_create_h(elem) {
-	server_create_h = parseInt(elem.value)
-	console.log("server_create_h", server_create_h)
-}
-function change_enable_auto_create(elem) {
-	enable_auto_create = elem.checked
+// called after the initial conneciton has been made
+function on_initial_connect() {
+	// hide the menu and trigger initial resize
+	if (hide_elem_id) { document.getElementById(hide_elem_id).classList.add("hidden") }
+	screen_onresize()
 }
 
 // button handler for connecting to an existing display(hide hide_elem_id on completion)
 function btn_connect() {
-	// start the stream
-	update_stream(function() {
-		if (hide_elem_id) { document.getElementById(hide_elem_id).classList.add("hidden") }
-		screen_onresize()
-	})
+	if (session_id && (session_id!=="")) {
+		// connect to an existing session(get DISPLAY from session)
+		get_display_for_session(function() {
+			update_stream(on_initial_connect)
+		})
+	} else {
+		// connect to a X11 display without a session
+		update_stream(on_initial_connect)
+	}
 }
 
 // button handler for creating a new display
 function btn_create() {
 	// TODO: This is not correct but would need proper unquoting
-	let ssv = server_command.split(" ")
-	xvfb_create_display(ssv[0], ssv.slice(1), function(new_display) {
-		display = new_display
-		update_stream(function() {
-			if (hide_elem_id) { document.getElementById(hide_elem_id).classList.add("hidden") }
-			screen_onresize()
+	let ssv = state.data.server_create_command.split(" ")
+	let enc_xvfb_run = x11_streamer.enc_xvfb_run(
+	xvfb_create_display(ssv[0], ssv.slice(1))
+	window.setTimeout(function() {
+		get_display_for_session(function() {
+			update_stream(on_initial_connect)
 		})
-	})
+	}, 500)
 }
 
 
@@ -543,18 +220,20 @@ function btn_create() {
 
 // key was pressed
 function screen_onkeydown(e) {
-	if ((!enable_keyboard_input) || (!is_running)) { return; }
-	if (code_to_keysym[e.code] !== undefined) {
-		send_key(code_to_keysym[e.code], true)
+	if ((!state.data.enable_keyboard_input) || (!state.data.has_stream)) { return; }
+	let keysym = x11_streamer.code_to_keysym[e.code]
+	if (keysym !== undefined) {
+		x11_streamer.send_key(keysym, true)
 		e.preventDefault()
 	}
 }
 
 // key was released
 function screen_onkeyup(e) {
-	if ((!enable_keyboard_input) || (!is_running)) { return; }
-	if (code_to_keysym[e.code] !== undefined) {
-		send_key(code_to_keysym[e.code])
+	if ((!state.data.enable_keyboard_input) || (!state.data.has_stream)) { return; }
+	let keysym = x11_streamer.code_to_keysym[e.code]
+	if (keysym !== undefined) {
+		x11_streamer.send_key(keysym)
 		e.preventDefault()
 	} else {
 		console.log("Unknown key:", e)
@@ -562,44 +241,36 @@ function screen_onkeyup(e) {
 }
 
 // resize view to current dimensions
+let auto_resize_timeout = 500
 function screen_onresize() {
-	// always update the requested width/height values
-	update_window_size()
-	if ((!auto_resize_timeout) || (!is_running)) { return; }
+	// if still in timeout or have no stream, abort
+	if ((!auto_resize_timeout) || (!state.data.has_stream)) { return; }
+
+	// resize the server or view, if requested
+	if (state.data.enable_auto_resize_server) {
+		state.data.view_width = window.innerWidth
+		state.data.view_height = window.innerHeight
+		x11_streamer.xrandr_change_resolution(state.data.view_width, state.data.view_height)
+		update_stream()
+	} else if (state.data.enable_auto_resize_view) {
+		state.data.view_width = window.innerWidth
+		state.data.view_height = window.innerHeight
+		update_stream()
+	}
 
 	// limit resize requests per second
-	let orig_auto_resize_timeout = auto_resize_timeout
-	setTimeout(function() {
-		console.log("resizing")
-		update_window_size()
-		if (enable_auto_resize_server) {
-			xrandr_change_resolution(display_w, display_h, function() {
-				update_stream()
-			})
-		} else if (enable_auto_resize_view) {
-			update_stream()
-		}
-		auto_resize_timeout = orig_auto_resize_timeout
-	}, auto_resize_timeout)
+	let _auto_resize_timeout = auto_resize_timeout
 	auto_resize_timeout = undefined
+	setTimeout(function() {
+		auto_resize_timeout = _auto_resize_timeout
+	}, _auto_resize_timeout)
 }
 
 // initialize configuration values from the HTML document and start the
-function onload(_screen_img_elem_id, _width_elem_id, _height_elem_id, _hide_elem_id) {
-	screen_img_elem_id = _screen_img_elem_id
-	width_elem_id = _width_elem_id
-	height_elem_id = _height_elem_id
-	hide_elem_id = _hide_elem_id
-
+function onload() {
 	// load the initial configuration values from the HTML data,
 	// by calling all onchange functions for input elements with the data-update attribute.
 	console.log("onload")
-	document.querySelectorAll("input[data-update]").forEach(function(elem) {
-		if (elem.onchange) { elem.onchange(elem) }
-	})
-
-	// load the hash location settings
-	parse_hash_location()
 
 	// put current size into inputs
 	window.setTimeout(function() { update_window_size(); }, 250)
@@ -611,6 +282,7 @@ function onload(_screen_img_elem_id, _width_elem_id, _height_elem_id, _hide_elem
 	screen_img_elem.onmouseup = screen_img_elem_onmouseup
 	screen_img_elem.oncontextmenu = screen_img_elem_oncontextmenu
 	screen_img_elem.onclick = screen_img_elem_onclick
+	screen_img_elem.onwheel = screen_img_elem_onwheel
 
 	document.onkeydown = screen_onkeydown
 	document.onkeyup = screen_onkeyup
@@ -623,8 +295,6 @@ function onload(_screen_img_elem_id, _width_elem_id, _height_elem_id, _hide_elem
 	}
 }
 
-function escapeShellArg (arg) {
-    return `'${arg.replace(/'/g, `'\\''`)}'`;
-}
+
 
 
