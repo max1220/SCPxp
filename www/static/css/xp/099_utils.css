@@ -34,4 +34,20 @@
 		clear: both;
 	}
 
+	/* Simple container with a border and a background */
+	.container {
+		border-radius: 3px;
+		background-color: #fff;
+		color: #000;
+		border: 1px solid #888;
+		padding: 8px 8px;
+	}
+
+	.background-disabled {
+		background:
+			repeating-linear-gradient(90deg, transparent, rgba(0,0,0, 0.15) 0px, rgba(0,0,0, 0.15) 1px, rgba(0,0,0, 0) 1px, rgba(0,0,0, 0) 2px),
+			repeating-linear-gradient(transparent, rgba(255,255,255, 0.15) 0px, rgba(255,255,255, 0.15) 1px, rgba(255,255,255, 0) 1px, rgba(255,255,255, 0) 2px)
+		;
+	}
+
 /* /Utils */
