@@ -1,11 +1,13 @@
+// This is a straightup port of libxcvt/lib/libxcvt.c and libxcvt/cvt/cvt.c
+// libxcvt is released under the MIT license. See libxcvt/COPYING
+
 let LIBXCVT_MODE_FLAG_HSYNC_POSITIVE = (1 << 0);
 let LIBXCVT_MODE_FLAG_HSYNC_NEGATIVE = (1 << 1);
 let LIBXCVT_MODE_FLAG_VSYNC_POSITIVE = (1 << 2);
 let LIBXCVT_MODE_FLAG_VSYNC_NEGATIVE = (1 << 3);
 let LIBXCVT_MODE_FLAG_INTERLACE      = (1 << 4);
 
-
-// This is a straightup port of libxcvt/lib/libxcvt.c
+// return the mode_info struct for the specified parameters
 function get_mode_info(hdisplay, vdisplay, vrefresh, reduced, interlaced)
 {
     let margins = false;
@@ -249,7 +251,7 @@ function get_mode_info(hdisplay, vdisplay, vrefresh, reduced, interlaced)
     return mode_info;
 }
 
-// This is a port of libxcvt/cvt/cvt.c
+// get the modeline string for the specified parameters(calls get_mode_info internally)
 function get_mode_line(hdisplay, vdisplay, vrefresh, reduced, interlaced)
 {
 	let mode_info = get_mode_info(hdisplay, vdisplay, vrefresh, reduced, interlaced)
