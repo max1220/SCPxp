@@ -69,12 +69,57 @@ function json_escape() {
 	echo -n "${1}" | jq -Rsa . | tr -d '\n'
 }
 
+# encode the stdout stream as event-stream events, line-by-line
+function eventstream_encode_stdout_lines() {
+	while LANG="C" IFS="" read -r line; do
+		printf "event: stdout_line\ndata: %s\n\n" "${line}"
+	done
+}
+
+# encode the stdout stream as event-stream events, byte-by-byte
+function eventstream_encode_stdout_bytes() {
+	while LANG="C" IFS="" read -r -d "" -N 1 byte_val; do
+		printf "event: stdout_byte\ndata: %.2x\n\n" "'${byte_val}"
+	done
+}
+
+# run the arguments as a command, and encode stdout/stderr into an event-stream line-by-line
+function eventstream_run_command_lines() {
+	# send the initial message
+	printf "event: begin\ndata: lines\n\n"
+
+	# run the command and redirect to encoder functions
+	local merge_stderr="${1}"
+	shift
+	if [ "${merge_stderr}" = "true" ]; then
+		"${@}" |& eventstream_encode_stdout_lines && return_value="0" || return_value="$?"
+	else
+		"${@}" | eventstream_encode_stdout_lines && return_value="0" || return_value="$?"
+	fi
+
+	# send final event
+	printf "event: return\ndata: ${return_value}\n\n"
+}
+
+# run the arguments as a command, and encode stdout/stderr into an event-stream byte-by-byte
+function eventstream_run_command_bytes() {
+	# send the initial message
+	printf "event: begin\ndata: bytes\n\n"
+
+	# run the command and redirect to encoder functions
+	"${@}" | eventstream_encode_stdout_bytes && return_value="0" || return_value="$?"
+
+	# send final event
+	printf "event: return\ndata: ${return_value}\n\n"
+}
+
+# HTML-encode special characters in stdin
 function html_encode_stdin() {
 	while read -rN1 s; do
-		s="${s//&/"&amp;"}"
-		s="${s//</"&lt;"}"
-		s="${s//>/"&gt;"}"
-		s="${s//'"'/"&quot;"}"
+		s="${s//'&'/'&amp;'}"
+		s="${s//'<'/'&lt;'}"
+		s="${s//'>'/'&gt;'}"
+		s="${s//\"/'&quot;'}"
 		echo -n "${s}"
 	done
 }
