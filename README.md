@@ -23,6 +23,9 @@ The only requirements for the web interface are web server with CGI support,
 and bash plus some basic shell utillites.
 
 ```
+# install dependencies
+sudo apt install busybox tmux tree xvfb ffmpeg jq sed xwininfo xdotool
+
 # clone the repo
 git clone https://github.com/max1220/lxc-scripts -b devember
 cd lxc-scripts
@@ -39,6 +42,9 @@ busybox httpd -v -f -p 127.0.0.1:8080
 
 You should now be able to point your browser to http://127.0.0.1:8080/` and enjoy ;)
 
+You can also download and build v86. Just place your copy of v86 into `www/`.
+This is only needed for the DOS prompt.
+See [v86 build instructions](https://github.com/copy/v86#readme)
 
 
 ## Features:
@@ -182,15 +188,15 @@ Some features didn't make it in time. Here is my TODO list:
    - Should provide basic information on most application
    - Should contain all documentation in this project
  * Desktop
-   - Use the correct unicode "icons" for the titlebar: 🗕  🗖  🗗  🗙
-   - Implement Maximize/unmaximize
+   - Maximize: auto resize maximized windows
    - creatable/editable/moveable desktop icons
-   - Fix Startmenu sub-menus occuring at unconvenient location
+   - Fix Startmenu sub-menus
    - Add boot screen with some animations and stuff
  * File manager
    - Implement upload file
    - Implement view-menu
  * LXC
+   - Fix info layout
    - Connect in terminal
    - Creation wizard
  * Terminal
