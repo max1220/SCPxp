@@ -24,7 +24,7 @@ and bash plus some basic shell utillites.
 
 ```
 # install dependencies
-sudo apt install busybox tmux tree xvfb ffmpeg jq sed xwininfo xdotool
+sudo apt install busybox tmux tree xvfb ffmpeg jq sed xwininfo xdotool matchbox-window-manager
 
 # clone the repo
 git clone https://github.com/max1220/lxc-scripts -b devember
