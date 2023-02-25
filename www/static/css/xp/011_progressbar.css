@@ -1,0 +1,31 @@
+/* progress bar */
+
+	.progress {
+		height: 20px;
+		appearance: none;
+		border-radius: 6px;
+		border: 1px solid #888;
+		width: 100%;
+	}
+	.progress[value]::-webkit-progress-bar {
+		background-color: #fff;
+		border-radius: 6px;
+	}
+	.progress[value]::-webkit-progress-value {
+		border-radius: 6px;
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+		box-shadow: inset 0 0 5px 3px #fff;
+		background-image:
+			repeating-linear-gradient(
+				90deg,
+				#fff,
+				#2DC411,
+				#2DC411 7px,
+				#2DC411 7px,
+				#fff 10px
+			)
+		;
+	}
+
+/* /progress bar */

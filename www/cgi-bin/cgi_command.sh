@@ -30,7 +30,7 @@ for ((i=0; i<"${#query_parms_list[@]}"; i=i+2)); do
 		env_key="$(url_decode "${query_parms_list[i+1]:-}")"
 	elif [ "${query_parms_list[i]}" = "env_value" ]; then
 		env_value="$(url_decode "${query_parms_list[i+1]:-}")"
-		declare "${env_key}=${env_value}"
+		export "${env_key}=${env_value}"
 	fi
 done
 

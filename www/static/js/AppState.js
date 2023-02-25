@@ -14,6 +14,7 @@ function trigger_onchange(elem) {
 function HashArgsParser(data_obj, key_to_type, type_to_encoder, type_to_decoder) {
 	// encode a single key of the data_obj that points to a single value
 	this.encode_kv = function(key, value) {
+		//console.log("encode_kv", key, value)
 		let data_type = key_to_type[key]
 		let str_encoder = type_to_encoder[data_type]
 		if (!str_encoder) { return; }
@@ -64,6 +65,7 @@ function HashArgsParser(data_obj, key_to_type, type_to_encoder, type_to_decoder)
 	this.update_data_from_hash_pair = function(hash_pair) {
 		let hash_key = hash_pair[0]
 		let hash_value_str = hash_pair[1]
+		//console.log("update_data_from_hash_pair", hash_key, hash_value_str)
 		let hash_type = key_to_type[hash_key]
 		let decoder = type_to_decoder[hash_type]
 		if (!decoder) { return; }
@@ -372,6 +374,7 @@ function AppState(data_obj) {
 
 	// update the HTML, hash, and storage backends for the data_key after it has been modified
 	this.update_value = function(data_key) {
+		//console.log("### update_value", data_key, "(", this.key_to_type[data_key], ") -->", data_obj[data_key])
 		if (this.is_html_enabled(data_key)) {
 			this.html_data_updater.update_html_from_data_key(data_key);
 		}

@@ -22,11 +22,14 @@ function CgiCommands(base_url) {
 			command_args.map(function(arg) { return "arg=" + encodeURIComponent(arg) })
 		)
 
+		// append event_stream arg and override content_type
+		if (event_stream) {
+			content_type = "text/event-stream"
+			encoded.push("event_stream="+encodeURIComponent(event_stream));
+		}
+
 		// append content_type arg if any
 		if (content_type) { encoded.push("content_type="+encodeURIComponent(content_type)); }
-
-		// append event_stream arg if any
-		if (event_stream) { encoded.push("event_stream="+encodeURIComponent(event_stream)); }
 
 		// append merge_stderr arg if any
 		if (merge_stderr) { encoded.push("merge_stderr=true"); }
@@ -51,49 +54,36 @@ function CgiCommands(base_url) {
 		return encoded.join("&")
 	}
 
-	// perform the XHR for an already-encoded command
+	// perform the XHR for an already-encoded command synchronously
+	// the return value is the body of a sucessful request, or undefined
 	this.run_encoded_sync = function(url_args) {
-		let req = make_xhr(
+		return make_xhr_sync(
 			base_url + "?" + url_args,
 			"POST",
 			"application/x-www-form-urlencoded",
-			undefined,
-			false
 		)
-		if (req.status == 200) {
-			return req.responseText
-		}
 	}
+
+	// perform the XHR for an already-encoded command asynchronously
+	// cb is called with a sucessful request body as arugment
+	// the return value is the generated XHR
 	this.run_encoded_async = function(url_args, cb) {
-		return make_xhr(
+		return make_xhr_async(
 			base_url + "?" + url_args,
 			"POST",
 			"application/x-www-form-urlencoded",
 			undefined,
-			true,
 			function(url, resp, req) {
 				if (cb) { cb(resp); }
 			}
 		)
 	}
 
-	// encode then run a command
-	this.run_command_sync = function(...args) {
-		return this.run_encoded_sync(this.encode_command(...args))
-	}
-	this.run_command_async = function(cb, ...args) {
-		return this.run_encoded_async(this.encode_command(...args), cb)
-	}
-
-	// run the command by starting an event-stream to read lines
-	this.run_command_event_stream = function(command, environment, merge_stderr, bytes, stdout_cb, stderr_cb, ret_cb, begin_cb) {
-		let encoded_command = this.encode_command(command, "text/event-stream", undefined, environment, bytes ? "bytes" : "lines", merge_stderr)
+	// run the already-encoded command by starting an event-stream to read lines
+	this.run_encoded_event_stream = function(encoded_command, stdout_cb, ret_cb, open_cb) {
 		let sse = new EventSource(base_url + "?" + encoded_command)
 
 		// forward the events to the callbacks
-		sse.addEventListener("begin", function(ev) {
-			if (begin_cb) { begin_cb(); }
-		})
 		sse.addEventListener("stdout_line", function(ev) {
 			if (stdout_cb) { stdout_cb(event.data); }
 		})
@@ -110,18 +100,35 @@ function CgiCommands(base_url) {
 		return sse
 	}
 
+	// encode and run a command
+	this.run_command_sync = function(...args) {
+		return this.run_encoded_sync(this.encode_command(...args))
+	}
+	this.run_command_async = function(cb, ...args) {
+		return this.run_encoded_async(this.encode_command(...args), cb)
+	}
+	this.run_command_event_stream = function(stdout_cb, ret_cb, open_cb, stream_bytes, command, environment, merge_stderr) {
+		let event_stream_type = stream_bytes ? "bytes" : "lines"
+		let encoded_command = this.encode_command(command, "text/event-stream", undefined, environment, event_stream_type, merge_stderr)
+		return this.run_encoded_event_stream(encoded_command, stdout_cb, ret_cb, open_cb)
+	}
+
 	// call printenv and parse response
 	this.get_env = function() {
 		let env = {}
-		this.make_xhr_sync("command_str=printenv").split("\n").map(function(pair_str) {
+		let env_str = this.run_command_sync([ "printenv" ])
+		env_str.split("\n").map(function(pair_str) {
 			let pair = pair_str.split("=")
 			env[pair[0]] = pair.slice(1).join("=")
 		})
 		return env
 	}
 
+	// shortcut/ugly hack
+	this.base_url = function() { return base_url; }
+
 	// escape the shell argument using bash's strict quoting.
 	this.escape_shell_arg = function(arg) {
-		return `'${arg.replace(/'/g, `'\\''`)}'`;
+		return `'${String(arg).replace(/'/g, `'\\''`)}'`;
 	}
 }

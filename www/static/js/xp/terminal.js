@@ -651,6 +651,10 @@ function update_windows_menu() {
 function update_terminal_content() {
 	let term_elem = document.getElementById("terminal-content")
 	cmd_capture_pane(function(screen_content) {
+		if (!screen_content[0]) {
+			console.log("No screen content!")
+		}
+
 		// turn string into lines of segments with parameters
 		let lines_segments = parse_escape_sequences(screen_content[0])
 		// render list of lines into a <pre> element

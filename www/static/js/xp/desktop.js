@@ -419,6 +419,11 @@ function focus_window(window_obj) {
 		win_obj.window.style.zIndex = 1000 + (windows_list.length-i) * 100
 	}
 	window_obj.window.classList.remove("window-unfocused")
+	if (window_obj.iframe) {
+		window_obj.iframe.focus()
+	} else if (window_obj.body && window_obj.body.focus) {
+		window_obj.body.focus()
+	}
 }
 
 // get the parsed server environment variables

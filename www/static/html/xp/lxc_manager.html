@@ -9,50 +9,58 @@
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
-			#container_table {
-				border-radius: 3px;
-				background-color: #fff;
-				border: 1px solid #999;
-				margin: 1em;
-				max-height: 300px:
-			}
-			#container_table tbody tr {
+			.container_table tr {
 				height: 20px;
 			}
-			#container_table tbody tr td:first-child {
-				border-top: 1px solid #999;
+			.container_table td {
+				border-top: 1px solid #888;
 			}
-			#container_table tbody tr td a {
+			.container_table td:last-child {
+				border-top: none;
+			}
+			.container_table td a {
 				text-decoration: none;
 			}
 		</style>
 	</head>
 	<body>
-		<div style="margin: 1em;">
-			<p>You can manage LXC contaiers using the controls below.<br>
-			Click on the links to get a shell on the container, or click Details to edit the container.<br>
-			You can also create a new container from a template, or restore a container backup.</p>
+		<div class="window-content">
 			<p>
-				<a class="btn" href="/static/html/xp/lxc_new.html" target="make_new_win">New container</a>
-				<a class="btn" href="/static/html/xp/lxc_new.html" target="make_new_win">Restore container</a>
+				The LXC manager allows you to control LXC containers.
 			</p>
+
+			<div class="container">
+				<h3>New container</h3>
+				Create a new container from a template, or restore a container backup.<br>
+				<br>
+				<div class="field-row">
+					<a class="btn" href="/static/html/xp/lxc_new.html" target="make_new_win">New container</a>
+					<a class="btn" href="/static/html/xp/lxc_new.html" target="make_new_win">Restore container</a>
+				</div>
+			</div>
+
+			<br>
+
+			<div class="container">
+				<h3>Existing containers</h3>
+				<p>
+					Click on the links to get a shell on the container.<br>
+					The info dialog shows you information about and control containers.
+				</p>
+
+				<table id="container_table" class="container_table">
+					<thead>
+						<tr>
+							<th style="width: 100%; text-align: left;">Container name</th>
+							<th style="width: 100%; text-align: left;">Status</th>
+							<th><button class="btn" onclick="update_table()">Refresh</button></th>
+						</tr>
+					</thead>
+					<tbody id="container_table_content"></tbody>
+				</table>
+
+			</div>
 		</div>
-		<h3>Containers</h3>
-		<table id="container_table">
-			<thead>
-				<tr>
-					<th style="width: 100%; text-align: left;">Container name</th>
-					<th style="width: 100%; text-align: left;">Status</th>
-					<th><button class="btn" onclick="update_table()">Refresh</button></th>
-				</tr>
-			</thead>
-			<tbody id="container_table_content">
-				<!--tr>
-					<td>test-session</td>
-					<td><button class="btn">x</button></td>
-				</tr-->
-			</tbody>
-		</table>
 
 		<script src="/static/js/fix_link_targets_iframe.js"></script>
 		<script src="/static/js/make_xhr.js"></script>
@@ -61,7 +69,7 @@
 	<!--
 These values are read outside of the iframe
 to determine the prefered size of this window:
-{{{window_width=500}}}
-{{{window_height=300}}}
+{{{window_width=350}}}
+{{{window_height=500}}}
 -->
 </html>

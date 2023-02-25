@@ -51,4 +51,4 @@ function update_table_delay() { window.setTimeout(function() { update_table() },
 
 // update table immediatly and every 5seconds afterwards
 update_table()
-window.setInterval(function() { update_table() }, 5000)
+window.setInterval(function() { update_table() }, 50000)

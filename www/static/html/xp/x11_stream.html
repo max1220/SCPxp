@@ -5,134 +5,153 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="Run command dialog">
 		<meta name="author" content="max1220">
-		<title>🖻 X11 stream</title>
+		<title>🖻 X11 Stream</title>
 		<link rel="stylesheet" href="/static/css/xp/style.css">
 		<link rel="stylesheet" href="/static/css/xp/application.css">
 		<style>
 			:root {
 				--windows-content-padding: 0px;
 			}
-			body {
-				background-color: #000;
-			}
-			.menu {
-				border-bottom-left-radius: 3px;
-				border-bottom-right-radius: 3px;
-				background-color: #fff;
-				border: 1px solid #888;
-				border-top: none;
+			#settings {
 				padding: 5px;
-				max-width: 300px;
-				margin: 0 auto;
+			}
+			#screen_img {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
 			}
 			.field-row input {
-				width: 70px;
+				width: 75px;
 			}
 			.field-row input[type=checkbox] {
 				width: auto;
 			}
 		</style>
 	</head>
-	<body onload="onload('screen_img', 'width', 'height', 'menu')">
+	<body onload="window_onload('screen_img')">
 		<div class="window-content">
-			<img id="screen_img" class="hidden"></img>
-			<video id="screen_video" class="hidden" autoplay></video>
-			<div id="menu" class="menu">
-				<h3>X11 stream</h3>
+			<div id="stream">
+				<img id="screen_img" class="hidden"></img>
+			</div>
+			<div id="settings">
+				<h2>X11 Stream</h2>
 				<p>
-					You can stream the content of an X11 screen.<br>
-					This uses ffmpegs mpjpeg output to encode the video.
+					This application streams the content of an X11 display using ffmpeg
+					and sends mouse inputs using xdotool.<br>
 				</p>
-				<div class="field-row">
-					<label for="session_id">Session ID:</label>
-					<input type="text" name="session_id" data-update onchange="change_session_id(this)" value=":0">
-				</div>
-				<div class="field-row">
-					<label for="display">Display:</label>
-					<input type="text" name="display" data-update onchange="change_display(this)" value=":0">
-				</div>
-				<div class="field-row">
-					<label for="width">Capture width:</label>
-					<input type="number" name="width" id="width" data-update onchange="change_width(this)" value="640" min="320" max="1920">
-				</div>
-				<div class="field-row">
-					<label for="height">Capture height:</label>
-					<input type="number" name="height" id="height" data-update onchange="change_height(this)" value="480" min="240" max="1080">
-				</div>
-				<div class="field-row">
-					<label for="offset_x">Capture offset x:</label>
-					<input type="number" name="offset_x" data-update onchange="change_offset_x(this)" value="0" min="0" max="99999">
-				</div>
-				<div class="field-row">
-					<label for="offset_y">Capture offset y:</label>
-					<input type="number" name="height" data-update onchange="change_offset_y(this)" value="0" min="0" max="99999">
-				</div>
-				<div class="field-row">
-					<label for="framerate">Framerate:</label>
-					<input type="number" name="framerate" data-update onchange="change_framerate(this)" value="15" min="1" max="60">
-				</div>
-				<div class="field-row">
-					<label for="quality">Quality:</label>
-					<input type="number" name="quality" data-update onchange="change_quality(this)" value="5" min="1" max="30">
-				</div>
-				<div class="field-row">
-					<label for="enable_low_delay">Low delay:</label>
-					<input type="checkbox" name="enable_low_delay" data-update onchange="change_enable_low_delay(this)">
-				</div>
-				<div class="field-row">
-					<label for="enable_keyboard">Enable keyboard:</label>
-					<input type="checkbox" name="enable_keyboard" checked data-update onchange="change_enable_keyboard(this)">
-				</div>
-				<div class="field-row">
-					<label for="enable_mouse">Enable mouse:</label>
-					<input type="checkbox" name="enable_mouse" checked data-update onchange="change_enable_mouse(this)">
-				</div>
-				<div class="field-row">
-					<label for="capture_mouse">Capture mouse:</label>
-					<input type="checkbox" name="capture_mouse" data-update onchange="change_enable_capture_mouse(this)">
-				</div>
-				<div class="field-row">
-					<label for="auto_connect">Auto-connect:</label>
-					<input type="checkbox" name="auto_connect" data-update onchange="change_enable_auto_connect(this)">
-				</div>
-				<div class="field-row">
-					<label for="auto_resize_view">Auto-resize view:</label>
-					<input type="checkbox" name="auto_resize_view" checked data-update onchange="change_enable_auto_resize_view(this)">
-				</div>
-				<div class="field-row">
-					<label for="auto_resize">Auto-resize server:</label>
-					<input type="checkbox" name="auto_resize_server" checked data-update onchange="change_enable_auto_resize_server(this)">
-				</div>
-				<div class="field-row">
-					<span></span>
-					<button class="btn" onclick="btn_connect()">Connect</button>
-				</div>
-				<div class="field-row">
-					<label for="server_command">Server command:</label>
-					<input type="text" name="server_command" id="server_command" data-update onchange="change_server_command(this)" value="xterm">
-				</div>
-				<div class="field-row">
-					<label for="server_create_w">Server width:</label>
-					<input type="number" name="server_create_w" id="server_create_w" data-update onchange="change_server_create_w(this)" value="1920" min="320" max="1920">
-				</div>
-				<div class="field-row">
-					<label for="server_create_h">Server height:</label>
-					<input type="number" name="server_create_h" id="server_create_h" data-update onchange="change_server_create_h(this)" value="1080" min="240" max="1080">
-				</div>
-
-				<div class="field-row">
-					<label for="eenable_server_create_wm">Use Window manager:</label>
-					<input type="checkbox" name="enable_server_create_wm" id="enable_server_create_wm" data-update onchange="change_enable_server_create_wm(this)" checked>
-				</div>
-
-				<div class="field-row">
-					<label for="enable_auto_create">Auto create:</label>
-					<input type="checkbox" name="enable_auto_create" id="enable_auto_create" data-update onchange="change_enable_auto_create(this)">
-				</div>
-				<div class="field-row">
-					<span></span>
-					<button class="btn" onclick="btn_create()">Create</button>
-				</div>
+				<h3>Settings</h3>
+				<p>
+					You can create and connect a new session with a new Xvfb server,<br>
+					create and connect a new session from an existing X11 display or<br>
+					connect to an existing session with a session ID.<br>
+					The capture settings apply to all connection options.
+				</p>
+				<section class="tabs">
+					<menu role="tablist" aria-label="Settings Tabs">
+						<button role="tab" aria-controls="tab-xvfb" aria-selected="true">Xvfb</button>
+						<button role="tab" aria-controls="tab-mirror">Mirror</button>
+						<button role="tab" aria-controls="tab-session">Session</button>
+						<button role="tab" aria-controls="tab-capture">Capture</button>
+					</menu>
+					<article role="tabpanel" id="tab-xvfb">
+						<h3>Create new Xvfb session</h3>
+						<div class="field-row">
+							<label for="session_create_command">Command:</label>
+							<input type="text" id="session_create_command" data-update-key="session_create_command" data-update-type="input-text" data-update-onchange value="xterm">
+						</div>
+						<div class="field-row">
+							<label for="session_create_width">Initial width:</label>
+							<input type="number" id="session_create_width" data-update-key="session_create_width" data-update-type="input-integer" data-update-onchange value="1920" min="320" max="3840">
+						</div>
+						<div class="field-row">
+							<label for="session_create_height">Initial height:</label>
+							<input type="number" id="session_create_height" data-update-key="session_create_height" data-update-type="input-integer" data-update-onchange value="1080" min="240" max="2160">
+						</div>
+						<div class="field-row">
+							<label for="session_create_wm">Window manager:</label>
+							<input type="text" id="session_create_wm" data-update-key="session_create_wm" data-update-type="input-text" data-update-onchange value="matchbox-window-manager">
+						</div>
+						<div class="field-row">
+							<span></span>
+							<button class="btn" onclick="btn_create_session_xvfb()">Create</button>
+						</div>
+					</article>
+					<article role="tabpanel" id="tab-mirror">
+						<h3>Create new mirror session</h3>
+						<div class="field-row">
+							<label for="session_create_mirror_display">Display:</label>
+							<input type="text" id="session_create_mirror_display" data-update-key="session_create_mirror_display" data-update-type="input-text" data-update-onchange value=":0">
+						</div>
+						<div class="field-row">
+							<span></span>
+							<button class="btn" onclick="btn_create_session_mirror()">Mirror</button>
+						</div>
+					</article>
+					<article role="tabpanel" id="tab-session">
+						<h3>Connect to existing session</h3>
+						<div class="field-row">
+							<label for="session_id">Session ID:</label>
+							<input type="text" id="session_id" data-update-key="session_id" data-update-type="input-text" data-update-onchange value="">
+						</div>
+						<div class="field-row">
+							<span></span>
+							<button class="btn" onclick="btn_connect_session()">Connect</button>
+						</div>
+					</article>
+					<article role="tabpanel" id="tab-capture">
+						<h3>Capture settings</h3>
+						<div class="field-row">
+							<label for="view_width">View width:</label>
+							<input type="text" id="view_width" data-update-key="view_width" data-update-type="input-integer" data-update-onchange value="640" min="320" max="3840">
+						</div>
+						<div class="field-row">
+							<label for="view_height">View height:</label>
+							<input type="text" id="view_height" data-update-key="view_height" data-update-type="input-integer" data-update-onchange value="480" min="240" max="2160">
+						</div>
+						<div class="field-row">
+							<label for="view_offset_x">View offset x:</label>
+							<input type="text" id="view_offset_x" data-update-key="view_offset_x" data-update-type="input-integer" data-update-onchange value="0" min="0" max="3840">
+						</div>
+						<div class="field-row">
+							<label for="view_offset_y">View offset y:</label>
+							<input type="text" id="view_offset_y" data-update-key="view_offset_y" data-update-type="input-integer" data-update-onchange value="0" min="0" max="2160">
+						</div>
+						<div class="field-row">
+							<label for="encode_framerate">Framerate:</label>
+							<input type="text" id="encode_framerate" data-update-key="encode_framerate" data-update-type="input-integer" data-update-onchange value="25" min="1" max="60">
+						</div>
+						<div class="field-row">
+							<label for="encode_quality">Quality:</label>
+							<input type="text" id="encode_quality" data-update-key="encode_quality" data-update-type="input-integer" data-update-onchange value="5" min="1" max="32">
+						</div>
+						<div class="field-row">
+							<label for="encode_low_delay">Low delay:</label>
+							<input type="checkbox" id="encode_low_delay" data-update-key="encode_low_delay" data-update-type="input-boolean" data-update-onchange>
+						</div>
+						<div class="field-row">
+							<label for="input_keyboard_enable">Enable keyboard:</label>
+							<input type="checkbox" id="input_keyboard_enable" data-update-key="input_keyboard_enable" data-update-type="input-boolean" data-update-onchange checked>
+						</div>
+						<div class="field-row">
+							<label for="input_mouse_enable">Enable mouse:</label>
+							<input type="checkbox" id="input_mouse_enable" data-update-key="input_mouse_enable" data-update-type="input-boolean" data-update-onchange checked>
+						</div>
+						<div class="field-row">
+							<label for="input_mouse_capture">Capture mouse:</label>
+							<input type="checkbox" id="input_mouse_capture" data-update-key="input_mouse_capture" data-update-type="input-boolean" data-update-onchange>
+						</div>
+						<div class="field-row">
+							<label for="auto_resize_view_enable">Auto-resize view:</label>
+							<input type="checkbox" id="auto_resize_view_enable" data-update-key="auto_resize_view_enable" data-update-type="input-boolean" data-update-onchange checked>
+						</div>
+						<div class="field-row">
+							<label for="auto_resize_server_enable">Auto-resize server:</label>
+							<input type="checkbox" id="auto_resize_server_enable" data-update-key="auto_resize_server_enable" data-update-type="input-boolean" data-update-onchange checked>
+						</div>
+					</article>
+				</section>
 			</div>
 		</div>
 
@@ -143,6 +162,7 @@
 		<script src="/static/js/AppState.js"></script>
 		<script src="/static/js/cvt.js"></script>
 		<script src="/static/js/X11Streamer.js"></script>
+		<script src="/static/js/xp/tabs.js"></script>
 		<script src="/static/js/xp/x11_stream.js"></script>
 	</body>
 <!--

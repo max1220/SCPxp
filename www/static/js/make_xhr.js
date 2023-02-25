@@ -11,11 +11,13 @@ function make_xhr_async(url, method, content_type, body, cb, err_cb) {
 		}
 	}
 
+	// open the request
+	req.open(method, url, true)
+
 	// set content-type header if any
 	if (content_type) { req.setRequestHeader("Content-type", content_type); }
 
-	// start the request
-	req.open(method, url, true)
+	// send the request
 	req.send(body)
 
 	// return request for convenience
@@ -25,11 +27,13 @@ function make_xhr_async(url, method, content_type, body, cb, err_cb) {
 function make_xhr_sync(url, method, content_type, body) {
 	let req = new XMLHttpRequest()
 
+	// open the request
+	req.open(method, url, false)
+
 	// set content-type header if any
 	if (content_type) { req.setRequestHeader("Content-type", content_type); }
 
-	// run the request
-	req.open(method, url, false)
+	// send the request
 	req.send(body)
 
 	// return request body if successful

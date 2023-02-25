@@ -1,178 +1,69 @@
-// the URL of the directory tree on the left side
-let tree_dir_path = undefined
+// create an application state object with some defaults
+let state_obj = {}
+let state = new AppState(state_obj)
+// register the known state parameters with types for automatic error checking and serialization
+function register_state_parameters() {
+	function add_serialize(key, type) {
+		state.add_key_parameters(key, type, true, true);
+	}
+	function add_internal(key, type, default_val) {
+		state.add_key_parameters(key, type, true, false);
+		if (default_val!==undefined) { state_obj[key] = default_val }
+	}
+	// the URL of the directory tree on the left side
+	add_serialize("tree_path", "text")
 
-// the URL of the direcotry and files table on the right
-let content_dir_path = undefined
+	// the URL of the direcotry and files table on the right
+	add_serialize("content_path", "text")
 
-// the current display settings for the content window
-let content_human_readable = true
-let content_dirfirst = true
-let content_reverse = false
-let content_sort = undefined
+	// the current display settings for the content window
+	add_serialize("content_human_readable", "boolean")
+	add_serialize("content_dirfirst", "boolean")
+	add_serialize("content_reverse", "boolean")
+	add_serialize("content_sort", "text")
+	add_serialize("content_hidden", "boolean")
+	add_serialize("content_show_select", "boolean")
+	add_serialize("content_show_mode", "boolean")
+	add_serialize("content_show_user", "boolean")
+	add_serialize("content_show_group", "boolean")
+	add_serialize("content_show_size", "boolean")
 
-let content_show_select = true
-let content_show_mode = true
-let content_show_user = true
-let content_show_group = true
-let content_show_size = true
+	add_internal("selected_files", undefined, [])
 
-let selected_files = []
-let clipboard = undefined
-let clipboard_mode = undefined
+	add_internal("clipboard", undefined, [])
+	add_internal("clipboard_mode", "text")
 
-let history = []
-let history_forward = []
-
-
-// return the basename of the specified path
-function basename(path) {
-	return path.split("/").pop()
+	add_internal("history", undefined, [])
+	add_internal("history_forward", undefined, [])
 }
+register_state_parameters()
 
-// return the containing directory
-function basedir(path) {
-	let base_path = path.split("/").slice(0,-1).join("/")
-	return (base_path=="") ? "/" : base_path
-}
+let cgi_commands = new CgiCommands("/cgi-bin/cgi_command.sh")
+let file_manager = new FileManager(cgi_commands)
 
 
 
 /* --- FILE API FUNCTIONS --- */
 
-// copy a file/directory
-function api_file_copy(source_file_path, target_dir_path, recursive, cb) {
-	let req_body =
-		"source_file_path=" + encodeURIComponent(source_file_path) +
-		"&target_dir_path=" + encodeURIComponent(target_dir_path)
-	make_xhr(
-		"/cgi-bin/file/copy_file.sh",
-		"POST",
-		"application/x-www-form-urlencoded",
-		req_body,
-		function(url, resp) {
-			let json_resp = JSON.parse(resp)
-			if (!json_resp.success) { return; }
-			if (cb) { cb(); }
-		}
+// wrapper to list files for the file tree(left side)
+function list_files_tree(path) {
+	console.log("Requesting file list for tree:", path)
+	return file_manager.list(path, 1, true)
+}
+
+// wrapper to list files for the content(right side)
+function list_files_content(path) {
+	console.log("Requesting file list for content:", path)
+	return file_manager.list(
+		path,
+		1,
+		false,
+		state.data.content_hidden,
+		state.data.content_human_readable,
+		state.data.content_sort,
+		state.data.content_reverse,
+		state.data.content_dirfirst
 	)
-}
-
-// move a file/directory
-function api_file_move(source_file_path, target_dir_path, cb) {
-	let req_body =
-		"source_file_path=" + encodeURIComponent(source_file_path) +
-		"&target_dir_path=" + encodeURIComponent(target_dir_path)
-	make_xhr(
-		"/cgi-bin/file/move_file.sh",
-		"POST",
-		"application/x-www-form-urlencoded",
-		req_body,
-		function(url, resp) {
-			let json_resp = JSON.parse(resp)
-			if (!json_resp.success) { return; }
-			if (cb) { cb(); }
-		}
-	)
-}
-
-// delete a file
-function api_file_delete(file_path, cb) {
-	let req_body =
-		"file_path=" + encodeURIComponent(file_path)
-	make_xhr(
-		"/cgi-bin/file/delete_file.sh",
-		"POST",
-		"application/x-www-form-urlencoded",
-		req_body,
-		function(url, resp) {
-			let json_resp = JSON.parse(resp)
-			if (!json_resp.success) { return; }
-			if (cb) { cb(); }
-		}
-	)
-}
-
-// create directory
-function api_make_dir(target_dir_path, cb) {
-	let req_body =
-		"target_dir_path=" + encodeURIComponent(target_dir_path)
-	make_xhr(
-		"/cgi-bin/file/make_dir.sh",
-		"POST",
-		"application/x-www-form-urlencoded",
-		req_body,
-		function(url, resp) {
-			let json_resp = JSON.parse(resp)
-			if (!json_resp.success) { return; }
-			if (cb) { cb(); }
-		}
-	)
-}
-
-// create an empty file
-function api_make_file(target_file_path, cb) {
-	let req_body =
-		"file_path=" + encodeURIComponent(target_file_path) +
-		"&append=true&data="
-	make_xhr(
-		"/cgi-bin/file/write_file.sh",
-		"POST",
-		"application/x-www-form-urlencoded",
-		req_body,
-		function(url, resp) {
-			let json_resp = JSON.parse(resp)
-			if (!json_resp.success) { return; }
-			if (cb) { cb(); }
-		}
-	)
-}
-
-// create an empty file
-function api_create_tar(files_list, cb) {
-	// URL-encode target-files
-	let url_args = files_list.map(encodeURIComponent)
-	url_args = url_args.map(function(e) { return "file_path="+e	})
-	url_args = url_args.join("&")
-
-	// start the download
-	open("/cgi-bin/file/create_tar.sh?"+url_args)
-}
-
-// get a list of files from the server
-function api_file_get_dir(dir_path, max_depth, human_readable, dirfirst, dironly, reverse, sort, cb) {
-	let url_args =
-		"file_path=" + encodeURIComponent(dir_path) +
-		"&max_depth=" + parseInt(max_depth) +
-		"&humanreadable=" + (!!human_readable) +
-		"&dirfirst=" + (!!dirfirst) +
-		"&dironly=" + (!!dironly) +
-		"&reverse=" + (!!reverse) +
-		(sort ? ("&sort=" + sort) : "")
-
-	make_xhr(
-		"/cgi-bin/file/get_dir.sh?"+url_args,
-		"GET",
-		"application/x-www-form-urlencoded",
-		undefined,
-		function(url, resp) {
-			let json_resp = JSON.parse(resp)
-			if (!json_resp[0]) { return; }
-			let files_content = json_resp[0].contents
-			cb(files_content, dir_path)
-		}
-	)
-}
-
-// wrapper that uses settings for the file tree
-function file_get_dir_tree(dir_path, cb) {
-	//console.log("Requesting file list for tree:", file_path)
-	api_file_get_dir(dir_path, 1, false, false, true, false, undefined, cb)
-}
-
-// wrapper that uses settings for the content
-function file_get_dir_content(dir_path, cb) {
-	//console.log("Requesting file list for content:", file_path)
-	api_file_get_dir(dir_path, 1, content_human_readable, content_dirfirst, false, content_reverse, content_sort, cb)
 }
 
 
@@ -244,7 +135,6 @@ function generate_content_table(files_list) {
 	if (content_show_group) { first_row.insertCell().classList = "header header-group" }
 	if (content_show_size) { first_row.insertCell().classList = "header header-size" }
 
-	console.log("files_list",files_list)
 	if (!files_list) { files_list=[] }
 	for (let y=0; y<files_list.length; y++) {
 		let file = files_list[y]
@@ -297,23 +187,23 @@ function generate_content_table(files_list) {
 /* --- TREE/TABLE NAVIGATION --- */
 
 // navigate the tree-page on the left
-function navigate_tree(new_tree_dir_path) {
-	file_get_dir_tree(new_tree_dir_path, function(files_list, cur_tree_dir_path) {
-		tree_dir_path = cur_tree_dir_path
-		console.log("Got initial tree file_list", cur_tree_dir_path, files_list)
-		let new_file_tree_elem = generate_tree(files_list)
-		let base_link = document.createElement("li");
-		base_link.classList = "base-link"
-		base_link.innerText = "Folders:" + tree_dir_path
-		base_link.onclick = function() {
-			navigate_content(new_tree_dir_path, true)
-		}
-		new_file_tree_elem.insertBefore(base_link, new_file_tree_elem.children[0])
-		let file_tree_elem = document.getElementById("file-tree")
-		new_file_tree_elem.classList = "file-tree"
-		new_file_tree_elem.id = file_tree_elem.id
-		file_tree_elem.replaceWith(new_file_tree_elem)
-	})
+function navigate_tree(new_tree_path) {
+	let files_list = list_files_tree(new_tree_path)
+	if (!files_list) { return; }
+	state.data.tree_path = new_tree_path
+
+	let new_file_tree_elem = generate_tree(files_list)
+	let base_link = document.createElement("li");
+	base_link.classList = "base-link"
+	base_link.innerText = "Folders:" + new_tree_path
+	base_link.onclick = function() {
+		navigate_content(new_tree_path, true)
+	}
+	new_file_tree_elem.insertBefore(base_link, new_file_tree_elem.children[0])
+	new_file_tree_elem.classList = "file-tree"
+	let file_tree_elem = document.getElementById("file-tree")
+	new_file_tree_elem.id = file_tree_elem.id
+	file_tree_elem.replaceWith(new_file_tree_elem)
 }
 
 // highlight specified path and open all required directories
@@ -353,20 +243,18 @@ function highlight_tree(highlight_dir_path) {
 }
 
 // navigate the content-page on the right
-function navigate_content(new_content_dir_path, do_highlight) {
-	file_get_dir_content(new_content_dir_path, function(files_list, cur_content_dir_path) {
-		content_dir_path = cur_content_dir_path
-		history.push(content_dir_path)
-		if (do_highlight) {
-			highlight_tree(content_dir_path)
-		}
-		let file_table_elem = document.getElementById("file-table")
-		let new_file_table_elem = generate_content_table(files_list)
-		new_file_table_elem.id = file_table_elem.id
-		file_table_elem.replaceWith(new_file_table_elem)
-		document.getElementById("menubar_file_path").value = cur_content_dir_path
-		selected_files = []
-	})
+function navigate_content(new_content_path, do_highlight) {
+	let files_list = list_files_content(new_content_path)
+	if (!files_list) { return; }
+	state.data.content_path = new_content_path
+	state.data.history.push(new_content_path)
+	//highlight_tree(new_content_path)
+	let file_table_elem = document.getElementById("file-table")
+	let new_file_table_elem = generate_content_table(files_list)
+	new_file_table_elem.id = file_table_elem.id
+	file_table_elem.replaceWith(new_file_table_elem)
+	document.getElementById("menubar_file_path").value = new_content_path
+	selected_files = []
 }
 
 // Update the data-selected attribute on all rows
@@ -377,7 +265,7 @@ function update_selected_files() {
 		let row = rows[i]
 		let decoded_path = decodeURIComponent(row.getAttribute("data-path"))
 		let checkbox = row.querySelector("input[type=checkbox]")
-		let is_selected = selected_files.includes(decoded_path)
+		let is_selected = state.data.selected_files.includes(decoded_path)
 		if (checkbox) {
 			checkbox.checked = is_selected
 		}
@@ -386,55 +274,6 @@ function update_selected_files() {
 }
 
 
-
-/* --- FILE TYPE URL GENERATORS --- */
-
-function file_type_text(file_name) {
-	return "/static/html/xp/text_editor.html#"+encodeURIComponent(file_name)
-}
-
-function file_type_image(file_name) {
-	return "/static/html/xp/picture_viewer.html#"+encodeURIComponent(file_name)
-}
-
-function file_type_video(file_name) {
-	return "/static/html/xp/video_viewer.html#"+encodeURIComponent(file_name)
-}
-
-function file_type_web(file_name) {
-	return "/static/html/xp/browser.html#"+encodeURIComponent(file_name)
-}
-
-function file_type_script(file_name) {
-	return "/static/html/xp/terminal.html#new-session:"+encodeURIComponent(file_name)
-}
-
-
-
-/* --- FILE TYPE HANDLING --- */
-
-/* List of known file extensions and how to generate a URL for them */
-let know_file_types = [
-	[ ".txt", file_type_text ],
-	[ ".conf", file_type_text ],
-
-	[ ".jpg", file_type_image ],
-	[ ".jpeg", file_type_image ],
-	[ ".gif", file_type_image ],
-	[ ".png", file_type_image ],
-	[ ".svg", file_type_image ],
-
-	[ ".webm", file_type_video ],
-	[ ".m4v", file_type_video ],
-	[ ".mkv", file_type_video ],
-	[ ".mp4", file_type_video ],
-
-	[ ".htm", file_type_web ],
-	[ ".html", file_type_web ],
-
-	[ ".sh", file_type_script ],
-	[ ".bash", file_type_script ]
-]
 
 // get a URL for a filename by looking up the file extension in know_file_types
 function url_for_known_file(file_name) {

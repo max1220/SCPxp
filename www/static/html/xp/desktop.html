@@ -26,6 +26,17 @@
 				<span class="desktop-icon">🖵</span>
 				Terminal
 			</a>
+
+			<a class="desktop-link" href="/static/html/xp/x11_manager.html" target="make_new_win">
+				<span class="desktop-icon">🖰</span>
+				X11 Stream
+			</a>
+
+			<a class="desktop-link" href="/static/html/xp/x11_stream.html#auto_create_xvfb=true&session_create_command=vglrun%20~%2FDownloads%2FClassiCube%2FClassiCube&input_mouse_capture=true&encode_low_delay=true&encode_framerate=60" target="make_new_win">
+				<span class="desktop-icon">🖰</span>
+				Classi-Cube
+			</a>
+
 		</div>
 
 		<!-- the taskbar with the start button -->
@@ -50,6 +61,7 @@
 
 		<!-- The start menu, containing the list of programs -->
 		<div id="start-menu" class="start-menu hidden">
+			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/app_demo.html"><span class="start-menu-icon">🗔</span>App demo</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/browser.html"><span class="start-menu-icon">🌐</span>Browser</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/desktop.html"><span class="start-menu-icon">🗔</span>Desktop window</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/file_manager.html"><span class="start-menu-icon">🗀</span>File manager</a>
@@ -64,6 +76,7 @@
 			<a class="start-menu-item" onclick="show_settings_window()"><span class="start-menu-icon">⚙</span>Settings...</a>
 			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/run.html"><span class="start-menu-icon">➔</span>Run...</a>
 			<div class="start-menu-spacer"></div>
+			<a class="start-menu-item overflow-ellipsis" href="/index.html#login"><span class="start-menu-icon">🢀</span>Logout...</a>
 			<a class="start-menu-item overflow-ellipsis" href="about:blank"><span class="start-menu-icon">⏻</span>Turn off computer...</a>
 		</div>
 
