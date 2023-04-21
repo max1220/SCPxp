@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>Tabs</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+	</head>
+	<body>
+		<div class="window-content">
+			<h3>Tabs test page</h3>
+
+			<p>This page implements a tab-style interface.</p>
+			<p>Requires JS to work properly.</p>
+
+			<section class="tabs">
+				<menu role="tablist" aria-label="Settings Tabs">
+					<button role="tab" aria-controls="tab-foo" aria-selected="true">Foo</button>
+					<button role="tab" aria-controls="tab-bar">Bar</button>
+					<button role="tab" aria-controls="tab-buzz">Buzz</button>
+				</menu>
+				<article role="tabpanel" id="tab-foo">
+					<h3>This is foo</h3>
+					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Eros in cursus turpis massa tincidunt dui ut ornare lectus. Bibendum ut tristique et egestas. Tincidunt ornare massa eget egestas purus viverra.</p>
+				</article>
+				<article role="tabpanel" id="tab-bar">
+					<h3>Welcome to bar</h3>
+					<p>Ornare quam viverra orci sagittis eu volutpat odio facilisis. Consectetur purus ut faucibus pulvinar. Fames ac turpis egestas maecenas pharetra convallis posuere. Libero id faucibus nisl tincidunt eget nullam. Orci porta non pulvinar neque laoreet suspendisse.</p>
+				</article>
+				<article role="tabpanel" id="tab-buzz">
+					<h3>Hello from buzz</h3>
+					<p>Donec adipiscing tristique risus nec feugiat in fermentum posuere. Venenatis urna cursus eget nunc scelerisque viverra. Consectetur libero id faucibus nisl. Enim lobortis scelerisque fermentum dui faucibus in ornare.</p>
+				</article>
+			</section>
+		</div>
+		<script src="/static/js/xp/tabs.js"></script>
+	</body>
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=300}}}
+{{{window_height=125}}}
+-->
+</html>

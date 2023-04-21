@@ -1,0 +1,25 @@
+/* toolbar */
+
+	.toolbar-btn {
+		display: flex;
+		align-items: center;
+		text-decoration: none;
+		font-family: sans-serif;
+		cursor: pointer;
+		border: none;
+		outline: none;
+		padding: 8px 12px;
+		margin: 0 4px;
+		background-color: transparent;
+		appearance: none;
+	}
+	.toolbar-text {
+		padding-left: 15px;
+	}
+	.toolbar-spacer {
+		border-right: 1px solid #888;
+		width: 1px;
+		height: 30px;
+	}
+
+/* /toolbar */

@@ -1,0 +1,94 @@
+/* icons */
+
+	.icon[data-icon]:before {
+		content: attr(data-icon);
+		display: inline-block;
+		box-sizing: border-box;
+	}
+	.icon-16[data-icon]:before {
+		width: 16px;
+		height: 16px;
+		font-size: 14px;
+		line-height: 16px;
+	}
+	.icon-24[data-icon]:before {
+		width: 24px;
+		height: 24px;
+		font-size: 21px;
+		line-height: 24px;
+	}
+	.icon-32[data-icon]:before {
+		width: 32px;
+		height: 32px;
+		font-size: 28px;
+		line-height: 32px;
+	}
+
+
+	.icon[data-icon="file-text"]:before { content: "🖹"; }
+	.icon[data-icon="file-image"]:before { content: "🖻"; }
+	.icon[data-icon="file-video"]:before { content: "📹"; }
+	.icon[data-icon="file-web"]:before { content: "🌐"; }
+	.icon[data-icon="file-script"]:before { content: "🖵"; }
+	.icon[data-icon="file-directory"]:before { content: "🗀"; }
+	.icon[data-icon="file-symlink"]:before { content: "⮫"; }
+	.icon[data-icon="file-generic"]:before { content: "🗋"; }
+
+	.icon[data-icon="window-minimize"]:before { content: "▁"; }
+	.icon[data-icon="window-maximize"]:before { content: "🗖"; }
+	.icon[data-icon="window-restore"]:before { content: "🗗"; }
+	.icon[data-icon="window-close"]:before { content: "🞮"; }
+
+	.icon[data-icon="startbutton"]:before { content: "🐧"; }
+	.icon[data-icon="startmenu-logout"]:before { content: "🢀"; }
+	.icon[data-icon="startmenu-shutdown"]:before { content: "⏻"; }
+
+	.icon[data-icon="generic-empty"]:before { content: ""; }
+	.icon[data-icon="generic-placeholder"]:before { content: "Ⓧ"; }
+	.icon[data-icon="generic-pinguin"]:before { content: "🐧"; }
+	.icon[data-icon="generic-mouse"]:before { content: "🖰"; }
+	.icon[data-icon="generic-keyboard"]:before { content: "⌨"; }
+	.icon[data-icon="generic-settings"]:before { content: "⚙"; }
+	.icon[data-icon="generic-info"]:before { content: "ⓘ"; }
+	.icon[data-icon="generic-error"]:before { content: "⮿"; }
+	.icon[data-icon="generic-computer"]:before { content: "🖵"; }
+	.icon[data-icon="generic-ellipsis"]:before { content: "…"; }
+
+	.icon[data-icon="action-back"]:before { content: "🠸"; }
+	.icon[data-icon="action-forward"]:before { content: "🠺"; }
+	.icon[data-icon="action-up"]:before { content: "🠹"; }
+	.icon[data-icon="action-down"]:before { content: "🠻"; }
+	.icon[data-icon="action-copy"]:before { content: "⮻"; }
+	.icon[data-icon="action-cut"]:before { content: "✀"; }
+	.icon[data-icon="action-paste"]:before { content: "📋"; }
+	.icon[data-icon="action-go"]:before { content: "➞"; }
+	.icon[data-icon="action-delete"]:before { content: "⌧"; }
+	.icon[data-icon="action-download"]:before { content: "🠻"; }
+	.icon[data-icon="action-upload"]:before { content: "🠹"; }
+	.icon[data-icon="action-rename"]:before { content: "…"; }
+	.icon[data-icon="action-open"]:before { content: "🗁"; }
+	.icon[data-icon="action-reload"]:before { content: "🗘"; }
+	.icon[data-icon="action-exit"]:before { content: "Ⓧ"; }
+	.icon[data-icon="action-new"]:before { content: "🗋"; }
+	.icon[data-icon="action-save"]:before { content: "🖫"; }
+	.icon[data-icon="action-saveas"]:before { content: "🗐"; }
+	.icon[data-icon="action-undo"]:before { content: "⟲"; }
+	.icon[data-icon="action-redo"]:before { content: "⟳"; }
+	.icon[data-icon="action-date"]:before { content: "🗓"; }
+
+	.icon[data-icon="application-generic"]:before { content: "🗔"; }
+	.icon[data-icon="application-l1t"]:before { content: "L1"; }
+	.icon[data-icon="application-file-manager"]:before { content: "🗀"; }
+	.icon[data-icon="application-terminal-manager"]:before { content: "🖵"; }
+	.icon[data-icon="application-terminal"]:before { content: "🖵"; }
+	.icon[data-icon="application-x11-manager"]:before { content: "🖰"; }
+	.icon[data-icon="application-x11-stream"]:before { content: "🖰"; }
+	.icon[data-icon="application-browser"]:before { content: "🌐"; }
+	.icon[data-icon="application-freedos"]:before { content: "🗔"; }
+	.icon[data-icon="application-lxc-manager"]:before { content: "🗔"; }
+	.icon[data-icon="application-system-info"]:before { content: "ⓘ"; }
+	.icon[data-icon="application-text-editor"]:before { content: "🖹"; }
+	.icon[data-icon="application-settings"]:before { content: "⚙"; }
+	.icon[data-icon="application-run"]:before { content: "➔"; }
+
+/* /icons */

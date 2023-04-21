@@ -12,19 +12,30 @@ No external dependencies, no package managers, no layers of cruft.
 This project is not intended to be hosted publicly.
 Please assume that everyone who has access to an instance already has root access ;)
 You should add external authentication(e.g. via an authenticating reverse proxy) if
-you wan to make this externall accesible(this provides no authentication itself).
+you wan to make this externally accessible(this provides no authentication itself).
 
 
 
 ## Installation
 
-The installation is fairly straigh-forward.
+The installation is fairly straight-forward.
 The only requirements for the web interface are web server with CGI support,
-and bash plus some basic shell utillites.
+and bash plus some basic shell utillities.
 
 ```
 # install dependencies
-sudo apt install busybox tmux tree xvfb ffmpeg jq sed xwininfo xdotool matchbox-window-manager
+sudo apt install \
+	busybox \ # for: http server
+	tree \ # for: file manager
+	jq \ # for: generic
+	sed \ # for: generic
+	tmux \ # for: terminal emulator
+	xvfb \ # for: x11 streamer
+	ffmpeg \ # for: x11 streamer
+	xwininfo \# for: x11 streamer
+	xdotool \# for: x11 streamer
+	matchbox-window-manager \ # for: x11 streamer
+	python3-markdown-it # for: file manager, text editor
 
 # clone the repo
 git clone https://github.com/max1220/lxc-scripts -b devember
@@ -102,6 +113,10 @@ The web interface currently has the following features(possibly incomplete):
        - Creation time
        - Size
        - Reverse
+     * view
+       - toggle byte/human-readable sizes
+       - show/hide columns
+       - show/hide dot files
      * Copy to clipboard
        - Mark selected files for copy
      * Cut to clipboard
@@ -116,6 +131,8 @@ The web interface currently has the following features(possibly incomplete):
        - Supports multiple selected files
      * Set mode
        - Set permissions on file(chmod)
+     * Upload file
+       - Uploads file to server base64-encoded
      * Download as tar
        - Download selected files as .tar file
      * New File
@@ -125,7 +142,8 @@ The web interface currently has the following features(possibly incomplete):
    - Open file via menu, hash-location, or file manager
    - Save(to current filename or save as)
    - Toggleable line-wrap
-   - Toggleable HTML preview
+   - Toggleable preview(HTML, markdown)
+   - Show current file size and cursor position
 
  * Info dialog
    - Shows some basic system information
@@ -176,7 +194,7 @@ The web interface currently has the following features(possibly incomplete):
  * You can open most application links in anoter tab by right-clicking on them.
    - e.g. open a browser tab with only the file manager content, no taskbar etc.
  * iframes sometimes behave strangely with focusing
-   - If you type and don't see any respone, try clicking into the window to set the focus(The titlebar color is unreliable)
+   - If you type and don't see any respone, try clicking into the window to set the focus
 
 
 
@@ -184,17 +202,28 @@ The web interface currently has the following features(possibly incomplete):
 
 Some features didn't make it in time. Here is my TODO list:
 
+ * All applications
+   - Port over all applications to cgi_commands
+     * DONE: file_manager, x11_manager, x11_streamer
+   - Use new Layout and CSS in all applications
+     * DONE: file_manager
+ * X11 streamer
+   - Proper menu system
+   - Sound
+     * Forward sound from server
+     * Forward microphone to server
  * Help system
    - Should provide basic information on most application
    - Should contain all documentation in this project
  * Desktop
    - Maximize: auto resize maximized windows
-   - creatable/editable/moveable desktop icons
+   - creatable/editable/moveable desktop icons and start menu
    - Fix Startmenu sub-menus
-   - Add boot screen with some animations and stuff
- * File manager
-   - Implement upload file
-   - Implement view-menu
+   - Persistent settings
+   - Window system improvements
+     * Create window client/window server libraries
+     * Create draggable library
+     * Make titlebar icons use icons.css
  * LXC
    - Fix info layout
    - Connect in terminal
@@ -203,4 +232,7 @@ Some features didn't make it in time. Here is my TODO list:
    - Copy screen content to clipboard
    - Mouse support
    - Scrollback buffer?
- * Run dialog styling
+ * Run dialog
+   - port over from app_example
+ * SSH connection manager thing
+ * automatic install, configure, launch scripts

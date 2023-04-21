@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>Menubar test</title>
+		<link rel="stylesheet" href="/static/css/xp/style.css">
+		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<link rel="stylesheet" href="/static/css/xp/icons.css">
+		<style>
+			:root {
+				--windows-content-padding: 1px;
+				--menubar-height: 66px;
+			}
+			body {
+				background-color: #fff;
+			}
+		</style>
+	</head>
+	<body onload="window_onload()">
+		<div class="menu-bar">
+			<div class="menu-row">
+				<div class="menu-container">
+					<div class="menu-category">Basic</div>
+					<div class="menu-sub hidden">
+						<a class="menu-item">Foo...</a>
+						<a class="menu-item">Bar</a>
+						<a class="menu-item">Buzz</a>
+						<a class="menu-item">Spam</a>
+						<a class="menu-item">Ham</a>
+						<a class="menu-item">Bam</a>
+						<div class="menu-spacer"></div>
+						<a href="about:blank" class="menu-item">Exit</a>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Icon</div>
+					<div class="menu-sub hidden">
+						<a class="menu-item icon icon-16" data-icon="generic-pinguin">Pinguin</a>
+						<a class="menu-item icon icon-16" data-icon="generic-mouse">Mouse</a>
+						<a class="menu-item icon icon-16" data-icon="generic-settings">Settings</a>
+						<a class="menu-item icon icon-16" data-icon="generic-computer">Computer</a>
+						<a class="menu-item icon icon-16" data-icon="generic-info">Info</a>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Checkbox</div>
+					<div class="menu-sub hidden">
+						<label class="menu-item" >
+							<input type="checkbox" checked>
+							Foo
+						</label>
+						<label class="menu-item" >
+							<input type="checkbox">
+							Bar
+						</label>
+						<label class="menu-item" >
+							<input type="checkbox">
+							Buzz
+						</label>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Radio</div>
+					<div class="menu-sub hidden">
+						<label class="menu-item">
+							<input type="radio" name="rg" checked>
+							Foo
+						</label>
+						<label class="menu-item">
+							<input type="radio" name="rg">
+							Bar
+						</label>
+						<label class="menu-item">
+							<input type="radio" name="rg">
+							Buzz
+						</label>
+					</div>
+				</div>
+				<div class="menu-container">
+					<div class="menu-category">Content</div>
+					<div class="menu-sub hidden">
+						<a class="menu-item">Foo</a>
+						<a class="menu-item">Bar</a>
+						<div class="menu-spacer"></div>
+						<h2>Example content</h2>
+						<p>Hello world foo bar buzz spam ham bam</p>
+					</div>
+				</div>
+			</div>
+			<div class="menu-row" style="height: 44px;">
+				<button class="toolbar-btn">
+					<span class="toolbar-icon">🠸</span>
+					<span class="toolbar-text">Back</span>
+				</button>
+				<button class="toolbar-btn">
+					<span class="toolbar-icon">🠺</span>
+					<span class="toolbar-text">Forward</span>
+				</button>
+				<button class="toolbar-btn">
+					<span class="toolbar-icon">🠹</span>
+					<span class="toolbar-text">Up</span>
+				</button>
+				<div class="toolbar-spacer"></div>
+				<button class="toolbar-btn">
+					<span class="toolbar-icon-small">⮻</span>
+					<span class="toolbar-text">Copy</span>
+				</button>
+				<button class="toolbar-btn">
+					<span class="toolbar-icon-small">✀</span>
+					<span class="toolbar-text">Cut</span>
+				</button>
+				<button class="toolbar-btn">
+					<span class="toolbar-icon-small">📋</span>
+					<span class="toolbar-text">Paste</span>
+				</button>
+			</div>
+		</div>
+
+		<div class="window-content">
+			<h1>Menubar test page</h1>
+			<p>This is the test page for menubars.</p>
+		</div>
+
+
+		<script src="/static/js/fix_link_targets_iframe.js"></script>
+		<script src="/static/js/fix_radio_onchange.js"></script>
+	</body>
+
+<!--
+These values are read outside of the iframe
+to determine the prefered size of this window:
+{{{window_width=600}}}
+{{{window_height=400}}}
+{{{window_resizeable}}}
+-->
+</html>
+
+
+
+
+
+
