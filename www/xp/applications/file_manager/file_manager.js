@@ -1,3 +1,5 @@
+"use strict";
+
 // create an application state object with some defaults
 let state_obj = {}
 let state = new AppState(state_obj)
@@ -38,8 +40,9 @@ function register_state_parameters() {
 }
 register_state_parameters()
 
-let cgi_commands = new CgiCommands("/cgi-bin/cgi_command.sh")
+let cgi_commands = new CgiCommands(CGI_BACKEND)
 let file_manager = new FileManager(cgi_commands)
+let message_box = new MessageBox()
 
 
 
@@ -47,13 +50,13 @@ let file_manager = new FileManager(cgi_commands)
 
 // wrapper to list files for the file tree(left side)
 function list_files_tree(path) {
-	console.log("Requesting file list for tree:", path)
+	update_status_message("Requesting file list for tree:", path)
 	return file_manager.list(path, 1, true)
 }
 
 // wrapper to list files for the content(right side)
 function list_files_content(path) {
-	console.log("Requesting file list for content:", path)
+	update_status_message("Requesting file list for content:", path)
 	return file_manager.list(
 		path,
 		1,
@@ -66,7 +69,12 @@ function list_files_content(path) {
 	)
 }
 
-
+function update_status_message(...args) {
+	let str = args.join(" ")
+	let status_text_elem = document.getElementById("status-message")
+	status_text_elem.innerText = str
+	console.log(...args)
+}
 
 /* --- TREE/TABLE GENERATION --- */
 
@@ -181,8 +189,8 @@ function update_sub_tree(summary_elem) {
 /* --- TREE/TABLE NAVIGATION --- */
 
 // navigate the tree-page on the left
-function navigate_tree(new_tree_path) {
-	let files_list = list_files_tree(new_tree_path)
+function navigate_tree(new_tree_path, files_list) {
+	files_list = files_list || list_files_tree(new_tree_path)
 	if (!files_list) { return; }
 	state.data.tree_path = new_tree_path
 
@@ -249,8 +257,9 @@ function highlight_tree(highlight_dir_path) {
 }
 
 // navigate the content-page on the right
-function navigate_content(new_content_path, do_highlight) {
-	let files_list = list_files_content(new_content_path)
+function navigate_content(new_content_path, do_highlight, files_list) {
+	console.log("Navigate content:", new_content_path)
+	files_list = files_list || list_files_content(new_content_path)
 	if (!files_list) { return; }
 	state.data.content_path = new_content_path
 	state.data.history.push(new_content_path)
@@ -265,8 +274,9 @@ function navigate_content(new_content_path, do_highlight) {
 
 // utillity wrapper for calling both functions at the same time
 function navigate_both(new_path) {
-	navigate_tree(new_path)
-	navigate_content(new_path, false)
+	let files_list = list_files_content(new_path)
+	navigate_tree(new_path, files_list)
+	navigate_content(new_path, false, files_list)
 }
 
 // Update the data-selected attribute on all rows
@@ -293,6 +303,7 @@ function unselect_all() {
 
 // refresh the content, but don't unselect elements or modify history
 function refresh_content() {
+	update_status_message("Refreshing content:",state.data.content_path)
 	let file_table_elem = document.getElementById("file-table")
 	let files_list = list_files_content(state.data.content_path)
 	let new_file_table_elem = generate_content_table(files_list.contents)
@@ -311,7 +322,7 @@ function tree_file_click(file, summary_elem, details_elem) {
 // when a file in the file table was double-clicked
 function content_file_double_click(file) {
 	return function(e) {
-		console.log("content_file_double_click", file)
+		update_status_message("Double clicked file:", file.name)
 		if (file.type == "directory") {
 			navigate_content(file.name)
 		} else {
@@ -324,6 +335,7 @@ function content_file_double_click(file) {
 // when a file in the file table was clicked
 function content_file_click(file) {
 	return function() {
+		update_status_message("Selected file:", file.name)
 		if (state.data.selected_files.includes(file.name)) {
 			state.data.selected_files.splice(state.data.selected_files.indexOf(file.name), 1)
 			update_selected_files()
@@ -347,70 +359,105 @@ function menubar_file_path_keyup() {
 
 
 
-/* --- PROGRESS WINDOW --- */
-
-// called when the action in the progress window is finished
-function on_progress_finish() {
-	document.getElementById("progress_text").innerText = "Action completed."
-	document.getElementById("progress_close").classList.remove("hidden")
-	refresh_content()
-}
-
-// called when the action produces some output
-function on_progress_stdout(data) {
-	document.getElementById("progress_status").innerText += data + "\n"
-}
-
-// show the progress dialog
-function show_progress_window(title, text) {
-	show_popup("progress-window")
-	document.getElementById("progress_title").innerText = title
-	document.getElementById("progress_text").innerText = text
-	document.getElementById("progress_status").innerText = ""
-	document.getElementById("progress_close").classList.add("hidden")
-}
-
-// show the progress dialog and start to paste from clipboard(copy/move)
-function paste_from_clipboard_progress(target_dir) {
-	let clipboard_mode = state.data.clipboard_mode
+// show the dialog to start to paste(copy) from clipboard
+function copy_from_clipboard(target_dir) {
 	let clipboard = state.data.clipboard
-	console.log("paste", clipboard_mode, clipboard)
-	if (clipboard.length<1) { return; }
-	if ((clipboard_mode == "copy") && confirm("Copy " + clipboard.length + " files to " + target_dir + "?")) {
-		show_progress_window("Copying...", "Copying from clipboard.")
-		file_manager.copy(clipboard, target_dir, true, on_progress_finish, on_progress_stdout)
-	} else if ((clipboard_mode == "cut") && confirm("Move " + clipboard.length + " files to " + target_dir + "?")) {
-		show_progress_window("Moving...", "Moving from clipboard.")
-		file_manager.move(clipboard, target_dir, on_progress_finish, on_progress_stdout)
-	}
+	message_box.show_message_box_info({
+		win_title: "Copy files?",
+		main_text: `Copy ${clipboard.length} files to ${target_dir}?`,
+		blocktext: clipboard.join("\n")
+	}, function(ret) {
+		if (ret !== "confirm") { return; }
+		message_box.show_message_box_command({
+			win_title: "Copying...",
+			command: file_manager.copy_command(clipboard, target_dir, true)
+		}, function(ret) {
+			refresh_content()
+			if (ret!=="confirm") { return; }
+			clipboard = undefined
+			clipboard_mode = undefined
+		})
+	})
 }
 
-// show the progress dialog and start to remove(delete) selected files
-function remove_selected_progress() {
-	let selected_files = state.data.selected_files
-	if (selected_files.length<1) { return; }
-	if (confirm("Delete " + selected_files.length + " files?")) {
-		show_progress_window("Deleting...", "Deleting selected files.")
-		file_manager.remove(selected_files, true, on_progress_finish, on_progress_stdout)
-	}
+// show the dialog to start to paste(move) from clipboard
+function move_from_clipboard(target_dir) {
+	let clipboard = state.data.clipboard
+	message_box.show_message_box_info({
+		win_title: "Move files?",
+		main_text: `Move ${clipboard.length} files to ${target_dir}?`,
+		blocktext: clipboard.join("\n")
+	}, function(ret) {
+		if (ret !== "confirm") { return; }
+		message_box.show_message_box_command({
+			win_title: "Moving...",
+			command: file_manager.move_command(clipboard, target_dir)
+		}, function(ret) {
+			refresh_content()
+			if (ret!=="confirm") { return; }
+			unselect_all()
+		})
+	})
 }
 
 // show the progress dialog and start to upload the selected files
 function upload_files_progress(files_list) {
-	show_progress_window("Uploading...", "uploading selected files.")
-	let remaining_files = files_list.length
+	if (files_list.length==0) { return; }
+	let cur_file = files_list[0].name
+	let cur_file_pct = 0
+	let total_uploaded = 0
+	function progress_msgbox_parms() {
+		let total_pct = Math.floor((total_uploaded/files_list.length)*100)
+		return {
+			win_title: "Uploading...",
+			win_size: "300x200",
+			main_html: `
+				Uploading ${files_list.length} files:<br>
+				<br>
+				Current file: ${cur_file}(${cur_file_pct}%)<br>
+				<progress class="progress" max="100" value="${cur_file_pct}">${cur_file_pct}%</progress><br>
+				<br>
+				Total: ${total_uploaded}/${files_list.length}(${total_pct}%)<br>
+				<progress class="progress" max="${files_list.length}" value="${total_uploaded}">${total_pct} %</progress>
+			`,
+			confirm_button: (total_uploaded!==files_list.length) ? "hidden" : "Confirm",
+			cancel_button: "Cancel"
+		}
+	}
+
+	let xhr_reqs = []
+	let progress_msgbox_win = message_box.show_message_box_info(progress_msgbox_parms(), function(ret) {
+		if (ret=="confirm") {
+			refresh_content()
+		} else {
+			xhr_reqs.forEach(function(e) { e.abort() })
+		}
+	})
+	function update_progress_msgbox() {
+		message_box.update_message_box(progress_msgbox_win, progress_msgbox_parms())
+	}
+
 	for (let file of files_list) {
 		let reader = new FileReader();
 		reader.onload = function(e) {
 			let base64_str = e.target.result.split(";base64,")[1]
-			let file_path = state.data.content_path + "/" + file.name
-			file_manager.upload_file_base64(base64_str, file_path, function(ret) {
-				on_progress_stdout(`Uploaded to ${file_path} (${file.size} bytes): ${ret}`)
-				remaining_files = remaining_files - 1
-				if (remaining_files==0) {
-					on_progress_finish()
-				}
+
+			let target_file_path = state.data.content_path + "/" + file.name
+			cur_file = file.name
+			update_progress_msgbox()
+
+			console.log("Uploading ",base64_str.length, "bytes to ",target_file_path)
+			let xhr_req = file_manager.upload_file_base64(base64_str, target_file_path, function(ret) {
+				console.log("Upload for ", target_file_path, "completed")
+				total_uploaded += 1;
+				update_progress_msgbox()
+				refresh_content()
+			}, function(e) {
+				console.log("progress", e)
+				cur_file_pct = (e.loaded/e.total)*100
+				update_progress_msgbox()
 			})
+			xhr_reqs.push(xhr_req)
 		}
 		reader.readAsDataURL(file)
 	}
@@ -418,10 +465,6 @@ function upload_files_progress(files_list) {
 
 
 /* --- BUTTON HANDLERS --- */
-
-function btn_open_go() {
-	navigate_both(prompt("Please enter the path you want to open:"))
-}
 
 function btn_menubar_go() {
 	let menu_file_path = document.getElementById("menubar_file_path").value
@@ -446,10 +489,12 @@ function btn_cut() {
 }
 
 function btn_paste() {
-	console.log("Pasting to:", state.data.content_path)
-	paste_from_clipboard_progress(state.data.content_path)
-	clipboard = undefined
-	clipboard_mode = undefined
+	let clipboard_mode = state.data.clipboard_mode
+	if (clipboard_mode == "copy") {
+		return copy_from_clipboard(state.data.content_path)
+	} else if (clipboard_mode == "cut") {
+		return move_from_clipboard(state.data.content_path)
+	}
 }
 
 function btn_back() {
@@ -475,26 +520,55 @@ function btn_forward() {
 }
 
 function btn_new_file() {
-	let file_path = prompt("Enter a path for the new file:")
-	if (file_path) {
+	message_box.show_message_box_input({
+		win_title: "New file...",
+		win_size: "300x150",
+		main_text: "Please enter the file name or path to touch:",
+	}, function(ret) {
+		if (ret[0]!=="confirm") { return; }
+		let file_path = ret[1]
 		file_path = file_path.startsWith("/") ? file_path : state.data.content_path + "/" + file_path
 		file_manager.touch(file_path)
 		refresh_content()
-	}
+	})
 }
 
 function btn_new_folder() {
-	let folder_path = prompt("Enter a path for the new folder:")
-	if (folder_path) {
+	message_box.show_message_box_input({
+		win_title: "New folder...",
+		win_size: "300x150",
+		main_text: "Please enter the directory name or path to create:",
+	}, function(ret) {
+		if (ret[0]!=="confirm") { return; }
+		let folder_path = ret[1]
 		folder_path = folder_path.startsWith("/") ? folder_path : state.data.content_path + "/" + folder_path
 		file_manager.mkdir(folder_path)
 		refresh_content()
-	}
+	})
 }
 
 function btn_delete() {
-	remove_selected_progress()
-	unselect_all()
+	let selected_files = state.data.selected_files
+	if (selected_files.length==0) { return; }
+	message_box.show_message_box_info({
+		win_title: "Delete files?",
+		main_text: `Delete ${selected_files.length} selected files?`,
+		blocktext: selected_files.join("\n"),
+		greyout: true
+	}, function(ret) {
+		if (ret!=="confirm") { return; }
+		message_box.show_message_box_command({
+			win_title: "Deleting...",
+			main_text: "Deleting selected files.",
+			command: file_manager.remove_command(selected_files, true),
+			greyout: true
+		}, function(ret) {
+			refresh_content()
+			if (ret!=="confirm") { return; }
+			unselect_all()
+		})
+	})
+
 }
 
 function btn_refresh() {
@@ -502,30 +576,62 @@ function btn_refresh() {
 	unselect_all()
 }
 
+function show_next_rename_dialog() {
+	if (state.data.selected_files.length==0) { return; }
+	let selected_file = state.data.selected_files.pop()
+	let base_dir = file_manager.basedir(selected_file)
+	let file_name = file_manager.basename(selected_file)
+
+	message_box.show_message_box_input({
+		win_title: "Rename...",
+		win_size: "300x150",
+		main_text: "Please enter the new filename for file:\n"+selected_file
+	}, function(ret) {
+		if (ret[0] !== "confirm") { return; }
+		let new_file_path = ret[1]
+		if (!new_file_path.startsWith("/")) {
+			new_file_path = base_dir + "/" + ret[1]
+		}
+		file_manager.move(selected_file, new_file_path, function() {
+			refresh_content()
+			show_next_rename_dialog()
+		})
+	})
+}
+
 function btn_rename() {
-	for (let selected_file of state.data.selected_files) {
-		let base_dir = file_manager.basedir(selected_file)
-		let file_name = file_manager.basename(selected_file)
-		let new_file_name = prompt("Enter a new name for the file:\n"+file_name)
-		if ((!new_file_name) || (new_file_name=="")) { continue; }
-		let new_file_path = base_dir + "/" + new_file_name
-		if (new_file_name.startsWith("/")) { new_file_name }
-		file_manager.move(selected_file, new_file_path, refresh_content)
-	}
-	unselect_all()
+	show_next_rename_dialog()
 }
 
 function btn_set_mode() {
-	for (let selected_file of state.data.selected_files) {
-		let new_mode_str = prompt("Enter a new octal mode for the file:\n"+selected_file)
-		if (new_mode_str.match("^[0-7]?[0-7][0-7][0-7]$")) {
-			cgi_commands.run_command_sync(["chmod", new_mode_str, selected_file])
-			refresh_content()
-		} else {
-			alert("Invalid octal mode!")
-		}
-	}
-	unselect_all()
+	if (state.data.selected_files.length==0) { return; }
+	message_box.show_message_box_input({
+		win_title: "Set mode...",
+		win_size: "300x150",
+		main_text: "Please enter the new octal mode for the selected files:\n"+state.data.selected_files.join("\n"),
+		text_label: "Mode:",
+		greyout: true
+	}, function(ret) {
+		if (ret[0] !== "confirm") { return; }
+		let new_mode_str = ret[1]
+		if (!new_mode_str.match("^[0-7]?[0-7][0-7][0-7]$")) { return; }
+		console.log("new_mode_str",new_mode_str)
+
+		setTimeout(function() {
+			message_box.show_message_box_command({
+				win_title: "Changing mode...",
+				main_text: "Changing file mode bits of selected files.",
+				command: file_manager.chmod_command(state.data.selected_files, new_mode_str, true),
+				greyout: true
+			}, function(ret) {
+				refresh_content()
+				if (ret!=="confirm") { return; }
+				unselect_all()
+			})
+		},0)
+
+
+	})
 }
 
 function btn_download_tar() {
@@ -543,11 +649,32 @@ function btn_upload_files() {
 }
 
 function btn_open_directory() {
-	let dir_path = prompt("Please enter the path of the base directory:")
-	if (!file_manager.test.directory(dir_path)) {
-		alert("Directory not found!")
-	}
-	navigate_both(dir_path)
+	message_box.show_message_box_file({
+		win_title: "Open directory...",
+		filename_label: "hidden"
+	}, function(ret) {
+		if (ret[0]!=="confirm") { return; }
+		navigate_both(ret[1])
+	})
+}
+
+function btn_about() {
+	message_box.show_message_box_info({
+		win_icon: "application-file-manager",
+		win_size: "300x250",
+		win_title: "About File Manager",
+		title_text: "About File Manager",
+		title_icon: "application-file-manager",
+		main_html: `
+		A simple file manager.
+		<ul>
+			<li>generic CGI backend written in Bash</li>
+			<li>front-end written in vanilla javascript</li>
+		</ul>
+		`,
+		okay_button: "Close",
+		greyout: false,
+	})
 }
 
 function radio_sort() {
@@ -561,6 +688,15 @@ function radio_sort() {
 
 /* --- INITIALIZATION --- */
 
+// called by the WM when the window is loaded
+function win_load() {
+	win.title = "File manager"
+	win.icon = "application-file-manager"
+	win.resize(660, 400)
+	win.update()
+}
+
+// called when the page is read(body onload)
 function body_onload() {
 	// load the initial configuration values from the HTML data,
 	// by calling all onchange functions for input elements with the data-update attribute.

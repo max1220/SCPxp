@@ -2,18 +2,25 @@
 
 function X11Streamer(config_obj, cgi_commands) {
 
+	this.xvfb_run_script = "bin/x_session_xvfb.sh"
+	this.mirror_run_script = "bin/x_session_mirror.sh"
+	this.sessions_dir = "xsessions"
+
 	// utillity functions to run a command with the display and session_id set
 	this.run_command_async = function(cmd, cb) {
 		let env = [
+			[ "SESSIONS_DIR", this.sessions_dir ],
+			[ "SESSION_ID", config_obj.session_id ],
 			[ "DISPLAY", config_obj.display ],
-			[ "SESSION_ID", config_obj.session_id ]
 		]
 		return cgi_commands.run_command_async(cb, cmd, undefined, undefined, env)
 	}
+
 	this.run_command_sync = function(cmd) {
 		let env = [
+			[ "SESSIONS_DIR", this.sessions_dir ],
+			[ "SESSION_ID", config_obj.session_id ],
 			[ "DISPLAY", config_obj.display ],
-			[ "SESSION_ID", config_obj.session_id ]
 		]
 		return cgi_commands.run_command_sync(cmd, undefined, undefined, env)
 	}
@@ -68,23 +75,22 @@ function X11Streamer(config_obj, cgi_commands) {
 	// xauthority is the path to an xauthority file to use.
 	this.enc_create_session_xvfb = function(new_session_id, cmd, session_wm, create_width, create_height, xauthority, event_stream) {
 		let server_args_str = "-screen 0 " + create_width+"x"+create_height+"x24"
-		//let esc = cgi_commands.escape_shell_arg
-		function esc(e) { return e; }
 
 		return cgi_commands.encode_command(
 			[
 				"xvfb-run",
 				"-a",
 				"-f",
-				esc(xauthority),
+				xauthority,
 				"-s",
-				esc(server_args_str),
-				"bin/x_session_xvfb.sh",
-				esc(cmd),
+				server_args_str,
+				this.xvfb_run_script,
+				cmd,
 			],
 			undefined,
 			undefined,
 			[
+				[ "SESSIONS_DIR", this.sessions_dir ],
 				[ "SESSION_ID", new_session_id ],
 				[ "XAUTHORITY", xauthority ],
 				[ "SESSION_WM", session_wm ],
@@ -99,10 +105,11 @@ function X11Streamer(config_obj, cgi_commands) {
 	// encode a command create a new session from an exisiting X11 server.
 	this.enc_create_session_mirror = function(new_session_id, mirror_display, xauthority, event_stream) {
 		return cgi_commands.encode_command(
-			[ "bin/x_session_mirror.sh" ],
+			[ this.mirror_run_script ],
 			undefined,
 			undefined,
 			[
+				[ "SESSIONS_DIR", this.sessions_dir ],
 				[ "SESSION_ID", new_session_id ],
 				[ "XAUTHORITY", xauthority ],
 				[ "DISPLAY", mirror_display ]
@@ -112,18 +119,45 @@ function X11Streamer(config_obj, cgi_commands) {
 		)
 	}
 
+	// list all active sessions and info about them(TODO: Uses fewer requests)
+	this.list_sessions = function() {
+		let sessions_list_str = cgi_commands.run_command_sync( ["ls", this.sessions_dir] )
+		if (!sessions_list_str || sessions_list_str=="") { return; }
+		let session_list = sessions_list_str.split("\n")
+		let sessions = []
+		session_list.forEach(function(session_id) {
+			if (session_id=="") { return; }
+			let session_pid = cgi_commands.run_command_sync([ "cat", this.sessions_dir+"/"+session_id+"/pid" ])
+			let session_display = cgi_commands.run_command_sync([ "cat", this.sessions_dir+"/"+session_id+"/display" ])
+			let session_command = cgi_commands.run_command_sync([ "cat", this.sessions_dir+"/"+session_id+"/command"])
+			if (session_command == "") { session_command=undefined; }
+			sessions.push({
+				id: session_id,
+				pid: session_pid,
+				display: session_display,
+				command: session_command
+			})
+		}, this)
+		return sessions
+	}
+
+	// kill the current session
+	this.kill_session = function() {
+		this.run_command_sync(["eval", "kill \"$(cat $SESSIONS_DIR/$SESSION_ID/pid)\""])
+	}
+
 	// run the xdotool command, call cb on success
 	this.send_xdotool_cmd_direct = function(xdotool_args, cb) {
 		let xdotool_cmd_direct = [ "xdotool" ].concat(xdotool_args)
 		return this.run_command_async(xdotool_cmd_direct, cb)
 	}
+
 	// run the xdotool command via an already-prepared FIFO for a session
 	this.send_xdotool_cmd_session = function(xdotool_args) {
-		let xdotool_args_enc = xdotool_args.join(" ")
 		let xdotool_cmd_session = [
 			"eval",
 			"echo",
-			cgi_commands.escape_shell_arg(xdotool_args_enc),
+			cgi_commands.escape_shell_args(xdotool_args),
 			">",
 			"xsessions/"+config_obj.session_id+"/xdotool"
 		]
@@ -173,13 +207,12 @@ function X11Streamer(config_obj, cgi_commands) {
 		let newmode_resp = this.run_command_sync(newmode_cmd)
 		let addmode_resp = this.run_command_sync(addmode_cmd)
 		let setmode_resp = this.run_command_sync(setmode_cmd)
-		console.log("change xrandr res", setmode_resp)
 		return (setmode_resp=="ok")
 	}
 
 	// get the DISPLAY for a session
 	this.get_display_from_session = function(session_id) {
-		let get_display_cmd = [ "cat", "xsessions/" + session_id + "/display" ]
+		let get_display_cmd = [ "cat", this.sessions_dir + "/" + session_id + "/display" ]
 		return cgi_commands.run_command_sync(get_display_cmd)
 	}
 
@@ -213,14 +246,19 @@ function X11Streamer(config_obj, cgi_commands) {
 		c.view_height = Math.min(c.view_height, c.display_height)
 		c.view_width = Math.min(c.view_width, Math.min(c.display_width - c.view_offset_x))
 		c.view_height = Math.min(c.view_height, Math.min(c.display_height - c.view_offset_y))
+
+		return dimensions
 	}
 
 	// update the display for the current session
 	this.update_display = function() {
 		if (((!config_obj.display) || config_obj.display=="") && config_obj.session_id && (config_obj.session_id !== "")) {
 			config_obj.display = this.get_display_from_session(config_obj.session_id)
+			if ((!config_obj.display) || config_obj.display=="") {
+				return
+			}
 		}
-		this.update_display_dimensions()
+		return this.update_display_dimensions()
 	}
 
 	// resolving JS key codes to X11 keysyms
@@ -255,7 +293,9 @@ function X11Streamer(config_obj, cgi_commands) {
 		"PageDown": "Page_Down",
 		"Home": "Home",
 		"Insert": "Insert",
-		"ControlLeft": "Control_L"
+		"ControlLeft": "Control_L",
+		"IntlBackslash": "less",
+		"Backquote": "dead_circumflex",
 	}
 	let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	for (let i=0; i<alphabet.length; i++) {

@@ -63,10 +63,25 @@
 			)
 		;
 	}
+	.btn:disabled,
+	.btn[disabled] {
+		color: #888;
+		outline: none !important;
+		box-shadow: none !important;
+		background:
+			linear-gradient(
+				180deg,
+				#fff,
+				#ecebe5 86%,
+				#d8d0c4
+			) !important
+		;
+	}
 
 	.btn-panel {
 		display: flex;
 		justify-content: space-between;
+		margin: 5px;
 	}
 
 /* /buttons */

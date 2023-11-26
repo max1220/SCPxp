@@ -3,268 +3,116 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="Run command dialog">
+		<meta name="description" content="Greetings to the Level1techs Forums!">
 		<meta name="author" content="max1220">
-		<title>🖵 Terminal</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
-		<link rel="stylesheet" href="/static/css/xp/term_attrs.css">
-		<style>
-			body {
-				background-color: #000;
-			}
-			.terminal-content, .cursor-content {
-				position: absolute;
-				top: calc(var(--menubar-height) + var(--windows-content-padding) + 1px);
-				left: var(--windows-content-padding);
-				right: var(--windows-content-padding);
-				bottom: var(--windows-content-padding);
-				margin: 0 0;
-				background-color: #000;
-				color: #fff;
-				font-family: monospace;
-				font-size: 14px;
-				line-height: 1.3333333;
-			}
-			.cursor-content {
-				background-color: rgba(0,0,0,0);
-			}
-			.css_editor {
-				display: block;
-				font-family: monospace;
-				white-space: pre;
-				overflow: auto;
-				max-height: 400px;
-				background-color: #fff;
-				color: #111;
-				border: 1px solid #333;
-			}
-			.term-cursor {
-				animation: blinker 2s linear infinite;
-			}
-			@keyframes blinker {
-				50% { opacity: 0; }
-			}
-		</style>
+		<title>Terminal</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/applications/terminal/terminal.css">
+		<link rel="stylesheet" href="/xp/applications/terminal/terminal_attrs.css">
+		<link rel="stylesheet" href="/xp/config/application.css">
 	</head>
-	<body>
-		<div class="menu-bar">
-			<div class="menu-row">
-				<div class="menu-container">
-					<a class="menu-category">File</a>
-					<div class="menu-sub" hidden>
-						<a onclick="btn_new_window()" class="menu-item">New window</a>
-						<a onclick="btn_kill_session()" class="menu-item">Kill session</a>
-						<a onclick="btn_kill_window()" class="menu-item">Kill window</a>
-						<a onclick="show_popup('resize_window')" class="menu-item">Resize window...</a>
-						<a onclick="show_popup('theme_window')" class="menu-item">Edit theme...</a>
-						<div class="menu-spacer"></div>
-						<a href="about:blank#close" class="menu-item">Exit</a>
+	<body onload="body_onload()">
+		<div class="window-content" id="window-content">
+			<div class="menu-bar">
+				<div class="menu-row">
+					<div class="menu-container">
+						<a class="menu-category">File</a>
+						<div class="menu-sub" hidden>
+							<a onclick="menu_new_session()" class="menu-item icon icon-16" data-icon="file-generic">
+								New session
+							</a>
+							<div class="menu-spacer"></div>
+							<div id="sessions_list">
+							</div>
+							<div class="menu-spacer"></div>
+							<a onclick="menu_info()" class="menu-item icon icon-16" data-icon="generic-info">
+								Session info
+							</a>
+							<a onclick="menu_kill_session()" class="menu-item icon icon-16" data-icon="generic-warning">
+								Kill session
+							</a>
+							<div class="menu-spacer"></div>
+							<a href="about:blank#close" class="menu-item icon icon-16" data-icon="action-exit">
+								Exit
+							</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<a class="menu-category">Pane</a>
+						<div class="menu-sub" hidden>
+							<a onclick="menu_new_window()" class="menu-item">New window</a>
+							<div class="menu-spacer"></div>
+							<div id="panes_list">
+							</div>
+							<div class="menu-spacer"></div>
+							<a onclick="menu_kill_pane()" class="menu-item">Kill pane</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<a class="menu-category">Size</a>
+						<div class="menu-sub" hidden>
+							<a onclick="resize_window_to_terminal()" class="menu-item">Resize to content</a>
+							<a onclick="resize_terminal_to_window()" class="menu-item">Resize to window</a>
+							<a onclick="menu_resize_to_80x24()" class="menu-item">Resize to 80x24</a>
+							<div class="menu-spacer"></div>
+							<a onclick="menu_resize_to_custom()" class="menu-item">Resize to...</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<a class="menu-category">Send</a>
+						<div class="menu-sub" hidden>
+							<a onclick="menu_send_key('F1')" class="menu-item">F1</a>
+							<a onclick="menu_send_key('F2')" class="menu-item">F2</a>
+							<a onclick="menu_send_key('F3')" class="menu-item">F3</a>
+							<a onclick="menu_send_key('F4')" class="menu-item">F4</a>
+							<a onclick="menu_send_key('F5')" class="menu-item">F5</a>
+							<a onclick="menu_send_key('F6')" class="menu-item">F6</a>
+							<a onclick="menu_send_key('F7')" class="menu-item">F7</a>
+							<a onclick="menu_send_key('F8')" class="menu-item">F8</a>
+							<a onclick="menu_send_key('F9')" class="menu-item">F9</a>
+							<a onclick="menu_send_key('F10')" class="menu-item">F10</a>
+							<a onclick="menu_send_key('F11')" class="menu-item">F11</a>
+							<a onclick="menu_send_key('F12')" class="menu-item">F12</a>
+							<a onclick="menu_send_key('End')" class="menu-item">End</a>
+							<a onclick="menu_send_key('Home')" class="menu-item">Home</a>
+							<a onclick="menu_send_key('IC')" class="menu-item">Insert</a>
+							<a onclick="menu_send_key('PageDown')" class="menu-item">PageDown</a>
+							<a onclick="menu_send_key('PageUp')" class="menu-item">PageUp</a>
+							<div class="menu-spacer"></div>
+							<a onclick="menu_send_text()" class="menu-item icon icon-16" data-icon="🖮">Text...</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<a class="menu-category">Help</a>
+						<div class="menu-sub" hidden>
+							<a onclick="menu_about()" class="menu-item icon icon-16" data-icon="generic-info">About</a>
+						</div>
 					</div>
 				</div>
-				<div class="menu-container">
-					<a class="menu-category">Send</a>
-					<div class="menu-sub" hidden>
-						<a onclick="cmd_send_key('F1')" class="menu-item">F1</a>
-						<a onclick="cmd_send_key('F2')" class="menu-item">F2</a>
-						<a onclick="cmd_send_key('F3')" class="menu-item">F3</a>
-						<a onclick="cmd_send_key('F4')" class="menu-item">F4</a>
-						<a onclick="cmd_send_key('F5')" class="menu-item">F5</a>
-						<a onclick="cmd_send_key('F6')" class="menu-item">F6</a>
-						<a onclick="cmd_send_key('F7')" class="menu-item">F7</a>
-						<a onclick="cmd_send_key('F8')" class="menu-item">F8</a>
-						<a onclick="cmd_send_key('F9')" class="menu-item">F9</a>
-						<a onclick="cmd_send_key('F10')" class="menu-item">F10</a>
-						<a onclick="cmd_send_key('F11')" class="menu-item">F11</a>
-						<a onclick="cmd_send_key('F12')" class="menu-item">F12</a>
-						<a onclick="cmd_send_key('End')" class="menu-item">End</a>
-						<a onclick="cmd_send_key('Home')" class="menu-item">Home</a>
-						<a onclick="cmd_send_key('IC')" class="menu-item">Insert</a>
-						<a onclick="cmd_send_key('PageDown')" class="menu-item">PageDown</a>
-						<a onclick="cmd_send_key('PageUp')" class="menu-item">PageUp</a>
-						<div class="menu-spacer"></div>
-						<a onclick="show_popup('input_window')" class="menu-item">Text...</a>
-					</div>
-				</div>
-				<div class="menu-container">
-					<a class="menu-category">Windows</a>
-					<div class="menu-sub" hidden id="windows_list">
-					</div>
-				</div>
-				<div class="menu-container">
-					<a class="menu-category">Help</a>
-					<div class="menu-sub" hidden>
-						<a onclick="show_popup('about_window')" class="menu-item">About</a>
-					</div>
-				</div>
+			</div>
+
+			<div class="window-inner">
+				<div id="terminal-content" class="terminal-content" tabindex="0"><!--
+					--><div id="terminal-cursor" class="terminal-cursor">_</div><!--
+				--></div>
 			</div>
 		</div>
 
-		<div class="window-content">
-			<pre id="terminal-content" class="terminal-content">(No session)</pre>
-			<pre id="cursor-content" class="cursor-content"><!--
-				--><span id="cursor-indent"></span><!--
-				--><span id="term-cursor" class="term-cursor">_</span><!--
-			--></pre>
-		</div>
 
-		<div id="popups" class="popups hidden">
-
-			<!-- About window -->
-			<div id="about_window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text">About terminal</div>
-					<div class="title-bar-controls">
-						<button aria-label="Close" onclick="close_popup()"></button>
-					</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<h3>Terminal</h3>
-						<p>Just a Terminal emulator</p>
-						<ul>
-							<li>CGI API written in bash</li>
-							<li>Uses tmux to for persistent sessions and rendering</li>
-							<li>Front-end written in plain Javascript</li>
-						</ul>
-						<br>
-						<br>
-						<div class="btn-panel">
-							<span></span>
-							<button class="btn" onclick="close_popup()">Close</button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Resize pane window -->
-			<div id="resize_window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text">Resize current pane</div>
-					<div class="title-bar-controls">
-						<button onclick="close_popup()" aria-label="Close"></button>
-					</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<p>Provide the new dimensions of the current window:</p>
-						<button class="btn" onclick="btn_resize_window()" style="float: right;">Resize to window</button>
-						<p>
-							Set the dimensions based on the terminal window:
-							<input type="checkbox" onchange="checkbox_auto_resize()">
-						</p>
-
-						<div style="clear: both;">
-							<div class="field-row">
-								<label for="rows">Rows</label>
-								<input type="number" id="rows" name="rows" style="width: 50px;" value="24">
-							</div>
-							<div class="field-row">
-								<label for="cols">Columns</label>
-								<input type="number" id="cols" name="cols" style="width: 50px;" value="80">
-							</div>
-							<br>
-							<div class="btn-panel">
-								<span></span>
-								<button class="btn" onclick="btn_resize()">Resize</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- CSS editor -->
-			<div id="theme_window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text">Theme</div>
-					<div class="title-bar-controls">
-						<button onclick="close_popup()" aria-label="Close"></button>
-					</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<p>Here you can live-adjust the CSS for this terminal emulator:</p>
-
-						<div>
-							<style id="css_editor" contenteditable="plaintext-only">
-.term-bold { font-weight: bold; }
-.term-underline { text-decoration: underline; }
-
-.term-fg-30 { color: #000; }
-.term-fg-31 { color: #a00; }
-.term-fg-32 { color: #0a0; }
-.term-fg-33 { color: #aa0; }
-.term-fg-34 { color: #00a; }
-.term-fg-35 { color: #a0a; }
-.term-fg-36 { color: #0aa; }
-.term-fg-37 { color: #aaa; }
-
-.term-fg-90 { color: #555; }
-.term-fg-91 { color: #f55; }
-.term-fg-92 { color: #5f5; }
-.term-fg-93 { color: #ff5; }
-.term-fg-94 { color: #55f; }
-.term-fg-95 { color: #f5f; }
-.term-fg-96 { color: #5ff; }
-.term-fg-97 { color: #fff; }
-
-.term-bg-40 { background-color: #000; }
-.term-bg-41 { background-color: #a00; }
-.term-bg-42 { background-color: #0a0; }
-.term-bg-43 { background-color: #0a5; }
-.term-bg-44 { background-color: #00a; }
-.term-bg-45 { background-color: #a0a; }
-.term-bg-46 { background-color: #0aa; }
-.term-bg-47 { background-color: #aaa; }
-
-.term-bg-100 { background-color: #555; }
-.term-bg-101 { background-color: #f55; }
-.term-bg-102 { background-color: #5f5; }
-.term-bg-103 { background-color: #ff5; }
-.term-bg-104 { background-color: #55f; }
-.term-bg-105 { background-color: #f5f; }
-.term-bg-106 { background-color: #5ff; }
-.term-bg-107 { background-color: #fff; }
-							</style>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- text input -->
-			<div id="input_window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text">Text input</div>
-					<div class="title-bar-controls">
-						<button onclick="close_popup()" aria-label="Close"></button>
-					</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<p>Enter the text that is to be sent to the current pane.</p>
-						<textarea id="input" rows="10" cols="28"></textarea>
-						<div class="btn-panel">
-							<span></span>
-							<button class="btn" onclick="btn_input()">Send</button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-
-		</div>
-
-		<script src="/static/js/make_xhr.js"></script>
-		<script src="/static/js/popups.js"></script>
-		<script src="/static/js/xp/terminal.js"></script>
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script src="/xp/libraries/AppState.js"></script>
+		<script src="/xp/libraries/MessageBox.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="/xp/libraries/Terminal.js"></script>
+		<script src="/xp/applications/terminal/terminal.js"></script>
 	</body>
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=690}}}
-{{{window_height=500}}}
-{{{window_resizeable}}}
--->
 </html>
 
 

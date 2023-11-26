@@ -4,6 +4,7 @@
 		content: attr(data-icon);
 		display: inline-block;
 		box-sizing: border-box;
+		font-family: sans-serif;
 	}
 	.icon-16[data-icon]:before {
 		width: 16px;
@@ -50,6 +51,7 @@
 	.icon[data-icon="generic-keyboard"]:before { content: "⌨"; }
 	.icon[data-icon="generic-settings"]:before { content: "⚙"; }
 	.icon[data-icon="generic-info"]:before { content: "ⓘ"; }
+	.icon[data-icon="generic-warning"]:before { content: "⚠"; }
 	.icon[data-icon="generic-error"]:before { content: "⮿"; }
 	.icon[data-icon="generic-computer"]:before { content: "🖵"; }
 	.icon[data-icon="generic-ellipsis"]:before { content: "…"; }
@@ -81,14 +83,15 @@
 	.icon[data-icon="application-file-manager"]:before { content: "🗀"; }
 	.icon[data-icon="application-terminal-manager"]:before { content: "🖵"; }
 	.icon[data-icon="application-terminal"]:before { content: "🖵"; }
-	.icon[data-icon="application-x11-manager"]:before { content: "🖰"; }
-	.icon[data-icon="application-x11-stream"]:before { content: "🖰"; }
+	.icon[data-icon="application-x11-streamer"]:before { content: "🖰"; }
 	.icon[data-icon="application-browser"]:before { content: "🌐"; }
 	.icon[data-icon="application-freedos"]:before { content: "🗔"; }
 	.icon[data-icon="application-lxc-manager"]:before { content: "🗔"; }
 	.icon[data-icon="application-system-info"]:before { content: "ⓘ"; }
 	.icon[data-icon="application-text-editor"]:before { content: "🖹"; }
 	.icon[data-icon="application-settings"]:before { content: "⚙"; }
+	.icon[data-icon="application-picture-viewer"]:before { content: "🖼"; }
+	.icon[data-icon="application-video-viewer"]:before { content: "📺"; }
 	.icon[data-icon="application-run"]:before { content: "➔"; }
 
 /* /icons */

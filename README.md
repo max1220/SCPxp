@@ -1,18 +1,20 @@
-# Devember 2022
+# SCPxp
 
-[Forum Post with Videos](https://forum.level1techs.com/t/192160)
+This repository contains the code for my
+server control panel "SCPxp"(Server Control Panel eXPerience).
 
-This is my Devember 2022 entry.
+It's a simple CGI-based backend(written as a Bash script),
+with a Javascript front-end inspired by the look of Windows XP.
 
-It's a XP-themed server control panel.
-The front-end is written in plain Javascript.
-It's back-end is entirely written in Bash.
-No external dependencies, no package managers, no layers of cruft.
+Keep in mind that this control panel itself
+does not have any authentication mechanism:
+You need to make sure that nobody except authorized users can access
+the panel yourself(e.g. using an authenticating reverse proxy).
 
-This project is not intended to be hosted publicly.
-Please assume that everyone who has access to an instance already has root access ;)
-You should add external authentication(e.g. via an authenticating reverse proxy) if
-you wan to make this externally accessible(this provides no authentication itself).
+[![Demo video](https://img.youtube.com/vi/lBBFG3guG5w/hqdefault.jpg)](https://www.youtube.com/embed/lBBFG3guG5w)
+
+[<img src="https://img.youtube.com/vi/lBBFG3guG5w/hqdefault.jpg" width="600" height="300"
+/>](https://www.youtube.com/embed/lBBFG3guG5w)
 
 
 
@@ -35,7 +37,7 @@ sudo apt install \
 	xwininfo \# for: x11 streamer
 	xdotool \# for: x11 streamer
 	matchbox-window-manager \ # for: x11 streamer
-	python3-markdown-it # for: file manager, text editor
+	cmark # for: file manager, text editor
 
 # clone the repo
 git clone https://github.com/max1220/lxc-scripts -b devember
@@ -66,21 +68,17 @@ The web interface currently has the following features(possibly incomplete):
    - Desktop icons
    - Windows
      * Desktop windows contain an iframe with the content
-       - Size automatically determined based on iframe content
-     * Titlebar text from iframe
-     * Close, Minimize
+     * Close, Minimize, Maximize, Restore
      * Resizeable
      * Create a window via hyperlink with target="make_new_win"
    - Taskbar
      * Start button
      * Window list
        - minimize/unminimize a window
+     * Systray icons
      * Clock
    - Start menu
-     * Submenus
-   - Themeable
-     * You can live-edit the CSS via the settings
-     * Most theme colors etc. are changeable via variables
+     * Shows list of applications
 
  * Terminal
    - Persistent sessions
@@ -91,13 +89,13 @@ The web interface currently has the following features(possibly incomplete):
      * switch current window via menu
      * kill current window
    - Resizeable
-     * Resize to window size
+     * Resize terminal to window size
      * Resize specified rows/cols
+     * Resize window to terminal content
    - Send key
      * Send keys via keyboard
      * Special keys(F1 etc.) via menu
-   - Themeable
-     * You can live-edit the CSS via the settings
+   - Session info
 
  * File manager
    - Dynamically loads content via XHR
@@ -139,11 +137,53 @@ The web interface currently has the following features(possibly incomplete):
      * New Directory
 
  * Text editor
-   - Open file via menu, hash-location, or file manager
-   - Save(to current filename or save as)
-   - Toggleable line-wrap
-   - Toggleable preview(HTML, markdown)
-   - Show current file size and cursor position
+   - Basic functions
+     * Open file
+     * New file
+     * Save file
+     * Save file as
+     * Reload file
+     * toggle line wrap
+   - Preview pane
+     * HTML
+     * Markdown
+     * Shellscript
+   - Status bar
+     * last action/filename
+     * cursor position in characters/lines
+     * document length in characters/lines
+
+ * Picture Viewer
+   - Shows an image(png/jpeg/svg)
+   - Basic functions
+     * Open file
+     * Open URL
+     * File info
+     * Reload file
+   - scale to 0.25x/0.5x/1x/2x/4x or fit to window(responsive)
+   - toggle background color white/black
+   - convert (imagemagick) an image
+     * change file format
+     * resize image
+     * rotate image
+   - Next/previous image in current directory
+
+ * Run dialog
+   - Display output of running a shell command
+   - Options
+     * merge stderr into output
+     * enable HTML in output
+     * close dialog window on command return(when streaming)
+     * get complete result or stream lines/bytes as EventSource
+
+ * FreeDOS(DOS prompt)
+   - Runs FreeDOS from floppy
+   - Uses v86 to run an actual x86 emulator
+   - 32MB RAM, 2MB VRAM
+   - (v86 not included in this repo)
+
+ * L1T
+   - Shows a greeting with a link to the L1T forums ;)
 
  * Info dialog
    - Shows some basic system information
@@ -159,33 +199,14 @@ The web interface currently has the following features(possibly incomplete):
    - Get a shell on a container in the terminal
    - Edit container configuration in text editor
 
- * Terminal manager
-   - List terminal sessions
-   - Connect to a terminal session
-   - Connect to custom terminal session
-
  * Video player
    - Displays a video file provided via hash-location
-   - Can be opened via file manager
-
- * Picture Viewer
-   - Displays a picture file provided via hash-location
    - Can be opened via file manager
 
  * Browser
    - Shows a website
    - Can't load most websites because of CORS
    - Can be opened via file manager
-
- * FreeDOS(DOS prompt)
-   - Uses v86 to run an actual x86 emulator
-   - (v86 not included in this repo)
-
- * L1T
-   - Shows a greeting with a link to the L1T forums ;)
-
- * Run dialog
-   - User can enter a command, and see the result in a terminal
 
 
 
@@ -198,10 +219,21 @@ The web interface currently has the following features(possibly incomplete):
 
 
 
+## Devember
+
+This project was part of the Level1Techs Forum's devember challenge 2022.
+See also the [Forum post](https://forum.level1techs.com/t/192160),
+which contains some development logs and small demo videos.
+
+
+
 ## TODO
 
 Some features didn't make it in time. Here is my TODO list:
 
+ * Wizard:
+   - Javascript frontend to set environment variables and execute shell scripts
+ * JavaScript REPL
  * All applications
    - Port over all applications to cgi_commands
      * DONE: file_manager, x11_manager, x11_streamer
@@ -219,10 +251,7 @@ Some features didn't make it in time. Here is my TODO list:
    - Maximize: auto resize maximized windows
    - creatable/editable/moveable desktop icons and start menu
    - Fix Startmenu sub-menus
-   - Persistent settings
    - Window system improvements
-     * Create window client/window server libraries
-     * Create draggable library
      * Make titlebar icons use icons.css
  * LXC
    - Fix info layout
@@ -234,5 +263,26 @@ Some features didn't make it in time. Here is my TODO list:
    - Scrollback buffer?
  * Run dialog
    - port over from app_example
- * SSH connection manager thing
+ * SSH connection manager
  * automatic install, configure, launch scripts
+ * Settings menu
+   - startmenu
+   - desktop icons
+   - desktop background(-color)
+   - style select, CSS overrides
+   - screensaver
+ * nice-to-have
+   - Sound streamer
+   - Music player
+   - Calculator
+   - Icon browser
+   - Clock/Stopwatch/Timer
+   - Calender
+   - Appstore
+   - basshrun integration
+   - Gallery
+   - Email
+   - Session restore
+   - Tar viewer
+   - Shadertoy screensavers
+   - WYSIWYG HTML Editor

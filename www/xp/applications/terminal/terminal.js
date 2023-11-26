@@ -1,768 +1,435 @@
-// the currently active tmux session name
-let session_name = undefined
+"use strict";
 
-// list of windows
-let windows = undefined
-
-// id of current window
-let current_window = undefined
-
-// event-source for terminal updates
-let event_source = undefined
+let state_obj = {}
+let state = new AppState(state_obj)
+state.add_key_parameters("session_id", "text", true, true);
+state.add_key_parameters("window_id", "text", true, true);
+state.add_key_parameters("pane_id", "text", true, true);
+state.add_key_parameters("create_session_and_connect", "text", true, true);
 
 
+let cgi_commands = new CgiCommands(CGI_BACKEND)
+let term = new Terminal(cgi_commands)
+let message_box = new MessageBox()
 
-/* --- UTILLITY FUNCTIONS --- */
 
-// get a random integer between 0 and (max-1), inclusive.
-function getRandomInt(max) {
-	return Math.floor(Math.random()*Math.floor(max));
+function target_session() {
+	return state.data.session_id
+}
+function target_window() {
+	return state.data.session_id + ":" + state.data.window_id
+}
+function target_pane() {
+	return state.data.session_id + ":" + state.data.window_id + "." + state.data.pane_id
 }
 
-// this causes the window to close
-function close_self() {
-	window.location = "about:blank#close"
-}
-
-
-
-/* --- TMUX COMMANDS --- */
-
-// run a tmux command in control mode and capture it's output
-function run_tmux_command(command_args, cb, err_cb) {
-	let req_body = []
-	for (let command_arg of command_args) {
-		if (command_arg !== "") {
-			req_body.push("arg="+encodeURIComponent(command_arg))
-		}
+// get the dimensions of a single character in the
+let _char_size = undefined
+function get_char_size() {
+	if (_char_size==undefined) {
+		_char_size = document.getElementById("terminal-cursor").getBoundingClientRect()
 	}
-	req_body = req_body.join("&")
-
-	return make_xhr(
-		"/cgi-bin/tmux/run_command.sh",
-		"POST",
-		"application/x-www-form-urlencoded",
-		req_body,
-		function(url, resp) {
-			let cur_lines = undefined
-			let cur_meta = undefined
-			let contents = []
-			let contents_meta = []
-			let errors = []
-			let errors_meta = []
-			let other_lines = []
-
-			let lines = resp.trim().split("\n")
-			for (let line of lines) {
-				if (line.startsWith("%begin ")) {
-					cur_lines = []
-					cur_meta = line
-				} else if (line.startsWith("%end ")) {
-					contents.push(cur_lines.join("\n"))
-					contents_meta.push(cur_meta)
-					cur_lines = undefined
-					cur_meta = undefined
-				} else if (line.startsWith("%error ")) {
-					errors.push(cur_lines.join("\n"))
-					errors_meta.push(cur_meta)
-					cur_lines = undefined
-					cur_meta = undefined
-				} else if (cur_meta) {
-					cur_lines.push(line)
-				} else {
-					other_lines.push(line)
-				}
-			}
-
-			if (err_cb && (errors_meta.length>0)) {
-				//console.log("run_tmux_command err:", errors)
-				err_cb(errors, errors_meta, other_lines)
-			} else if (cb) {
-				//console.log("run_tmux_command cb:", command_args, "-", contents)
-				cb(contents, contents_meta, other_lines)
-			}
-		}
-	)
+	return _char_size
 }
 
-// listen for control_mode events, and dispatch callbacks
-function control_mode_events_dispatcher(on_event, on_reply, on_error) {
-	console.log("Listening for control mode events from: ", session_name)
+// resize the terminal content to fit the available space
+function resize_terminal_to_window() {
+	let window_content_elem = document.getElementById("window-content")
+	let content_rect = window_content_elem.getBoundingClientRect()
+	let content_w = content_rect.width - 2
+	let content_h = content_rect.height - 24
+	let char_size = get_char_size()
+	let new_w = Math.floor(content_w / char_size.width)
+	let new_h = Math.floor(content_h / char_size.height)
+	term.resize_window(target_window(), new_w, new_h)
+}
 
-	let tmux_control_mode = new EventSource("/cgi-bin/tmux/control_mode.sh?session_name="+encodeURIComponent(session_name));
+// resize the window to the current terminal content
+function resize_window_to_terminal() {
+	let char_size = get_char_size()
+	let pane_info = term.info(target_pane())
+	if (pane_info.session_id=="") { return; }
+	if (pane_info.session_id===undefined) { return; }
+	let required_width = char_size.width * pane_info.pane_width
+	let required_height = char_size.height * pane_info.pane_height
+	console.log("required_width", required_width)
+	win.width = required_width + 2
+	win.height = required_height + 24
+	win.update()
+}
 
-	let reply_body = undefined
-	let reply_meta = undefined
-	tmux_control_mode.onmessage = function(e) {
-		let line = e.data
-		if (line.startsWith("%begin ")) {
-			reply_meta = line.substr(7)
-			reply_body = []
-		} else if (line.startsWith("%end ")) {
-			if (on_reply) {
-				on_reply(reply_meta, reply_body)
-			}
-			reply_meta = undefined
-			reply_body = undefined
-		} else if (line.startsWith("%error ")) {
-			reply_meta = undefined
-			reply_body = undefined
-		} else if (reply_meta){
-			reply_body.push(line)
-		} else {
-			if (on_event) {
-				on_event(line)
-			}
-		}
+// get the terminal content and update
+function update_terminal_content(term_data) {
+	let term_content_elem = document.getElementById("terminal-content")
+
+	// remove old terminal content
+	let old_elems = term_content_elem.querySelectorAll(".terminal-row")
+	for (let i=0; i<old_elems.length; i++) {
+		let elem = old_elems[i]
+		elem.remove()
 	}
 
-	tmux_control_mode.onerror = function() {
-		if (on_error) {
-			on_error()
-		}
-		tmux_control_mode.close()
-	}
-
-	return tmux_control_mode
+	// render the current terminal state
+	term.render_segments(term_content_elem, term.parse_escape_sequences(term_data))
 }
 
-// create a new tmux session
-//tmux new-session -d -s "${new_session_name}" "${command_str}"
-function cmd_new_session(new_session_name, shell_str, cb, err_cb) {
-	run_tmux_command([
-		"new-session",
-		"-d",
-		"-s",
-		new_session_name,
-		shell_str
-	], cb, err_cb)
+// update the size of the terminal element to fit it's content(tmux pane width)
+function update_terminal_size(info) {
+	let char_size = get_char_size()
+	let term_elem = document.getElementById("terminal-content")
+	term_elem.style.width = char_size.width*info.pane_width+"px"
+	term_elem.style.height = char_size.height*info.pane_height+"px"
 }
 
-// kill the current tmux session
-function cmd_kill_session(cb, err_cb) {
-	run_tmux_command([
-		"kill-session",
-		"-t",
-		session_name
-	], cb, err_cb)
-}
-
-// kill the current tmux window
-function cmd_kill_window(cb, err_cb) {
-	let target_window = session_name+":"+current_window.window_id
-	run_tmux_command([
-		"kill-window",
-		"-t",
-		target_window
-	], cb, err_cb)
-}
-
-// resize the current window to the specified dimensions
-function cmd_resize_window(w, h, cb, err_cb) {
-	let target_window = session_name+":"+current_window.window_id
-	run_tmux_command([
-		"resize-window",
-		"-t",
-		target_window,
-		"-x",
-		w,
-		"-y",
-		h
-	], cb, err_cb)
-}
-
-// send keys to the current pane
-function cmd_send_key(keys_str, literal, cb, err_cb) {
-	let target_pane = session_name+":"+current_window.window_id+".0"
-	run_tmux_command([
-		"send-keys",
-		(literal ? "-l" : ""),
-		"-t",
-		target_pane,
-		keys_str
-	], cb, err_cb)
-}
-
-// get the screen content of the current pane
-function cmd_capture_pane(cb, err_cb) {
-	let target_pane = session_name+":"+current_window.window_id+".0"
-	run_tmux_command([
-		"capture-pane",
-		"-p",
-		"-e",
-		"-N",
-		"-t",
-		target_pane
-	], cb, err_cb)
-}
-
-// list all windows in the current session
-function cmd_list_windows(cb, err_cb) {
-	run_tmux_command([
-		"list-windows",
-		"-t",
-		session_name,
-		"-F",
-		"{ \"window_name\": \"#{q:window_name}\", \"window_id\": \"#{window_id}\", \"pane_id\": \"#{pane_id}\", \"cursor_x\":#{q:cursor_x},\"cursor_y\":#{q:cursor_y},\"window_width\":#{q:window_width},\"window_height\":#{q:window_height} }"
-	], cb, err_cb)
-}
-
-// create a new pane by splitting the window
-function cmd_new_window(cb, err_cb) {
-	run_tmux_command([
-		"new-window",
-		"-t",
-		session_name,
-		"-P",
-		"-F",
-		"#{q:window_id}"
-	], cb, err_cb)
-}
-
-
-
-/* --- TERMINAL EMULATOR FUNCTIONS --- */
-
-// from https://github.com/chalk/ansi-regex/blob/main/index.js
-const escape_sequence_regexp = new RegExp(
-	'([\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~])))'
-	, "g"
-)
-
-// parse a string into lines, then text sequences with parameters
-function parse_escape_sequences(str) {
-	// first split the content into lines(escape sequences should not contain newlines)
-	let lines = str.split("\n")
-
-	// each line get a list of segments
-	let lines_segments = []
-
-	// current parser state
-	var fg = undefined
-	var bg = undefined
-	var is_bold = undefined
-	var is_reverse = undefined
-	var is_underline = undefined
-
-	// iterate over every line to create a list of segments for each line
-	for (let i=0; i<lines.length; i++) {
-		let current_line = lines[i]
-
-		// list of segments in current line
-		let current_segment = []
-
-		// add sgr reset at beginning, so at least one escape sequence is always present
-		if (!current_line.match(escape_sequence_regexp)) {
-			// line without any escape sequences
-			current_segment.push({
-				text: current_line,
-				fg: fg,
-				bg: bg,
-				is_bold: is_bold,
-				is_reverse: is_reverse,
-				is_underline: is_underline
-			})
-			lines_segments.push(current_segment)
-			continue
-		}
-
-		// split the text by the escape sequence regex
-		for (let segment of current_line.split(escape_sequence_regexp)) {
-			// if segment is an escape sequence, update parser state
-			if (segment.match(escape_sequence_regexp)) {
-				// foreground color \e[30m - \e[37m, \e[90m - \e[97m
-				let has_match = false
-				let fg_match = segment.match("\\033\\[(3[0-7])m")
-				if (fg_match) { fg = fg_match[1]; has_match=true; }
-				fg_match = segment.match("\\033\\[(9[0-7])m")
-				if (fg_match) { fg = fg_match[1]; has_match=true; }
-
-				// background color \e[40m - \e[47m, \e[100m - \e[107m
-				let bg_match = segment.match("\\033\\[(4[0-7])m")
-				if (bg_match) { bg = bg_match[1]; has_match=true; }
-				bg_match = segment.match("\\033\\[(10[0-7])m")
-				if (bg_match) { bg = bg_match[1]; has_match=true; }
-
-				// iterate semicolon-separated SGR codes
-				let sgr_codes = segment.match("\\033\\[(.*)m")[1].split(";")
-				for (let sgr_code of sgr_codes) {
-					if (sgr_code=="0") {
-						// reset SGR parameters
-						fg = undefined
-						bg = undefined
-						is_bold = undefined
-						is_reverse = undefined
-						is_underline = undefined
-						has_match = true
-					} else if (sgr_code=="39") {
-						// reset fg to default
-						fg = undefined
-						has_match = true
-					} else if (sgr_code == "49") {
-						// reset bg to default
-						bg = undefined
-						has_match = true
-					} else if (sgr_code == "1") {
-						// set bold
-						is_bold = true
-						has_match = true
-					} else if (sgr_code == "4") {
-						// set underline
-						is_underline = true
-						has_match = true
-					} else if (sgr_code == "7") {
-						// set reverse
-						is_reverse = true
-						has_match = true
-					}
-				}
-
-				if (!has_match) {
-					console.log("Unknown escape sequence: ", segment)
-				}
-			} else {
-				// is a text segment, push to segments list with current parameters
-				current_segment.push({
-					text: segment,
-					fg: fg,
-					bg: bg,
-					is_bold: is_bold,
-					is_reverse: is_reverse,
-					is_underline: is_underline
-				})
-			}
-		}
-
-		lines_segments.push(current_segment)
-	}
-
-	return lines_segments
-}
-
-// create a <pre> element from a list of segments
-function render_segments(lines_segments) {
-	let pre_elem = document.createElement("pre")
-	pre_elem.classList = "terminal-content"
-	// iterate over every line
-	for (let i=0; i<lines_segments.length; i++) {
-		let segments = lines_segments[i]
-
-		// create a span for the entire line content
-		let row_elem = document.createElement("span")
-		row_elem.classList = "terminal-row"
-
-		// iterate over every segment in line
-		for (let j=0; j<segments.length; j++) {
-			let segment = segments[j]
-
-			// create a span for every segment
-			let span_elem = document.createElement("span")
-			span_elem.innerText = segment.text
-			if (segment.is_reverse) {
-				if (segment.bg) {
-					let new_fg = parseInt(segment.bg) - 10
-					span_elem.classList.add("term-fg-"+new_fg)
-				}
-				if (segment.fg) {
-					let new_bg = parseInt(segment.fg) + 10
-					span_elem.classList.add("term-bg-"+new_bg)
-				}
-				span_elem.classList.add("term-reverse")
-			} else {
-				segment.fg ? span_elem.classList.add("term-fg-"+segment.fg) : false
-				segment.bg ? span_elem.classList.add("term-bg-"+segment.bg) : false
-			}
-			segment.is_bold ? span_elem.classList.add("term-bold") : false
-			segment.is_underline ? span_elem.classList.add("term-underline") : false
-			row_elem.appendChild(span_elem)
-		}
-
-		row_elem.appendChild(document.createElement("br"))
-		pre_elem.appendChild(row_elem)
-	}
-
-	return pre_elem
-}
-
-// handle a single event for the terminal
-function handle_terminal_key_event(e) {
-	if (!session_name) { return; }
-	if (ignore_keypress) { return; }
-	let key = e.key
-	let has_match = false
-
-	// TODO: special handling required: "^" "`" ";"
-	let single_char_keys = [
-		"*",
-		"*",
-		"\"",
-		"\\",
-		"'",
-		"=",
-		"?",
-		"~",
-		"!",
-		"+",
-		"$",
-		"%",
-		"&",
-		"/",
-		"(",
-		")",
-		"{",
-		"}",
-		"[",
-		"]",
-		",",
-		"<",
-		">",
-		"|",
-		".",
-		":",
-		"_",
-		"-",
-		"#",
-		" "
-	]
-
-	if (key=="Enter") {
-		cmd_send_key("Enter", false)
-		has_match = true
-	} else if (key=="Backspace") {
-		cmd_send_key("BSpace", false)
-		has_match = true
-	} else if (key=="Tab") {
-		cmd_send_key("Tab", false)
-		has_match = true
-	} else if (key=="Delete") {
-		cmd_send_key("DC", false)
-		has_match = true
-	} else if (key=="ArrowUp") {
-		cmd_send_key("Up", false)
-		has_match = true
-	} else if (key=="ArrowDown") {
-		cmd_send_key("Down", false)
-		has_match = true
-	} else if (key=="ArrowLeft") {
-		cmd_send_key("Left", false)
-		has_match = true
-	} else if (key=="ArrowRight") {
-		cmd_send_key("Right", false)
-		has_match = true
-	} else if (key.length==1) {
-		if (e.ctrlKey && key.match(/[a-zA-Z]/)) {
-			cmd_send_key("C-" + key, false)
-			has_match = true
-		} else if (key.match(/[a-zA-Z0-9]/)){
-			cmd_send_key(key, true)
-			has_match = true
-		} else if (single_char_keys.includes(key)) {
-			cmd_send_key(key, true)
-			has_match = true
-		} else if (key == ";") {
-			cmd_send_key("\\;", true)
-		}
-	}
-
-	if (has_match) {
-		e.preventDefault()
+// update the position and visibillity of the cursor
+function update_cursor_position(info) {
+	let cursor = document.getElementById("terminal-cursor")
+	let char_size = get_char_size()
+	cursor.style.left = info.cursor_x*char_size.width + "px"
+	cursor.style.top = info.cursor_y*char_size.height + "px"
+	if ((info.cursor_flag==0) || (info.cursor_x>=info.pane_width) || (info.cursor_y>=info.pane_height)) {
+		cursor.classList.add("hidden")
 	} else {
-		console.log("Unknown key:", e)
+		cursor.classList.remove("hidden")
 	}
 }
 
 
+let request_sent = false
+let request_again = false
 
-/* --- WINDOW MANAGEMENT --- */
-
-// set current window by id
-function set_window(new_window_id) {
-	for (let window of windows) {
-		if (window.window_id == new_window_id) {
-			console.log("set_window", new_window_id)
-			current_window = window
-			update_hash()
-			update_terminal_content()
-			return true
+// perform a full refresh of the terminal content by capturing the entire pane using tmux
+function full_refresh() {
+	term.capture_with_info(target_pane(), function(data, info) {
+		//console.log("Got terminal capture:", info, data.length)
+		update_terminal_size(info)
+		update_cursor_position(info)
+		request_sent = false;
+		update_terminal_content(data);
+		if (request_again) {
+			request_again = false;
+			request_full_refresh();
 		}
-	}
-}
-
-// update the windows array and current_window
-function update_windows(cb) {
-	cmd_list_windows(function(resp) {
-		// prepare a new array of windows, to eventually replace the global windows array
-		let new_windows = []
-
-		// unset the current window(points to possibly non-exisiting window)
-		let previous_window = current_window
-		current_window = undefined
-
-		// get newline-separated JSON window stanzas generated by tmux
-		if (resp[0]) {
-			let windows_jsons = resp[0].split("\n")
-			for (let window_json of windows_jsons) {
-				// append decoded JSON to new_windows array
-				let window_obj = JSON.parse(window_json)
-				new_windows.push(window_obj)
-
-				// the previously current window still exists
-				if ((previous_window) && (window_obj.window_id == previous_window.window_id)) {
-					// re-set current_window
-					current_window = window_obj
-				}
-			}
-		}
-		windows = new_windows
-
-		// no current_window, default to first window
-		if ((!current_window) && (windows[0])) {
-			set_window(windows[0].window_id)
-		}
-
-		// run callback
-		if (cb) { cb() }
-
-		// update the menu entries
-		update_windows_menu()
 	})
+}
+// request a full refresh. Requesting again during an outstanding request
+// will at most cause one more refresh after the outstanding request is handled.
+function request_full_refresh() {
+	if (state.data.session_id=="") { return; }
+
+	if (request_sent && request_again) {
+		//console.log("Still awaiting request and already requesting again")
+		return;
+	}
+	if (request_sent) {
+		//console.log("Still awaiting request, requesting again after")
+		request_again = true;
+		return;
+	}
+	//console.log("Sending request")
+	request_sent = true
+	full_refresh();
+}
+
+// perform a partial update. new_data is the output that the terminal produced.
+function perform_partial_update(new_data) {
+	// TODO: perform a partial update when all escape sequences in new_data are known
+	request_full_refresh()
+}
+
+// create a handler for lines from tmux control mode streamed via EventSource
+let ev_dispatcher = term.control_mode_events_dispatcher()
+ev_dispatcher.callbacks.on_output = function(line, event_name, args) {
+	console.log("on_output")
+	perform_partial_update(line)
+}
+ev_dispatcher.callbacks.on_exit = function(line, event_name, args) {
+	console.log("on_exit")
+	reconnect()
+}
+ev_dispatcher.callbacks.on_event = function(line, event_name, args) {
+	console.log("other event",event_name)
+}
+ev_dispatcher.callbacks.on_reply = function(meta, body) {
+	console.log("reply", meta, body)
+}
+
+// handle tmux process stdout
+let tmux_stdout_cb = function(line) {
+	ev_dispatcher.handle_line(line)
+}
+// handle tmux process return value
+let tmux_ret_cb = function(code) {
+	connect_session_event_listener()
+}
+
+// start tmux in control mode attached to the session to listen for events.
+let ev_stream = undefined
+function connect_session_event_listener() {
+	// TODO HACK: sleep 60 | tmux, since tmux can't deal with having no stdin
+	// TODO HACK: -d/-x don't work *sometimes*, so pkill manually(DANGEROUS!).
+	let tmux_cmd = "tmux -C attach-session -t " + cgi_commands.escape_shell_arg(target_session())
+	cgi_commands.run_command_sync([
+		"pkill",
+		"-xf",
+		"tmux -C attach-session -t \\$" + target_session().substr(1)
+	])
+	let command = [
+		"eval",
+		"sleep 60 | " + tmux_cmd,
+	]
+	if (ev_stream) {
+		ev_stream.close()
+		ev_stream = undefined
+	}
+	ev_stream = cgi_commands.run_command_event_stream(tmux_stdout_cb, tmux_ret_cb, undefined, false, command, undefined, false)
+}
+
+// handle a single keydown event
+function on_key(key_ev) {
+	if (state.data.session_id=="") { return; }
+
+	let tmux_key = term.key_event_to_tmux(key_ev)
+	if (tmux_key) {
+		console.log("Sending key:",tmux_key)
+		term.send_keys(target_pane(), tmux_key[0], tmux_key[1])
+		event.preventDefault()
+	} else {
+		console.log("Unknown key pressed:", key_ev.key)
+	}
+}
+
+// unset session and display "No session!" screen
+function no_session() {
+	console.log("No session!")
+	let term_content_elem = document.getElementById("terminal-content")
+	update_terminal_content("\x1b[31mNo session!")
+	term_content_elem.style.width = ""
+	term_content_elem.style.height = ""
+
+	let cursor = document.getElementById("terminal-cursor")
+	cursor.style.left = 0
+	cursor.style.top = 0
+
+	location.hash = ""
+	update_sessions_list()
+}
+
+// call after changing session_id/window_id/pane_id to reconnect
+function reconnect() {
+	let info = term.info(target_pane())
+	if (info.session_id=="") { return no_session(); }
+	if (info.session_id===undefined) { return no_session(); }
+	console.log("info", info)
+
+	request_sent = false
+	request_again = false
+
+	state.data.session_id = info.session_id
+	state.data.window_id = info.window_id
+	state.data.pane_id = info.pane_id
+
+	console.log("target_session", target_session())
+	console.log("target_window", target_window())
+	console.log("target_pane", target_pane())
+
+	// connect session
+	request_full_refresh()
+	connect_session_event_listener()
+	update_sessions_list()
+	update_panes_list()
+	update_terminal_size(info)
+
+	document.getElementById("terminal-content").focus()
+}
+
+// update the list of sessions in the "File" menu
+function update_sessions_list() {
+	let sessions_list_elem = document.getElementById("sessions_list")
+	sessions_list_elem.innerHTML = ""
+	let sessions_list = term.list_sessions()
+	if (sessions_list.length == 0) {
+		sessions_list_elem.innerHTML = '<div class="menu-item">No sessions!</div>'
+		return;
+	}
+	for (let i=0; i<sessions_list.length; i++) {
+		let session = sessions_list[i]
+		let session_item = document.createElement("a")
+		session_item.classList.add("menu-item")
+		session_item.innerText = session.session_id + ": " + session.session_name
+		//let href = "#session_id=" + encodeURIComponent(session.session_id) + "&window_id=" + encodeURIComponent(session.window_id) + "&pane_id=" + encodeURIComponent(session.pane_id)
+		//session_item.href = href
+		session_item.onclick = function() {
+			state.data.session_id = session.session_id
+			state.data.window_id = session.window_id
+			state.data.pane_id = session.pane_id
+			reconnect()
+		}
+		sessions_list_elem.appendChild(session_item)
+	}
+}
+
+// update the list of panes in the "Panes" menu
+function update_panes_list() {
+	let panes_list_elem = document.getElementById("panes_list")
+	panes_list_elem.innerHTML = ""
+	let panes_list = term.list_panes(target_session())
+	if (panes_list.length == 0) {
+		panes_list_elem.innerHTML = '<div class="menu-item">No panes!</div>'
+		return;
+	}
+	for (let i=0; i<panes_list.length; i++) {
+		let pane = panes_list[i]
+		let pane_item = document.createElement("a")
+		pane_item.classList.add("menu-item")
+		pane_item.innerText = pane.pane_id + ": " +pane.pane_title
+		pane_item.onclick = function() {
+			state.data.window_id = pane.window_id
+			state.data.pane_id = pane.pane_id
+			reconnect()
+		}
+		panes_list_elem.appendChild(pane_item)
+	}
+}
+
+// create a session with a random name and connect to it
+function create_session_and_connect(cmd) {
+	let session_name = "xp-"+Math.floor(10000+Math.random()*89999)
+	let new_session = term.new_session(session_name, cmd)
+	if (new_session.session_id == undefined) { return no_session(); }
+	state.data.session_id = new_session.session_id
+	state.data.window_id = new_session.window_id
+	state.data.pane_id = new_session.pane_id
+	reconnect()
+}
+
+// send a key from the "Send" menu
+function menu_send_key(key_name) {
+	term.send_keys(target_pane(), key_name)
+}
+
+// create a new session and switch to it
+function menu_new_session() {
+	create_session_and_connect("bash")
 }
 
 // create a new window and switch to it
-function make_new_window(cb) {
-	cmd_new_window(function(resp) {
-		update_windows(function() {
-			set_window(resp)
-		})
-	})
+function menu_new_window() {
+	let new_window = term.new_window(target_session(), "bash")
+	state.data.window_id = new_window.window_id
+	state.data.pane_id = new_window.pane_id
+	reconnect()
 }
 
-
-
-/* --- SESSION MANAGEMENT --- */
-
-// create a new tmux session, on success set current session
-function connect_new_session(command_str, cb) {
-	let new_session_name = "web-" + getRandomInt(9999999)
-	command_str = command_str || "bash"
-	cmd_new_session(new_session_name, command_str, function(resp) {
-		connect_session(new_session_name, cb)
-	})
+// kill the current pane and switch to the next pane
+function menu_kill_pane() {
+	cgi_commands.run_command_sync([
+		"tmux",
+		"kill-pane",
+		"-t",
+		target_pane()
+	])
+	reconnect()
 }
 
-// start using the session
-function connect_session(new_session_name, cb) {
-	session_name = new_session_name
-	update_windows(function() {
-		if (windows.length == 0) { close_self(); }
-
-		// initial update of elements
-		update_windows_menu()
-		update_terminal_content()
-
-		// register event handlers for session for update notifications
-		event_source = control_mode_events_dispatcher(function(event_line) {
-			if (event_line.startsWith("%output ")) {
-				let output_pane_id = event_line.match(/^%output (%[0-9]+)/)[1]
-				if (current_window && (output_pane_id == current_window.pane_id)) {
-					update_windows(function() {
-						update_terminal_content()
-					})
-				}
-			} else if (event_line.startsWith("%window-add")) {
-				update_windows()
-			} else if (event_line.startsWith("%unlinked-window-close")) {
-				update_windows()
-				if (windows.length == 0) { close_self(); }
-			} else if (event_line.startsWith("%session-changed")) {
-				update_windows()
-				if (windows.length == 0) { close_self(); }
-			} else if (event_line.startsWith("%exit")) {
-				console.log("tmux exit event received", event_line)
-				close_self()
-			} else {
-				console.log("Unknown event:", event_line)
-			}
-		})
-
-		if (cb) { cb(); }
-	})
+function menu_kill_session() {
+	term.kill_session(target_session())
+	reconnect()
 }
 
-// called to run the instruction in the hash part of the URL(part after the #)
-function session_from_hash() {
-	let hash_str = window.location.hash.substr(1)
-
-	// get session arguments
-	let session_args = hash_str.split(":")
-	session_args = session_args.map(decodeURIComponent)
-
-	if (hash_str=="") {
-		// create a new default session
-		console.log("Creating and connecting to a default session")
-		connect_new_session()
-	} else if (session_args[0] == "new-session") {
-		// create a new session with custom command
-		let custom_command_str = session_args[1]
-		console.log("Creating and connecting to a session with command: ", custom_command_str)
-		connect_new_session(custom_command_str)
-	} else if (session_args[0] && session_args[1]) {
-		// connect to existing named session and window
-		let existing_session_name = session_args[0]
-		let existing_window_id = session_args[1]
-		console.log("Connecting to existing session and window: ", existing_session_name, existing_window_id)
-		connect_session(existing_session_name, function() {
-			set_window(existing_window_id)
-		})
-	} else if (session_args[0]) {
-		// connect to existing named session
-		let existing_session_name = session_args[0]
-		console.log("Connecting to existing session: ", existing_session_name)
-		connect_session(existing_session_name)
-	}
+function menu_resize_to_80x24() {
+	term.resize_window(target_window(), 80, 24)
 }
 
-
-
-/* --- UI FUNCTIONS --- */
-
-// update the URL hash-part
-function update_hash() {
-	window.location.hash = encodeURIComponent(session_name) + ":" + encodeURIComponent(current_window.window_id)
-}
-
-// update all DOM elements associated with the windows object
-function update_windows_menu() {
-	let windows_menu = document.getElementById("windows_list")
-	windows_menu.innerHTML = ""
-	if (!windows) { return; }
-	for (let window of windows) {
-		let menu_entry = document.createElement("a")
-		menu_entry.classList = "menu-item"
-		menu_entry.textContent = window.window_id
-		menu_entry.onclick = function() {
-			set_window(window.window_id)
+function menu_resize_to_custom() {
+	win.dialog_show("/xp/applications/terminal/resize.html", function(ret) {
+		if (ret) {
+			console.log("Custom dimensions:", ret)
+			term.resize_window(target_window(), ret[0], ret[1])
 		}
-		windows_menu.appendChild(menu_entry)
-	}
+	})
 }
 
-// capture tmux screen content, and update the terminal-content
-function update_terminal_content() {
-	let term_elem = document.getElementById("terminal-content")
-	cmd_capture_pane(function(screen_content) {
-		if (!screen_content[0]) {
-			console.log("No screen content!")
+// show the send-text dialog activated from the "Send" menu
+function menu_send_text() {
+	message_box.show_message_box_input({
+		win_icon: "application-terminal",
+		win_size: "300x200",
+		win_title: "Send text",
+		main_text: "Enter text to send to the terminal pane verbatim:",
+		blocktext: "",
+		greyout: true,
+	}, function(ret) {
+		if (ret[0]=="confirm") {
+			console.log("got input:", ret[1])
+			term.send_keys(target_pane(), ret[1], true)
 		}
-
-		// turn string into lines of segments with parameters
-		let lines_segments = parse_escape_sequences(screen_content[0])
-		// render list of lines into a <pre> element
-		let new_term_elem = render_segments(lines_segments)
-
-		// replace old element
-		new_term_elem.id = term_elem.id
-		term_elem.replaceWith(new_term_elem)
-
-		// update cursor indent element
-		let cursor_x = current_window.cursor_x
-		let cursor_y = current_window.cursor_y
-		let cursor_indent_elem = document.getElementById("cursor-indent")
-		cursor_indent_elem.innerText = ("\n").repeat(cursor_y) + (" ").repeat(cursor_x)
 	})
 }
 
-
-
-/* --- DIALOG SHOW/CLOSE BUTTON HANDLERS --- */
-
-on_show_popup_cb = function() {
-	ignore_keypress = true
-}
-on_close_popup_cb = function() {
-	ignore_keypress = false
-}
-
-
-
-/* --- BUTTON HANDLERS --- */
-
-function btn_new_window() {
-	make_new_window()
-}
-
-function btn_resize() {
-	let rows = document.getElementById("rows").value
-	let cols = document.getElementById("cols").value
-	cmd_resize_window(cols, rows)
-	close_popup()
-}
-
-function btn_resize_window() {
-	let terminal_content_elem = document.querySelector(".terminal-content")
-	let term_cursor_elem = document.getElementById("term-cursor")
-	let cur_size = term_cursor_elem.getBoundingClientRect()
-	let cols = Math.floor((terminal_content_elem.offsetWidth)/ cur_size.width)
-	let rows = Math.floor((terminal_content_elem.offsetHeight) / cur_size.height)
-	console.log("Calculated new dimensions in characters: ", cols, rows)
-	cmd_resize_window(cols, rows)
-	close_popup()
-}
-
-function btn_kill_session() {
-	cmd_kill_session(close_self)
-}
-
-function btn_kill_window() {
-	cmd_kill_window(function() {
-		update_windows()
-		if (windows.length == 0) { close_self(); }
+function menu_info() {
+	let info = term.info(target_pane())
+	let info_segs = []
+	for (let parm in info) {
+		info_segs.push(parm + ":\t" + info[parm])
+	}
+	let info_text = info_segs.join("\n")
+	message_box.show_message_box_info({
+		win_icon: "application-terminal",
+		win_size: "350x400",
+		win_title: "Session info",
+		main_text: "Details about the current terminal session:",
+		blocktext: info_text,
+		greyout: true,
 	})
 }
 
-function btn_input() {
-	let input_value = document.getElementById("input").value
-	cmd_send_key(input_value)
-	btn_close_input()
+function menu_about() {
+	message_box.show_message_box_info({
+		win_icon: "application-terminal",
+		win_size: "300x250",
+		win_title: "About Terminal",
+		title_text: "About Terminal Emulator",
+		title_icon: "application-terminal",
+		main_html: `
+		Just a simple terminal emulator.
+		<ul>
+			<li>generic CGI backend written in Bash</li>
+			<li>front-end written in vanilla javascript</li>
+			<li>uses tmux for sessions, rendering</li>
+		</ul>
+		`,
+		okay_button: "Close",
+		greyout: false,
+	})
 }
 
-
-
-/* --- CHECKBOX HANDLERS --- */
-
-let auto_resize_enable = false
-function checkbox_auto_resize() {
-	auto_resize_enable = window.event.currentTarget.checked
+// called by the WM when the window is loaded
+function win_load() {
+	win.title = "Terminal"
+	win.icon = "application-terminal"
+	win.resize(685, 485)
+	win.resizeable = true
+	win.update()
 }
 
-
-
-/* --- GLOBAL EVENT HANDLERS --- */
-
-function window_on_resize() {
-	if (!checkbox_auto_resize) {
-		btn_resize_window()
-		window.onresize = undefined
-		console.log("Window resizing...")
-		window.setTimeout(function() {
-			btn_resize_window()
-			window.onresize = window_on_resize
-			console.log("Window resized!")
-		}, 1000)
+// called when the page is read(body onload)
+function body_onload() {
+	// load the initial configuration values from the HTML data,
+	// by calling all onchange functions for input elements with the data-update attribute.
+	console.log("Loading state...")
+	state.load()
+	console.log("Loaded state:", state.data)
+	if (state.data.create_session_and_connect) {
+		let cmd = state.data.create_session_and_connect
+		state.data.create_session_and_connect = undefined
+		create_session_and_connect(state.data.create_session_and_connect)
 	}
+
+	// connect the keydown event handler
+	let term_content_elem = document.getElementById("terminal-content")
+	term_content_elem.onkeydown = on_key
+
+	// connect to session
+	reconnect()
 }
-window.onresize = window_on_resize
-
-// handle key press
-let ignore_keypress = false
-document.onkeydown = function(e) {
-	if (!ignore_keypress) {
-		return handle_terminal_key_event(e)
-	}
-}
-
-
-
-/* --- INITIALIZATION --- */
-
-session_from_hash()

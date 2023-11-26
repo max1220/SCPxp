@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			#messagebox_return {
+				overflow: auto;
+				height: 5em;
+			}
+			.return {
+				color: #555;
+			}
+			.field-row {
+				padding: 2px 0;
+			}
+		</style>
+	</head>
+	<body onload="onload()">
+		<div class="window-content p8">
+			<p>
+				You can configure a message box using the controls below.
+			</p>
+
+			<section class="tabs" style="flex-grow: 1;">
+				<menu role="tablist" aria-label="Settings Tabs">
+					<button role="tab" data-tabgroup="settings" aria-controls="tab-generic" aria-selected="true" onclick="tab_onlick()">Generic</button>
+					<button role="tab" data-tabgroup="settings" aria-controls="tab-file" onclick="tab_onlick()">File</button>
+					<button role="tab" data-tabgroup="settings" aria-controls="tab-command" onclick="tab_onlick()">Command</button>
+				</menu>
+
+				<article role="tabpanel" id="tab-generic" data-tabgroup="settings">
+					<p>These settings apply to all message boxes.</p>
+					<div class="field-row">
+						<label for="win_icon">win_icon:</label>
+						<input id="win_icon" type="text" data-update-key="win_icon" data-update-type="input-text" data-update-onchange value="generic-info">
+					</div>
+					<div class="field-row">
+						<label for="win_size">win_size:</label>
+						<input id="win_size" type="text" data-update-key="win_size" data-update-type="input-text" data-update-onchange value="300x250">
+					</div>
+					<div class="field-row">
+						<label for="win_closeable">win_closeable</label>
+						<input type="checkbox" id="win_closeable" data-update-key="win_closeable" data-update-type="input-boolean" data-update-onchange checked>
+					</div>
+					<div class="field-row">
+						<label for="win_resizeable">win_resizeable</label>
+						<input type="checkbox" id="win_resizeable" data-update-key="win_resizeable" data-update-type="input-boolean" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="win_minimizeable">win_minimizeable</label>
+						<input type="checkbox" id="win_minimizeable" data-update-key="win_minimizeable" data-update-type="input-boolean" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="win_show_taskbar">win_show_taskbar</label>
+						<input type="checkbox" id="win_show_taskbar" data-update-key="win_show_taskbar" data-update-type="input-boolean" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="win_title">win_title:</label>
+						<input id="win_title" type="text" data-update-key="win_title" data-update-type="input-text" data-update-onchange value="">
+					</div>
+
+					<div class="field-row">
+						<label for="title_text">title_text:</label>
+						<input id="title_text" type="text" data-update-key="title_text" data-update-type="input-text" data-update-onchange value="">
+					</div>
+					<div class="field-row">
+						<label for="title_icon">title_icon:</label>
+						<input id="title_icon" type="text" data-update-key="title_icon" data-update-type="input-text" data-update-onchange value="">
+					</div>
+					<div class="field-row">
+						<label for="main_html">main_html:</label>
+						<input id="main_html" type="text" data-update-key="main_html" data-update-type="input-text" data-update-onchange value="">
+					</div>
+					<div class="field-row">
+						<label for="main_text">main_text:</label>
+						<input id="main_text" type="text" data-update-key="main_text" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="blocktext">blocktext:</label>
+						<input id="blocktext" type="text" data-update-key="blocktext" data-update-type="input-text" data-update-onchange>
+					</div>
+
+					<div class="field-row">
+						<label for="text_label">text_label:</label>
+						<input id="text_label" type="text" data-update-key="text_label" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="text_value">text_value:</label>
+						<input id="text_value" type="text" data-update-key="text_value" data-update-type="input-text" data-update-onchange>
+					</div>
+
+					<div class="field-row">
+						<label for="confirm_button">confirm_button:</label>
+						<input id="confirm_button" type="text" data-update-key="confirm_button" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="cancel_button">cancel_button:</label>
+						<input id="cancel_button" type="text" data-update-key="cancel_button" data-update-type="input-text" data-update-onchange>
+					</div>
+
+					<br>
+					<div class="field-row">
+						<span>Show message box</span>
+						<button class="btn" onclick="btn_message_box_info()" >Show info messagebox</button>
+					</div>
+					<div class="field-row">
+						<span></span>
+						<button class="btn" onclick="btn_message_box_input()" >Show input messagebox</button>
+					</div>
+				</article>
+
+				<article role="tabpanel" id="tab-file" data-tabgroup="settings" class="hidden">
+					<p>These settings apply to message boxes containing a file selection screen.</p>
+					<div class="field-row">
+						<label for="directory">directory:</label>
+						<input id="directory" type="text" data-update-key="directory" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="selected">selected:</label>
+						<input id="selected" type="text" data-update-key="selected" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="show_only_file_types">show_only_file_types:</label>
+						<input id="show_only_file_types" type="text" data-update-key="show_only_file_types" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="filename_label">filename_label:</label>
+						<input id="filename_label" type="text" data-update-key="filename_label" data-update-type="input-text" data-update-onchange>
+					</div>
+					<div class="field-row">
+						<label for="filename_required">filename_required</label>
+						<input type="checkbox" id="filename_required" data-update-key="filename_required" data-update-type="input-boolean" data-update-onchange checked>
+					</div>
+
+
+					<div class="field-row">
+						<label for="directory_label">directory_label:</label>
+						<input id="directory_label" type="text" data-update-key="directory_label" data-update-type="input-text" data-update-onchange>
+					</div>
+
+					<br>
+					<div class="field-row">
+						<span>Show message box</span>
+						<button class="btn" onclick="btn_message_box_file()" >Show file messagebox</button>
+					</div>
+				</article>
+
+				<article role="tabpanel" id="tab-command" data-tabgroup="settings" class="hidden">
+					<p>These settings apply to the command output message boxes.</p>
+					<div class="field-row">
+						<label for="command_str">command_str:</label>
+						<input id="command_str" type="text" data-update-key="command_str" data-update-type="input-text" data-update-onchange>
+					</div>
+
+					<br>
+					<div class="field-row">
+						<span>Show message box</span>
+						<button class="btn" onclick="btn_message_box_command()" >Show command messagebox</button>
+					</div>
+				</article>
+
+			</section>
+
+
+			<div class="field-row m4">
+				<span>Output:</span>
+				<button id="update_message_box" class="btn" onclick="btn_update_message_box()" >Update message box</button>
+			</div>
+			<pre id="messagebox_return" class="container"></pre>
+		</div>
+
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/MessageBox.js"></script>
+		<script src="/xp/libraries/AppState.js"></script>
+		<script>
+			"use strict";
+			let message_box = new MessageBox()
+
+			// create an application state object to manage
+			var state = new AppState({})
+
+			state.add_key_parameters("win_icon", "text", true, true)
+			state.add_key_parameters("win_size", "text", true, true)
+			state.add_key_parameters("win_closeable", "boolean", true, true)
+			state.add_key_parameters("win_resizeable", "boolean", true, true)
+			state.add_key_parameters("win_minimizeable", "boolean", true, true)
+			state.add_key_parameters("win_show_taskbar", "boolean", true, true)
+			state.add_key_parameters("win_title", "text", true, true)
+
+			state.add_key_parameters("title_text", "text", true, true)
+			state.add_key_parameters("title_icon", "text", true, true)
+			state.add_key_parameters("main_html", "text", true, true)
+			state.add_key_parameters("main_text", "text", true, true)
+			state.add_key_parameters("blocktext", "text", true, true)
+
+			state.add_key_parameters("directory", "text", true, true)
+			state.add_key_parameters("selected", "text", true, true)
+			state.add_key_parameters("directory_label", "text", true, true)
+			state.add_key_parameters("filename_label", "text", true, true)
+			state.add_key_parameters("filename_required", "boolean", true, true)
+			state.add_key_parameters("show_only_file_types", "text", true, true)
+
+
+			state.add_key_parameters("text_label", "text", true, true)
+			state.add_key_parameters("text_value", "text", true, true)
+
+			state.add_key_parameters("command_str", "text", true, true)
+
+			state.add_key_parameters("confirm_button", "text", true, true)
+			state.add_key_parameters("cancel_button", "text", true, true)
+
+
+			function onload() {
+				state.load()
+				console.log("state.data:",state.data)
+			}
+			function make_parms() {
+				let parms = {}
+				for (let key in state.data) {
+					let value = state.data[key]
+					if (value!=="") {
+						parms[key] = value
+					}
+				}
+				return parms
+			}
+
+			let msgbox_win = undefined
+
+			function on_return(ret) {
+				console.log("got return:", ret)
+				let messagebox_return_elem = document.getElementById("messagebox_return")
+				messagebox_return_elem.innerText = ret.toString()
+				msgbox_win = undefined
+			}
+
+			function btn_update_message_box() {
+				if (!msgbox_win) { return; }
+				let ret = message_box.update_message_box(msgbox_win, make_parms())
+				console.log("got update return:", ret)
+			}
+
+			// the run_command button(run the command using eval on the server)
+			function btn_message_box_info() {
+				if (msgbox_win) { return; }
+				msgbox_win = message_box.show_message_box_info(make_parms(), on_return)
+			}
+			function btn_message_box_input() {
+				if (msgbox_win) { return; }
+				msgbox_win = message_box.show_message_box_input(make_parms(), on_return)
+			}
+			function btn_message_box_file() {
+				if (msgbox_win) { return; }
+				msgbox_win = message_box.show_message_box_file(make_parms(), on_return)
+			}
+			function btn_message_box_command() {
+				if (msgbox_win) { return; }
+				msgbox_win = message_box.show_message_box_command(make_parms(), on_return)
+			}
+
+			function win_load() {
+				// setup a basic window
+				win.title = "Message box test"
+				win.icon = "generic-info"
+				win.resize(400, 820)
+				win.update()
+			}
+
+		</script>
+	</body>
+</html>

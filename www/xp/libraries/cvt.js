@@ -1,3 +1,5 @@
+"use strict";
+
 // This is a straightup port of libxcvt/lib/libxcvt.c and libxcvt/cvt/cvt.c
 // libxcvt is released under the MIT license. See libxcvt/COPYING
 

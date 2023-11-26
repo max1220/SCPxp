@@ -1,3 +1,5 @@
+"use strict";
+
 // The AppState constructor is used to manage an object(data_obj) that
 // is automatically updating it's state to three possible backends:
 // The HTML document, via html_data_updater,
@@ -95,7 +97,7 @@ function HashArgsParser(data_obj, key_to_type, type_to_encoder, type_to_decoder)
 
 	// decode the current hash location
 	this.update_data_from_hash = function() {
-		this.decode_hash_str(location.hash)
+		this.update_data_from_hash_str(location.hash)
 		return true
 	}
 

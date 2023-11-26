@@ -3,417 +3,207 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="Run command dialog">
+		<meta name="description" content="A simple file manager">
 		<meta name="author" content="max1220">
-		<title>🗀 File manager</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
-		<link rel="stylesheet" href="/static/css/xp/icons.css">
-		<style>
-			:root {
-				--windows-content-padding: 1px;
-				--menubar-height: 88px;
-			}
-
-			.splitview {
-				height: 100%;
-				width: 100%;
-				display: flex;
-			}
-
-			.file-tree {
-				padding: 3px 3px;
-				margin: 0 0;
-
-				max-width: 250px;
-				min-width: 100px;
-				width: 150px;
-				height: 100%;
-
-				resize: horizontal;
-				box-sizing: border-box;
-				overflow: auto;
-
-				border-right: 1px solid #888;
-				background-color: #fff;
-				list-style-type: none;
-				white-space: nowrap;
-				padding-inline-start: 32px;
-
-			}
-			.base-link {
-				margin-left: -30px;
-				margin-bottom: 2px;
-				padding: 4px;
-				font-weight: bold;
-				background-color: #ece9d8;
-			}
-			.file-tree ul {
-				padding-inline-start: 16px;
-				list-style-type: none;
-				white-space: nowrap;
-			}
-			.file-tree li {
-				position: relative;
-			}
-			.file-tree summary {
-				height: 16px;
-				list-style: none;
-			}
-			.file-tree summary span {
-				padding: 0 2px;
-			}
-			/* closed directory with files */
-			.file-tree summary[data-empty=false]:before {
-				content: "+";
-				display: block;
-				line-height: 10px;
-				padding-left: 1px;
-				box-sizing: border-box;
-
-				position: absolute;
-				top: 0;
-				left: -32px;
-				width: 12px;
-				height: 12px;
-				border: 1px solid #888;
-			}
-			/* Opened directory */
-			details[open] > summary[data-empty=false]:before {
-				padding-left: 2px;
-				line-height: 8px;
-				content: "-";
-			}
-			/* Add the icon */
-			.file-tree [data-icon]:after {
-				content: attr(data-icon);
-				display: block;
-
-				position: absolute;
-				top: 0;
-				left: -16px;
-				width: 16px;
-				height: 16px;
-			}
-			.tree-file-selected * {
-				background-color: #316AC5;
-				color: #f5f5f5
-			}
-
-
-			.file-content {
-				width: 100%;
-				max-height: 100%;
-				overflow: auto;
-				background:
-					linear-gradient(
-						135deg,
-						#ffffff 10%,
-						#ece9d8 50%
-					)
-				;
-				position: relative;
-			}
-			.file-table {
-				width: 100%;
-				max-height: 100%;
-				overflow: scroll;
-				border: none;
-				border-spacing: 0px;
-				border-collapse: collapse;
-			}
-			.file-table tr[data-selected=true] {
-				background-color: #316AC5;
-				color: #f5f5f5;
-			}
-			.select-cell {
-				background-color: rgba(255,255,255, 0.2);
-			}
-			.header-row {
-				background-color: #EEEAD6;
-				height: 25px;
-				border-bottom: 1px solid #888;
-				position: sticky;
-				top: 0;
-				left: 0;
-				right: 0;
-
-			}
-			.file-table tr {
-				height: 20px;
-			}
-			.header:after {
-				font-weight: bold;
-			}
-			.header-select {
-				width: 0;
-			}
-			.header-file-name {
-				width: 100%;
-			}
-			.header-file-name:after {
-				content: "File name";
-			}
-			.header-mode:after {
-				content: "Mode";
-			}
-			.header-user:after {
-				content: "User";
-			}
-			.header-group:after {
-				content: "Group";
-			}
-			.header-size:after {
-				content: "Size";
-			}
-			.file-table [data-icon]:before {
-				content: attr(data-icon);
-				display: inline-block;
-				width: 16px;
-			}
-		</style>
+		<title>File manager</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/applications/file_manager/file_manager.css">
+		<link rel="stylesheet" href="/xp/config/application.css">
 	</head>
 	<body onload="body_onload()">
 		<input type="file" style="display: none;" id="file-input">
-		<div class="menu-bar">
-			<div class="menu-row">
-				<div class="menu-container">
-					<div class="menu-category">File</div>
-					<div class="menu-sub hidden">
-						<a onclick="btn_open_directory()" class="menu-item icon icon-16" data-icon="action-open">
-							Open directory...
-						</a>
-						<div class="menu-spacer"></div>
-						<a onclick="btn_new_file()" class="menu-item icon icon-16" data-icon="file-text">
-							New file
-						</a>
-						<a onclick="btn_new_folder()" class="menu-item icon icon-16" data-icon="file-directory">
-							New Folder
-						</a>
-						<div class="menu-spacer"></div>
-						<a onclick="btn_refresh()" class="menu-item icon icon-16" data-icon="action-reload">
-							Refresh
-						</a>
-						<div class="menu-spacer"></div>
-						<a href="about:blank#close" class="menu-item icon icon-16" data-icon="action-exit">
-							Exit
-						</a>
-					</div>
-				</div>
-				<div class="menu-container">
-					<div class="menu-category">Edit</div>
-					<div class="menu-sub hidden">
-						<a onclick="btn_copy()" class="menu-item icon icon-16" data-icon="action-copy">
-							Copy
-						</a>
-						<a onclick="btn_cut()" class="menu-item icon icon-16" data-icon="action-cut">
-							Cut
-						</a>
-						<a onclick="btn_paste()" class="menu-item icon icon-16" data-icon="action-paste">
-							Paste
-						</a>
-						<div class="menu-spacer"></div>
-						<a onclick="btn_rename()" class="menu-item icon icon-16" data-icon="action-rename">
-							Rename...
-						</a>
-						<a onclick="btn_delete()" class="menu-item icon icon-16" data-icon="action-delete">
-							Delete...
-						</a>
-						<a onclick="btn_set_mode()" class="menu-item icon icon-16" data-icon="⎆">
-							Set mode...
-						</a>
-						<div class="menu-spacer"></div>
-						<a onclick="btn_upload_files()" class="menu-item icon icon-16" data-icon="action-upload">
-							Upload files...
-						</a>
-						<a onclick="btn_download_tar()" class="menu-item icon icon-16" data-icon="action-download">
-							Download as tar
-						</a>
-					</div>
-				</div>
-				<div class="menu-container">
-					<div class="menu-category">View</div>
-					<div class="menu-sub hidden">
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_human_readable" data-update-type="input-boolean" data-update-onchange checked>
-							Human-readable
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_show_dotfiles" data-update-type="input-boolean" data-update-onchange>
-							Show hidden files
-						</label>
-						<div class="menu-spacer"></div>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_show_select" data-update-type="input-boolean" data-update-onchange checked>
-							Select
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_show_mode" data-update-type="input-boolean" data-update-onchange checked>
-							Mode
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_show_user" data-update-type="input-boolean" data-update-onchange checked>
-							User
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_show_group" data-update-type="input-boolean" data-update-onchange checked>
-							Group
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_show_size" data-update-type="input-boolean" data-update-onchange checked>
-							Size
-						</label>
-					</div>
-				</div>
-				<div class="menu-container">
-					<div class="menu-category">Sort</div>
-					<div class="menu-sub hidden">
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_dirfirst" data-update-type="input-boolean" data-update-onchange checked>
-							Directories first
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="content_reverse" data-update-type="input-boolean" data-update-onchange>
-							Reverse
-						</label>
-						<div class="menu-spacer"></div>
-						<label class="menu-item">
-							<input type="radio" name="sort" checked onchange="radio_sort()" value="">
-							Alphabetically
-						</label>
-						<label class="menu-item">
-							<input type="radio" name="sort" onchange="radio_sort()" value="mtime">
-							Modification
-						</label>
-						<label class="menu-item">
-							<input type="radio" name="sort" onchange="radio_sort()" value="ctime">
-							Create
-						</label>
-						<label class="menu-item">
-							<input type="radio" name="sort" onchange="radio_sort()" value="size">
-							Size
-						</label>
-					</div>
-				</div>
-				<div class="menu-container">
-					<div class="menu-category">Help</div>
-					<div class="menu-sub hidden">
-						<a onclick="show_popup('about-window')" class="menu-item icon icon-16" data-icon="generic-info">About...</a>
-					</div>
-				</div>
-			</div>
-			<div class="menu-row" style="height: 44px;">
-				<button onclick="btn_back()" class="toolbar-btn icon icon-24" data-icon="action-back">
-					Back
-				</button>
-				<button onclick="btn_forward()" class="toolbar-btn icon icon-24" data-icon="action-forward">
-					Forward
-				</button>
-				<button onclick="btn_up()" class="toolbar-btn icon icon-24" data-icon="action-up">
-					Up
-				</button>
-				<div class="toolbar-spacer"></div>
-				<button onclick="btn_copy()" class="toolbar-btn icon icon-24" data-icon="action-copy">
-					Copy
-				</button>
-				<button onclick="btn_cut()" class="toolbar-btn icon icon-24" data-icon="action-cut">
-					Cut
-				</button>
-				<button onclick="btn_paste()" class="toolbar-btn icon icon-24" data-icon="action-paste" >
-					Paste
-				</button>
-				<div class="toolbar-spacer"></div>
-				<button onclick="btn_refresh()" class="toolbar-btn icon icon-24" data-icon="action-reload" >
-					Refresh
-				</button>
-			</div>
-			<div class="menu-row">
-				<label for="file_path_text_input">&nbsp;Address:&nbsp;</label>
-				<input type="text" id="menubar_file_path" name="menubar_file_path" style="width: 100%; height: 24px;" onkeyup="menubar_file_path_keyup()">
-				<button id="menubar_go_button" class="btn" onclick="btn_menubar_go()" style="border-radius: 0; min-width: 50px; border: 1px solid #888; min-height: 24px; border-left: none;">➞Go</button>
-			</div>
-		</div>
 
 		<div class="window-content">
-			<div class="splitview">
-				<ul id="file-tree" class="file-tree"></ul>
-				<div class="file-content">
-					<table id="file-table">
-						<tbody id="file-list">
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-
-		<div class="status-bar">
-			<p class="status-bar-field"></p>
-			<p class="status-bar-field" id="status_text"></p>
-		</div>
-
-		<div id="popups" class="popups hidden">
-
-			<div id="about-window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text">About text editor</div>
-					<div class="title-bar-controls">
-						<button aria-label="Close" onclick="close_popup()"></button>
+			<div class="menu-bar">
+				<div class="menu-row">
+					<div class="menu-container">
+						<div class="menu-category">File</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_open_directory()" class="menu-item icon icon-16" data-icon="action-open">
+								Open directory...
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_new_file()" class="menu-item icon icon-16" data-icon="file-text">
+								New file
+							</a>
+							<a onclick="btn_new_folder()" class="menu-item icon icon-16" data-icon="file-directory">
+								New Folder
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_refresh()" class="menu-item icon icon-16" data-icon="action-reload">
+								Refresh
+							</a>
+							<div class="menu-spacer"></div>
+							<a href="about:blank#close" class="menu-item icon icon-16" data-icon="action-exit">
+								Exit
+							</a>
+						</div>
 					</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<h3>File manager</h3>
-						<p>A simple file manager</p>
-						<ul>
-							<li>CGI API written in bash</li>
-							<li>Front-end written in plain Javascript</li>
-						</ul>
-						<br>
-						<br>
-						<div class="btn-panel">
-							<span></span>
-							<button class="btn" onclick="close_popup()">Close</button>
+					<div class="menu-container">
+						<div class="menu-category">Edit</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_copy()" class="menu-item icon icon-16" data-icon="action-copy">
+								Copy
+							</a>
+							<a onclick="btn_cut()" class="menu-item icon icon-16" data-icon="action-cut">
+								Cut
+							</a>
+							<a onclick="btn_paste()" class="menu-item icon icon-16" data-icon="action-paste">
+								Paste
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_rename()" class="menu-item icon icon-16" data-icon="action-rename">
+								Rename...
+							</a>
+							<a onclick="btn_delete()" class="menu-item icon icon-16" data-icon="action-delete">
+								Delete...
+							</a>
+							<a onclick="btn_set_mode()" class="menu-item icon icon-16" data-icon="⎆">
+								Set mode...
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_upload_files()" class="menu-item icon icon-16" data-icon="action-upload">
+								Upload files...
+							</a>
+							<a onclick="btn_download_tar()" class="menu-item icon icon-16" data-icon="action-download">
+								Download as tar
+							</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">View</div>
+						<div class="menu-sub hidden">
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_human_readable" data-update-type="input-boolean" data-update-onchange checked>
+								Human-readable
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_show_dotfiles" data-update-type="input-boolean" data-update-onchange>
+								Show hidden files
+							</label>
+							<div class="menu-spacer"></div>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_show_select" data-update-type="input-boolean" data-update-onchange checked>
+								Select
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_show_mode" data-update-type="input-boolean" data-update-onchange checked>
+								Mode
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_show_user" data-update-type="input-boolean" data-update-onchange checked>
+								User
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_show_group" data-update-type="input-boolean" data-update-onchange checked>
+								Group
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_show_size" data-update-type="input-boolean" data-update-onchange checked>
+								Size
+							</label>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">Sort</div>
+						<div class="menu-sub hidden">
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_dirfirst" data-update-type="input-boolean" data-update-onchange checked>
+								Directories first
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="content_reverse" data-update-type="input-boolean" data-update-onchange>
+								Reverse
+							</label>
+							<div class="menu-spacer"></div>
+							<label class="menu-item">
+								<input type="radio" name="sort" checked onchange="radio_sort()" value="">
+								Alphabetically
+							</label>
+							<label class="menu-item">
+								<input type="radio" name="sort" onchange="radio_sort()" value="mtime">
+								Modification
+							</label>
+							<label class="menu-item">
+								<input type="radio" name="sort" onchange="radio_sort()" value="ctime">
+								Create
+							</label>
+							<label class="menu-item">
+								<input type="radio" name="sort" onchange="radio_sort()" value="size">
+								Size
+							</label>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">Help</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_about()" class="menu-item icon icon-16" data-icon="generic-info">About...</a>
 						</div>
 					</div>
 				</div>
+				<div class="menu-row">
+					<button onclick="btn_back()" class="toolbar-btn icon icon-24" data-icon="action-back">
+						Back
+					</button>
+					<button onclick="btn_forward()" class="toolbar-btn icon icon-24" data-icon="action-forward">
+						Forward
+					</button>
+					<button onclick="btn_up()" class="toolbar-btn icon icon-24" data-icon="action-up">
+						Up
+					</button>
+					<div class="toolbar-spacer"></div>
+					<button onclick="btn_copy()" class="toolbar-btn icon icon-24" data-icon="action-copy">
+						Copy
+					</button>
+					<button onclick="btn_cut()" class="toolbar-btn icon icon-24" data-icon="action-cut">
+						Cut
+					</button>
+					<button onclick="btn_paste()" class="toolbar-btn icon icon-24" data-icon="action-paste" >
+						Paste
+					</button>
+					<div class="toolbar-spacer"></div>
+					<button onclick="btn_refresh()" class="toolbar-btn icon icon-24" data-icon="action-reload" >
+						Refresh
+					</button>
+				</div>
+				<div class="menu-row">
+					<label for="file_path_text_input">&nbsp;Address:&nbsp;</label>
+					<input type="text" id="menubar_file_path" name="menubar_file_path" onkeyup="menubar_file_path_keyup()">
+					<button id="menubar_go_button" class="btn" onclick="btn_menubar_go()">➞Go</button>
+				</div>
 			</div>
 
-			<div id="progress-window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text" id="progress_title">Progress</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<p id="progress_text"></p>
-						<pre id="progress_status" style="overflow: auto; border: 1px solid #888; height: 8em;"></pre>
-					</div>
-					<div class="field-row">
-						<span></span>
-						<button class="btn" id="progress_close" onclick="close_popup()" hidden>Close</button>
+			<div class="window-inner">
+				<div class="splitview">
+					<ul id="file-tree" class="file-tree"></ul>
+					<div class="file-content">
+						<table id="file-table">
+							<tbody id="file-list">
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
 
+			<div class="status-bar">
+				<span class="status-bar-field" id="status-message"></span>
+			</div>
 		</div>
 
-		<script src="/static/js/fix_link_targets_iframe.js"></script>
-		<script src="/static/js/fix_open_target.js"></script>
-		<script src="/static/js/fix_radio_onchange.js"></script>
-		<script src="/static/js/make_xhr.js"></script>
-		<script src="/static/js/popups.js"></script>
-		<script src="/static/js/CgiCommands.js"></script>
-		<script src="/static/js/AppState.js"></script>
-		<script src="/static/js/FileManager.js"></script>
-		<script src="/static/js/xp/file_manager.js"></script>
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script src="/xp/libraries/AppState.js"></script>
+		<script src="/xp/libraries/MessageBox.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="/xp/libraries/FileManager.js"></script>
+		<script src="/xp/applications/file_manager/file_manager.js"></script>
 	</body>
-
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=600}}}
-{{{window_height=400}}}
-{{{window_resizeable}}}
--->
 </html>
 
 

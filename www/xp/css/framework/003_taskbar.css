@@ -25,10 +25,11 @@
 		;
 	}
 
-	.taskbar-left {
+	/* The list of buttons in the taskbar for minimizing/restoring a window */
+	.windowlist {
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
+		overflow-x: auto;
+		margin-right: auto;
 	}
 
 	/* The buttons in the taskbar for minimizing/restoring a window */
@@ -52,9 +53,16 @@
 		color: #eee;
 		padding: 0px 10px;
 		width: 10em;
-		max-width: 10em;
+		max-width: 100px;
+		min-width: 75px;
 		text-align: left;
 		margin-left: 4px;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	.windowbutton-icon {
+		color: #000;
 	}
 	.windowbutton:hover {
 		border: 1px solid #0997ff;
@@ -78,6 +86,13 @@
 			) !important
 		;
 		border: 1px inset #003dd7;
+	}
+
+	.systray {
+		border: 1px solid #0787fb;
+		background-color: #003dd7;
+		color: #fff;
+		padding: 2px;
 	}
 
 	/* The clock at the right corner of the taskbar */
@@ -125,7 +140,7 @@
 		width: 20px;
 		height: 20px;
 		display: inline-block;
-		background: url("/static/tux.svg");
+		background: url("/xp/assets/tux.svg");
 	}
 
 /* /taskbar */

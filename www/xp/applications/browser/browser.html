@@ -1,155 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
+		<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="Run command dialog">
+		<meta name="description" content="A simple iframe-based web browser">
 		<meta name="author" content="max1220">
-		<title>🌐 Browser</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<title>Browser</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
 		<style>
-			:root {
-				--windows-content-padding: 0px;
-				--menubar-height: 29px;
-			}
-			iframe {
-				box-sizing: border-box;
-				background-color: #fff;
-				width: 100%;
+			#browser-content {
 				height: 100%;
-			}
-			.urlbar {
-				width: 100%;
-				margin: 0 5px;
-			}
-
-			.toolbar-btn {
-				display: flex;
-				align-items: baseline;
-				position: relative;
-
-				text-decoration: none;
-				font-family: sans-serif;
-				cursor: pointer;
-				border: none;
-				outline: none;
-				padding: 0 10px;
-				margin: 0 10px;
-				background-color: transparent;
-				appearance: none;
-			}
-			.toolbar-icon {
-				position: absolute;
-				font-size: 32px;
-				top: -16px;
-				bottom: -16px;
-				left: 0;
-			}
-			.toolbar-icon-small {
-				position: absolute;
-				font-size: 20px;
-				top: -6px;
-				bottom: -6px;
-				left: 0;
-			}
-			.toolbar-text {
-				padding-left: 15px;
-			}
-			.toolbar-spacer {
-				border-right: 1px solid #888;
-				width: 1px;
-				height: 30px;
 			}
 		</style>
 	</head>
 	<body>
-		<div class="menu-bar">
-			<div class="menu-row" style="height: 44px;">
-				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_back()">
-					<span class="toolbar-icon">🠸</span>
-					<span class="toolbar-text">Back</span>
-				</button>
-				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_forward()">
-					<span class="toolbar-icon">🠺</span>
-					<span class="toolbar-text">&nbsp;</span>
-				</button>
-				<div class="toolbar-spacer"></div>
-				<input type="text" id="urlbar" class="urlbar" onkeyup="onkeyup_urlbar()" style="width: 100%">
-				<div class="toolbar-spacer"></div>
-				<button id="menubar_go_button" class="toolbar-btn" onclick="btn_go()">
-					<span class="toolbar-icon-small">🌐</span>
-					<span class="toolbar-text">Go</span>
-				</button>
+		<div class="window-content">
+			<div class="menu-bar">
+				<div class="menu-row" style="height: 44px;">
+					<button id="menubar_go_button" class="toolbar-btn" onclick="btn_back()">
+						<span class="toolbar-icon">🠸</span>
+						<span class="toolbar-text">Back</span>
+					</button>
+					<button id="menubar_go_button" class="toolbar-btn" onclick="btn_forward()">
+						<span class="toolbar-icon">🠺</span>
+						<span class="toolbar-text">&nbsp;</span>
+					</button>
+					<div class="toolbar-spacer"></div>
+					<input type="text" id="urlbar" class="urlbar" onkeyup="onkeyup_urlbar()" style="flex-grow: 1;">
+					<div class="toolbar-spacer"></div>
+					<button id="menubar_go_button" class="toolbar-btn" onclick="btn_go()">
+						<span class="toolbar-icon-small">🌐</span>
+						<span class="toolbar-text">Go</span>
+					</button>
+				</div>
+			</div>
+			<div class="window-inner">
+				<iframe id="browser-content"></iframe>
+			</div>
+			<div class="status-bar">
+				<span class="status-bar-field" id="status_left"></span>
+				<span class="status-bar-field" id="status_middle"></span>
+				<span class="status-bar-field" id="status_right"></span>
 			</div>
 		</div>
-
-		<div class="window-content">
-			<iframe id="browser-content"></iframe>
-		</div>
-
-		<div class="status-bar">
-			<span class="status-bar-field" id="status_left"></span>
-			<span class="status-bar-field" id="status_middle"></span>
-			<span class="status-bar-field" id="status_right"></span>
-		</div>
-
-		<script>
-			let iframe_elem = document.getElementById("browser-content")
-			let urlbar_elem = document.getElementById("urlbar")
-
-			function btn_back() {
-				iframe_elem.contentWindow.history.back()
-			}
-			function btn_forward() {
-				iframe_elem.contentWindow.history.forward()
-			}
-			function btn_home() {
-				home_elem.onclick = function() {
-					iframe_elem.src = "about:blank"
-				}
-			}
-			function btn_go() {
-				let url_text = urlbar_elem.value
-				if (url_text.startsWith("http://") || url_text.startsWith("https://")) {
-					iframe_elem.src = urlbar_elem.value
-				} else {
-					iframe_elem.src = "http://" + urlbar_elem.value
-				}
-			}
-			function onkeyup_urlbar() {
-				if (event.key == "Enter" || event.keyCode == 13) {
-					btn_go()
-				}
-			}
-
-			iframe_elem.onreadystatechange = function(e) {
-				console.log("readystatechange", e)
-				status_elem.innerHTML = "readystatechange: " + document.readyState
-			}
-
-			iframe_elem.onload = function() {
-				let current_url = iframe_elem.contentWindow.location.href
-				let status_left_elem = document.getElementById("status_left")
-				status_left_elem.innerText = "Loaded: " + current_url
-				urlbar_elem.value = current_url
-			}
-
-			let hash_loc = location.hash.substr(1)
-			if (hash_loc=="") {
-				iframe_elem.src = location.origin;
-			} else {
-				iframe_elem.src = decodeURIComponent(hash_loc);
-			}
-		</script>
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="browser.js"></script>
 	</body>
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=800}}}
-{{{window_height=600}}}
-{{{window_resizeable}}}
--->
 </html>
 
 

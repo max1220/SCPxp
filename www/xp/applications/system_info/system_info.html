@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Displays system information, such as load, uptime, processes, etc.">
+		<meta name="author" content="max1220">
+		<title>System Information</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			pre {
+				overflow: auto;
+				height: 240px;
+			}
+		</style>
+	</head>
+	<body onload="body_onload()">
+		<div class="window-content">
+			<div class="window-inner p8">
+				<h3>System Information for <span class="update-USERNAME">USERNAME</span>@<span class="update-HOSTNAME">HOSTNAME</span></h3>
+
+				<section class="tabs" style="flex-grow: 1;">
+				<menu role="tablist" aria-label="System info tabs">
+					<button role="tab" data-tabgroup="infos" aria-controls="tab-system" aria-selected="true" onclick="info_tab_onlick()">System</button>
+					<button role="tab" data-tabgroup="infos" aria-controls="tab-process" onclick="info_tab_onlick()">Processes</button>
+					<button role="tab" data-tabgroup="infos" aria-controls="tab-filesystem" onclick="info_tab_onlick()">File systems</button>
+					<button role="tab" data-tabgroup="infos" aria-controls="tab-interfaces" onclick="info_tab_onlick()">Interfaces</button>
+					<button role="tab" data-tabgroup="infos" aria-controls="tab-ports" onclick="info_tab_onlick()">Ports</button>
+				</menu>
+				<article role="tabpanel" id="tab-system" data-tabgroup="infos">
+					<h3>System info</h3>
+					<dl>
+						<dt>Hostname:</dt>
+						<dd><b class="update-HOSTNAME">HOSTNAME</b></dd>
+						<dt>Username:</dt>
+						<dd><b class="update-USERNAME">USERNAME</b></dd>
+						<dt>Kernel:</dt>
+						<dd><b class="update-KERNEL">KERNEL</b></dd>
+						<dt>CPU:</dt>
+						<dd><b class="update-CPU_MODEL">CPU_MODEL</b></dd>
+						<dt>Memory:</dt>
+						<dd><b class="update-MEM_AVAILABLE">MEM_AVAILABLE</b> / <b class="update-MEM_TOTAL">MEM_TOTAL</b></dd>
+						<dt>OS:</dt>
+						<dd><b class="update-OS_NAME">OS_NAME</b></dd>
+						<dt>Uptime:</dt>
+						<dd><b class="update-UPTIME">UPTIME</b></dd>
+						<dt>Load:</dt>
+						<dd>
+							1min: <b class="update-LOADAVG_1">LOADAVG_1</b><br>
+							5min: <b class="update-LOADAVG_5">LOADAVG_5</b><br>
+							15min: <b class="update-LOADAVG_15">LOADAVG_15</b>
+						</dd>
+					</dl>
+				</article>
+				<article role="tabpanel" id="tab-process" data-tabgroup="infos" hidden>
+					<h3>Processes</h3>
+					<div style="display: flex; flex-direction: column;">
+						<pre class="update-PROCESS"></pre>
+					</div>
+				</article>
+				<article role="tabpanel" id="tab-filesystem" data-tabgroup="infos" hidden>
+					<h3>File systems</h3>
+					<pre class="update-FILESYSTEM"></pre>
+				</article>
+				<article role="tabpanel" id="tab-interfaces" data-tabgroup="infos" hidden>
+					<h3>Network interfaces</h3>
+					<pre class="update-INTERFACES"></pre>
+				</article>
+				<article role="tabpanel" id="tab-ports" data-tabgroup="infos" hidden>
+					<h3>Ports</h3>
+					<pre class="update-PORTS"></pre>
+				</article>
+			</section>
+
+			</div>
+		</div>
+		<script src="/xp/libraries/utils.js"></script>
+
+
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="/xp/applications/system_info/system_info.js"></script>
+	</body>
+</html>
+
+

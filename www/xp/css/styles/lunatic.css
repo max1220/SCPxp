@@ -2,11 +2,10 @@
 
 	:root {
 		--desktop-bg-color: #004E98;
-		/* --desktop-bg-image: url("/static/bliss.png"); */
 
 		--windows-popup-window-width: 300px;
-		--windows-content-padding: 5px;
-		--windows-shadow-color: #333333;
+		--windows-shadow-color: #333;
+		--windows-border-size: 2px;
 		--windows-border-radius: 8px;
 		--windows-border-color1: #0831D9;
 		--windows-border-color2: #166AEE;
@@ -39,14 +38,101 @@
 				#337CFF
 			)
 		;
-		--windows-title-bar-text-color: #fff;
+		--windows-title-bar-text-color: #FFF;
+		--windows-title-bar-text-shadow-color: #0F1089;
+		--windows-title-bar-icon-color: #000;
+		--windows-title-button-width: 21px;
+		--windows-title-button-height: 21px;
+		--windows-title-button-radius: 3px;
+		--windows-title-button-border-color: #D3DAFF;
+		--windows-title-button-bg-color: #0050EE;
+		--windows-title-button-close-bg-color: #ED3315;
+		--windows-title-button-bg-color-hover: #1262FF;
+		--windows-title-button-close-bg-color-hover: #FF4021;
+		--windows-title-button-bg-color-unfocused: #3070EE;
+		--windows-title-button-box-shadow: 0px 0px 2px inset rgba(0,0,0,0.5);
+		--windows-title-button-bg-image:
+			linear-gradient(
+				/* Bottom */
+				0deg,
+				rgba(0,0,0,0.2),
+				rgba(0,0,0,0.1) 16%,
+				rgba(0,0,0,0) 24%
+			),
+			linear-gradient(
+				/* Left */
+				90deg,
+				rgba(255,255,255,0.3),
+				rgba(255,255,255,0.15) 8%,
+				rgba(0,0,0,0) 16%
+			),
+			linear-gradient(
+				/* Top */
+				180deg,
+				rgba(255,255,255,0.15) 8%,
+				rgba(255,255,255,0) 16%
+			),
+			linear-gradient(
+				/* Right */
+				270deg,
+				rgba(0,0,0,0.2),
+				rgba(0,0,0,0.1) 16%,
+				rgba(0,0,0,0) 24%
+			),
+			radial-gradient(
+				/* highlight 1 */
+				at 10% 10%,
+				rgba(255,255,255,0.4),
+				rgba(255,255,255,0.15),
+				rgba(255,255,255,0)
+			),
+			radial-gradient(
+				/* highlight 2 */
+				at 12% 12%,
+				rgba(255,255,255,0.3),
+				rgba(255,255,255,0) 16%
+			)
+		;
+		--windows-title-button-bg-image-active:
+			linear-gradient(
+				/* Bottom */
+				0deg,
+				rgba(255,255,255,0.2),
+				rgba(255,255,255,0.1) 12%,
+				rgba(255,255,255,0) 20%
+			),
+			linear-gradient(
+				/* Left */
+				90deg,
+				rgba(0,0,0,0.3),
+				rgba(0,0,0,0.15) 12%,
+				rgba(0,0,0,0) 20%
+			),
+			linear-gradient(
+				/* Top */
+				180deg,
+				rgba(0,0,0,0.15) 12%,
+				rgba(0,0,0,0) 20%
+			),
+			linear-gradient(
+				/* Right */
+				270deg,
+				rgba(255,255,255,0.2),
+				rgba(255,255,255,0.1) 12%,
+				rgba(255,255,255,0) 20%
+			)
+		;
+
+
+
+		--windows-title-icon-color: #FFF;
 		--statusbar-height: 19px;
 		--menubar-height: 22px;
 		--menubar-row-height: 22px;
 		--menubar-sub-width: 150px;
 		--menubar-row-bg-color: #EEEAD6;
 		--menubar-row-fg-color: #111111;
-		--menubar-sub-bg-color: #FAFAFAFA;
+		--menubar-sub-bg-color: #FAFAFA;
 		--menubar-hover-fg-color: #EEEEEE;
 		--menubar-hover-bg-color: #4466FF;
 		--taskbar-height: 26px;

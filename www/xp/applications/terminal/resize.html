@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Resize window of Terminal">
+		<meta name="author" content="max1220">
+		<title>Resize Terminal</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+	</head>
+	<body>
+		<div class="window-content p3">
+			<p>Please enter the new dimensions of the terminal window.</p>
+			<div class="field-row">
+				<label for="cols">Columns</label>
+				<input type="number" id="cols" name="cols" style="width: 50px;" value="80">
+			</div>
+			<div class="field-row">
+				<label for="rows">Rows</label>
+				<input type="number" id="rows" name="rows" style="width: 50px;" value="24">
+			</div>
+			<br>
+			<div class="btn-panel">
+				<span></span>
+				<button class="btn" onclick="send_resize()">Send</button>
+			</div>
+		</div>
+		<script>
+			function send_resize() {
+				let dims = [
+					document.getElementById("cols").value,
+					document.getElementById("rows").value
+				]
+				win.dialog_return(dims);
+			}
+			// called by the WM on any window event
+			function win_ev(ev) {
+				if (ev=="close") {
+					win.dialog_return();
+				}
+			}
+			// called by the WM when the window is loaded
+			function win_load() {
+				win.title = "Resize terminal"
+				win.icon = "application-terminal"
+				win.resize(250, 180)
+				win.resizeable = false
+				win.minimizeable = false
+				win.update()
+			}
+		</script>
+	</body>
+</html>

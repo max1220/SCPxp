@@ -11,6 +11,8 @@
 		box-shadow: 1px 1px 5px #000;
 		font-family: sans-serif;
 		z-index: 10000;
+		max-height: calc(100vh - var(--taskbar-height) - 5px);
+		overflow-y: auto;
 	}
 	.start-menu-icon {
 		display: inline-block;

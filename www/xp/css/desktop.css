@@ -4,56 +4,47 @@
 		background-color: var(--desktop-bg-color);
 		background-image: var(--desktop-bg-image);
 		user-select: none;
-
 	}
 
-	#windows {
-		display: flex;
-		flex-direction: column;
+	/* movable windows container */
+	.windows {
 		position: absolute;
 		left: 0;
 		right: 0;
 		top: 0;
 		bottom: var(--taskbar-height);
-		overflow-x: hidden;
+		overflow: hidden;
 	}
 
-	.desktop-icon {
-		width: 48px;
-		height: 48px;
-		border-radius: 3px;
-		font-size: 32px;
-		background-image: radial-gradient(
-			rgba(0,0,0,0.25),
-			rgba(0,0,0,0) 75%
-		);
-		color: #000;
+	.desktop {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		max-height: 100%;
+		align-content: flex-start;
 	}
-	.desktop-link {
-		margin: 1em;
-		width: 3em;
+
+	/* complete desktop icon link */
+	.desktop-icon {
+		text-decoration: none;
 		text-align: center;
 		font-family: sans-serif;
-		text-decoration: none;
-		color: #eee;
 		cursor: pointer;
-		text-shadow: 1px 1px rgba(0,0,0,0.3);
+		padding: 4px;
+		width: 100px;
+		height: 75px;
 	}
-
-	#css_editor {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 0;
-		bottom: 0;
-		display: block;
-		font-family: monospace;
+	.desktop-icon-icon {
+		font-size: 32px;
+		color: #000;
+	}
+	.desktop-icon-icon::after {
+		content: "\a";
 		white-space: pre;
-		background-color: #fff;
-		color: #111;
-		outline: none;
-		border: 1px solid #333;
-		overflow: auto;
+	}
+	.desktop-icon-text {
+		color: #eee;
+		text-shadow: 1px 1px rgba(0,0,0,0.3);
 	}
 
 	body {

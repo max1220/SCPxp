@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>Run Command</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			#command-output {
+				flex-grow: 1;
+				user-select: text;
+				margin: 0;
+			}
+		</style>
+	</head>
+	<body onload="onload()">
+		<div class="window-content p3">
+			<pre id="command-output"></pre>
+		</div>
+
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script src="/xp/libraries/AppState.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script>
+			let cgi_commands = new CgiCommands(CGI_BACKEND)
+
+			function decode_parms() {
+				// parse search string into parms object
+				let parms = {}
+				location.search.substr(1).split("&").forEach(function(e) {
+					let kv = e.split("=").map(function(e) {
+						return decodeURIComponent(e.replace(/\+/g, " "))
+					})
+					parms[kv[0]] = kv[1]
+				})
+				return parms
+			}
+
+			// called by the WM when the window is loaded
+			function win_load() {
+				let parms = decode_parms()
+				win.title = parms.command_str
+				win.icon = "application-run"
+				win.resize(500,400)
+				win.resizeable = true
+				win.update()
+			}
+			function onload() {
+				let parms = decode_parms()
+				console.log("parms", parms)
+
+				let command = ["eval", parms.command_str]
+				let command_output_elem = document.getElementById("command-output")
+
+				let on_return_code = function(code) {
+					command_output_elem.innerHTML += "\n<b>Command returned:"+code+"</b>"
+					if (parms.close_return) {
+						location.href = "about:blank#close"
+					}
+				}
+
+				if (parms.mode == "complete") {
+					cgi_commands.run_command_async(function(resp) {
+						if (parms.enable_html=="on") {
+							command_output_elem.innerHTML = resp
+						} else {
+							command_output_elem.innerText = resp
+						}
+					}, command, false, false, false, false, parms.merge_stderr=="on")
+				} else if (parms.mode == "lines") {
+					cgi_commands.run_command_event_stream(function(line) {
+						if (parms.enable_html=="on") {
+							command_output_elem.innerHTML += line + "\n"
+						} else {
+							command_output_elem.innerText += line + "\n"
+						}
+					}, on_return_code, false, false, command, false, parms.merge_stderr=="on")
+				} else if (parms.mode == "bytes") {
+					cgi_commands.run_command_event_stream(function(chr) {
+						if (parms.enable_html=="on") {
+							command_output_elem.innerHTML += chr
+						} else {
+							command_output_elem.innerText += chr
+						}
+					}, on_return_code, false, true, command, false, parms.merge_stderr=="on")
+				}
+			}
+		</script>
+	</body>
+</html>
+
+

@@ -34,6 +34,26 @@
 		clear: both;
 	}
 
+	.p0 { padding: 0; }
+	.p1 { padding: 1px; }
+	.p2 { padding: 2px; }
+	.p3 { padding: 3px; }
+	.p4 { padding: 4px; }
+	.p5 { padding: 5px; }
+	.p6 { padding: 6px; }
+	.p7 { padding: 7px; }
+	.p8 { padding: 8px; }
+	.ma { margin: auto; }
+	.m0 { margin: 0; }
+	.m1 { margin: 1px; }
+	.m2 { margin: 2px; }
+	.m3 { margin: 3px; }
+	.m4 { margin: 4px; }
+	.m5 { margin: 5px; }
+	.m6 { margin: 6px; }
+	.m7 { margin: 7px; }
+	.m8 { margin: 8px; }
+
 	/* Simple container with a border and a background */
 	.container {
 		border-radius: 3px;

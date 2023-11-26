@@ -16,8 +16,6 @@
 	/* Add some values to windows to make the useful for the desktop */
 	.window {
 		position: absolute;
-		min-width: 100px;
-		min-height: 30px;
 		box-shadow: 1px 1px 4px var(--windows-shadow-color);
 		border-top-left-radius: var(--windows-border-radius);
 		border-top-right-radius: var(--windows-border-radius);
@@ -26,35 +24,28 @@
 		flex-direction: column;
 	}
 
-	/* Support for simpler popup-windows */
-	.popups {
-		position: absolute;
-		left: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 3000;
-		background-color: rgba(0,0,0,0.5);
-		display: flex;
+	/* Greout a window and disable interactions, e.g. when a dialog prevents interaction */
+	.window-greyout * {
+		filter: grayscale(100%);
+		pointer-events: none;
 	}
-	.popups .window {
-		z-index: 4000;
-		top: 50px;
-		left: calc( 50% - calc( var(--windows-popup-window-width) / 2 ) );
-		width: var(--windows-popup-window-width);
-		--windows-content-padding: 5px;
+
+	/* borderless windows */
+	.window-borderless {
+		box-shadow: none;
+		border-radius: 0;
+		border: none;
 	}
-	.popups .window-body {
-		position: relative;
-		top: 0;
+	.window-borderless .title-bar {
+		display: none;
 	}
-	.popups .window-content {
-		height: auto;
+	.window-borderless .window-body {
+		border: none;
 	}
 
 	/* The container of the window body(it's content, without titlebars/borders )*/
 	.window-body {
-		border: 2px outset var(--windows-border-color2);
+		border: var(--windows-border-size) outset var(--windows-border-color2);
 		border-top: none;
 		background-color: var(--windows-bg-color);
 		color: var(--windows-fg-color);
@@ -72,17 +63,22 @@
 		color: var(--windows-title-bar-text-color);
 		background-image: var(--windows-title-bar-background-image);
 	}
+	.title-bar-icon {
+		color: var(--windows-title-bar-icon-color);
+		padding-left: 8px;
+	}
 	.title-bar-text {
-		padding-left: 0.5em;
+		padding-left: 4px;
+		flex-grow: 1;
 		font-weight: bold;
 		letter-spacing: 0;
 		font-size: 13px;
 		font-family: sans-serif;
-		text-shadow: 1px 1px #0f1089;
+		text-shadow: 1px 1px var(--windows-title-bar-text-shadow-color);
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
-		min-width: 0;
+		margin-right: auto;
 	}
 
 	/* Container for the controls on the right */
@@ -98,88 +94,20 @@
 		position: relative;
 		margin: 0 0.5px;
 		padding: 0 0;
-		width: 21px;
-		height: 21px;
-		border-radius: 3px;
-		border: 1px solid #D3DAFF;
-		color: #fff;
-		background-color: #0050ee;
-		box-shadow: 0px 0px 2px inset rgba(0,0,0,0.5);
-		background-image: linear-gradient(
-				/* Bottom */
-				0deg,
-				rgba(0,0,0,0.2),
-				rgba(0,0,0,0.1) 16%,
-				rgba(0,0,0,0) 24%
-			),
-			linear-gradient(
-				/* Left */
-				90deg,
-				rgba(255,255,255,0.3),
-				rgba(255,255,255,0.15) 8%,
-				rgba(0,0,0,0) 16%
-			),
-			linear-gradient(
-				/* Top */
-				180deg,
-				rgba(255,255,255,0.15) 8%,
-				rgba(255,255,255,0) 16%
-			),
-			linear-gradient(
-				/* Right */
-				270deg,
-				rgba(0,0,0,0.2),
-				rgba(0,0,0,0.1) 16%,
-				rgba(0,0,0,0) 24%
-			),
-			radial-gradient(
-				/* highlight 1 */
-				at 10% 10%,
-				rgba(255,255,255,0.4),
-				rgba(255,255,255,0.15),
-				rgba(255,255,255,0)
-			),
-			radial-gradient(
-				/* highlight 1 */
-				at 12% 12%,
-				rgba(255,255,255,0.3),
-				rgba(255,255,255,0) 16%
-			)
-		;
-
+		width: var(--windows-title-button-width);
+		height: var(--windows-title-button-height);
+		border-radius: var(--windows-title-button-radius);
+		border: 1px solid var(--windows-title-button-border-color);
+		color: var(--windows-title-icon-color);
+		background-color: var(--windows-title-button-bg-color);
+		box-shadow: var(--windows-title-button-box-shadow);
+		background-image: var(--windows-title-button-bg-image);
 	}
 	.title-bar-controls *:hover {
-		background-color: #1262FF;
+		background-color: var(--windows-title-button-bg-color-hover);
 	}
 	.title-bar-controls *:active {
-		background-image: linear-gradient(
-				/* Bottom */
-				0deg,
-				rgba(255,255,255,0.2),
-				rgba(255,255,255,0.1) 12%,
-				rgba(255,255,255,0) 20%
-			),
-			linear-gradient(
-				/* Left */
-				90deg,
-				rgba(0,0,0,0.3),
-				rgba(0,0,0,0.15) 12%,
-				rgba(0,0,0,0) 20%
-			),
-			linear-gradient(
-				/* Top */
-				180deg,
-				rgba(0,0,0,0.15) 12%,
-				rgba(0,0,0,0) 20%
-			),
-			linear-gradient(
-				/* Right */
-				270deg,
-				rgba(255,255,255,0.2),
-				rgba(255,255,255,0.1) 12%,
-				rgba(255,255,255,0) 20%
-			)
-		;
+		background-image: var(--windows-title-button-bg-image-active);
 	}
 
 	/* Decolor the unfocused window */
@@ -187,7 +115,7 @@
 		background-image: var(--windows-title-bar-background-image-unfocused);
 	}
 	.window-unfocused .title-bar-controls * {
-		background-color: #3070EE;
+		background-color: var(--windows-title-button-bg-color-unfocused);
 	}
 
 	/* Add window icons to buttons */
@@ -206,10 +134,10 @@
 
 	/* Recolor close button */
 	.window .title-bar-controls [aria-label=Close] {
-		background-color: #ED3315;
+		background-color: var(--windows-title-button-close-bg-color);
 	}
 	.window .title-bar-controls [aria-label=Close]:hover {
-		background-color: #FF4021;
+		background-color: var(--windows-title-button-close-bg-color-hover);
 	}
 
 	/* Make a window resizeable */
@@ -226,27 +154,21 @@
 		border-radius: 0;
 	}
 
-	/* The container for the actual window content, excluding menu bars and such */
+	/* The container for the all window content, including menu bars and such */
 	.window-content {
-		padding: var(--windows-content-padding);
+		position: relative;
 		height: 100vh;
 		display: flex;
 		flex-direction: column;
-		padding-bottom:
-			calc(
-				var(--statusbar-height) + var(--windows-content-padding)
-			)
-		;
 		box-sizing: border-box;
 	}
 
-	/* Support a menubar/statusbar for the window content */
-	.menu-bar+.window-content {
-		padding-top:
-			calc(
-				var(--menubar-height) + var(--windows-content-padding)
-			)
-		;
+	/* The container for the actual window content, including menu bars and such */
+	.window-inner {
+		flex-grow: 1;
+		overflow: auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.window-body-iframe {
@@ -254,6 +176,7 @@
 		height: 100%;
 		border: none;
 		box-sizing: border-box;
+		position: absolute;
 	}
 
 /* /windows */

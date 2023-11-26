@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="File manager action progress">
+		<meta name="author" content="max1220">
+		<title>Select directory</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			.directory_preview {
+				width: 100%;
+				height: 200px;
+				background-color: #000;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="window-content">
+			<input type="text" id="filepath">
+			<div class="directory_preview">
+
+			</div>
+			<div class="field-row">
+				<span></span>
+				<button class="btn hidden" id="progress_close" onclick="btn_abort()">Abort</button>
+				<button class="btn hidden" id="progress_close" onclick="btn_open()">Open</button>
+			</div>
+		</div>
+		<script>
+			function win_load() {
+				win.title = "Select a directory"
+				win.icon = "application-file-manager"
+				win.resize(300, 250)
+				win.resizeable = false
+				win.closeable = false
+				win.minimizeable = false
+				win.update()
+			}
+		</script>
+	</body>
+</html>

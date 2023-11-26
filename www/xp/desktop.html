@@ -3,87 +3,46 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="New CSS test page">
+		<meta name="description" content="Boot selection and login page">
 		<meta name="author" content="max1220">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/desktop.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
 		<title>Desktop</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/desktop.css">
 	</head>
-	<body>
-		<!-- The container for the moveable windows(managed by javascript) -->
+	<body onload="load()">
+		<!-- container for the moveable windows(managed by javascript) -->
 		<div id="windows" class="windows">
-			<a class="desktop-link" href="/static/html/xp/l1t.html" target="make_new_win">
-				<span class="desktop-icon">L1</span>
-				L1T
-			</a>
-
-			<a class="desktop-link" href="/static/html/xp/file_manager.html#tree_path=HOME" target="make_new_win">
-				<span class="desktop-icon">🗀</span>
-				Home
-			</a>
-
-			<a class="desktop-link" href="/static/html/xp/terminal_manager.html" target="make_new_win">
-				<span class="desktop-icon">🖵</span>
-				Terminal
-			</a>
-
-			<a class="desktop-link" href="/static/html/xp/x11_manager.html" target="make_new_win">
-				<span class="desktop-icon">🖰</span>
-				X11 Stream
-			</a>
-
-			<a class="desktop-link" href="/static/html/xp/x11_stream.html#auto_create_xvfb=true&session_create_command=vglrun%20~%2FDownloads%2FClassiCube%2FClassiCube&input_mouse_capture=true&encode_low_delay=true&encode_framerate=60" target="make_new_win">
-				<span class="desktop-icon">🖰</span>
-				Classi-Cube
-			</a>
-
+			<!-- container for the desktop icons and desktop status text -->
+			<div id="desktop" class="desktop"></div>
 		</div>
 
-		<!-- the taskbar with the start button -->
+		<!-- taskbar with the start button -->
 		<nav id="taskbar" class="taskbar noselect">
-			<!-- left side: Start button, window buttons -->
-			<div class="taskbar-left">
-				<button id="start-button" class="start-button">
-					<span class="start-icon" aria-label "Tux">&nbsp;</span>start
-				</button>
+			<!-- Start button -->
+			<button id="start-button" class="start-button">
+				<span class="start-icon" aria-label "Tux">&nbsp;</span>start
+			</button>
 
-
-				<!-- the list of windows in the taskbar is managed by js -->
-				<div id="windowlist" class="windowlist"></div>
-			</div>
+			<!-- list of windows in the taskbar -->
+			<div id="windowlist" class="windowlist"></div>
 
 			<!-- right side: the clock/notification area -->
-			<div class="taskbar-right">
-				<!-- the clock is updated by js -->
-				<div id="clock" class="clock">??:??:??</div>
-			</div>
+			<div id="systray" class="systray"></div>
+			<div id="clock" class="clock"></div>
 		</nav>
 
-		<!-- The start menu, containing the list of programs -->
-		<div id="start-menu" class="start-menu hidden">
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/app_demo.html"><span class="start-menu-icon">🗔</span>App demo</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/browser.html"><span class="start-menu-icon">🌐</span>Browser</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/desktop.html"><span class="start-menu-icon">🗔</span>Desktop window</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/file_manager.html"><span class="start-menu-icon">🗀</span>File manager</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/FreeDOS.html"><span class="start-menu-icon">🖵</span>FreeDOS prompt</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/l1t.html"><span class="start-menu-icon">L1</span>L1T</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/lxc_manager.html"><span class="start-menu-icon">🖹</span>LXC Manager</a>
-			<a class="start-menu-item" target="make_new_win" href="/cgi-bin/xp/info.sh"><span class="start-menu-icon">ℹ</span>System Info</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/terminal_manager.html"><span class="start-menu-icon">🖵</span>Terminal</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/text_editor.html"><span class="start-menu-icon">🖹</span>Text editor</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/x11_stream.html"><span class="start-menu-icon">🖰</span>X11 stream</a>
-			<div class="start-menu-spacer"></div>
-			<a class="start-menu-item" onclick="show_settings_window()"><span class="start-menu-icon">⚙</span>Settings...</a>
-			<a class="start-menu-item" target="make_new_win" href="/static/html/xp/run.html"><span class="start-menu-icon">➔</span>Run...</a>
-			<div class="start-menu-spacer"></div>
-			<a class="start-menu-item overflow-ellipsis" href="/index.html#login"><span class="start-menu-icon">🢀</span>Logout...</a>
-			<a class="start-menu-item overflow-ellipsis" href="about:blank"><span class="start-menu-icon">⏻</span>Turn off computer...</a>
-		</div>
+		<!-- start menu, containing the list of programs -->
+		<div id="start-menu" class="start-menu hidden"></div>
 
-		<!-- Load the window manager and stuff last -->
-		<script src="/static/js/fix_open_target.js"></script>
-		<script src="/static/js/fix_link_targets_iframe.js"></script>
-		<script src="/static/js/make_xhr.js"></script>
-		<script src="/static/js/xp/desktop.js"></script>
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/WindowManager.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/start_menu.js"></script>
+		<script src="/xp/config/desktop_icons.js"></script>
+		<!-- Application -->
+		<script src="/xp/libraries/desktop.js"></script>
 	</body>
 </html>

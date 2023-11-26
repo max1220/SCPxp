@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Run command dialog">
+		<meta name="author" content="max1220">
+		<title>Run Command...</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			.field-row {
+				text-align: right;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="window-content p8">
+			<p>
+				Please enter the command to run on the server-side below.
+				<br>
+			</p>
+			<form method="GET" action="/xp/applications/run/run_output.html">
+				<div class="field-row">
+					<label for="command_str">Command:</label>
+					<input type="text" name="command_str" id="command_str" value="ls -lah">
+				</div>
+				<div class="field-row">
+					<span>Settings</span>
+					<span>
+						<label for="merge_stderr">Merge stderr</label>
+						<input type="checkbox" name="merge_stderr" id="merge_stderr" checked>
+						<br>
+						<label for="enable_html">Enable HTML</label>
+						<input type="checkbox" name="enable_html">
+						<br>
+						<label for="close_return">Close on return</label>
+						<input type="checkbox" name="close_return">
+					</span>
+				</div>
+				<div class="field-row">
+					<span>Run mode:</span>
+					<div>
+							<label for="mode_complete">complete</label>
+							<input type="radio" name="mode" value="complete" id="mode_complete" checked>
+
+							<br>
+
+							<label for="mode_lines">stream lines</label>
+							<input type="radio" name="mode" value="lines" id="mode_lines">
+
+							<br>
+
+							<label for="mode_bytes">stream bytes</label>
+							<input type="radio" name="mode" value="bytes" id="mode_bytes">
+
+					</div>
+				</div>
+				<div class="field-row">
+					<span></span>
+					<input type="submit" class="btn" value="Run" style="width: 100%;">
+				</div>
+			</form>
+		</div>
+		<script>
+			function win_load() {
+				win.title = "Run command..."
+				win.icon = "application-run"
+				win.resize(300, 260)
+				win.resizeable = false
+				win.update()
+			}
+		</script>
+	</body>
+</html>

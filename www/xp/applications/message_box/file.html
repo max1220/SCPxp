@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			#directory_view {
+				overflow: auto;
+				flex-grow: 1;
+				background-color: #fff;
+				border: 1px solid #888;
+			}
+			#directory_view * {
+				padding: 1px;
+			}
+			#directory_view .selected {
+				background-color: #316AC5;
+				color: #f5f5f5
+			}
+		</style>
+	</head>
+	<body>
+		<div class="window-content p8">
+			<h3 id="title" class="hidden"></h3>
+			<p id="content">Please select a file to open:</p>
+			<div class="field-row p3" id="directory_label">
+				<label for="directory">Directory:</label>
+				<input type="text" id="directory" onchange="directory_onchange()">
+			</div>
+			<div id="directory_view" class="m5 p2"></div>
+			<div class="field-row p3" id="filename_label">
+				<label for="filename">File name:</label>
+				<input type="text" id="filename" onchange="filename_onchange()" onkeydown="filename_onkeydown()">
+			</div>
+
+			<div class="btn-panel">
+				<button id="cancel_button" class="btn hidden" onclick="btn_cancel()">Cancel</button>
+				<span></span>
+				<button id="confirm_button" class="btn" onclick="btn_confirm()">Confirm</button>
+			</div>
+		</div>
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script src="/xp/libraries/MessageBox.js"></script>
+		<script src="/xp/libraries/FileManager.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="file.js"></script>
+	</body>
+</html>
+

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			#command_out {
+				flex-grow: 1;
+				overflow: auto;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="window-content p8">
+			<h3 id="title" class="hidden"></h3>
+			<p id="content"></p>
+			<pre id="command_out" class="container"></pre>
+			<div class="btn-panel">
+				<button id="cancel_button" class="btn hidden" onclick="btn_cancel()">Cancel</button>
+				<span></span>
+				<button id="confirm_button" class="btn" onclick="btn_confirm()" disabled>Confirm</button>
+			</div>
+		</div>
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="command.js"></script>
+	</body>
+</html>
+

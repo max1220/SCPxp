@@ -3,23 +3,31 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="Run command dialog">
+		<meta name="description" content="Greetings to the Level1techs Forums!">
 		<meta name="author" content="max1220">
 		<title>L1 Greetings</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
 	</head>
 	<body>
-		<div class="window-content">
+		<div class="window-content p8">
 			<h3>Hello L1T forums!</h3>
-			<p>Devember, Devanuary, Defebuary...? <i>The end is near!</i></p>
-			<a class="btn" href="https://forum.level1techs.com/t/192160" target="_blank">Look at my forum posts!</a>
+			<p>Still developing...</p>
+			<div>
+				<a class="btn" href="https://forum.level1techs.com/t/192160" target="_blank">Look at my forum posts!</a>
+			</div>
 		</div>
+		<script>
+			// called by the WM when the window is loaded
+			function win_load() {
+				win.title = "Level1Techs"
+				win.icon = "application-l1t"
+				win.resize(200, 120)
+				win.update()
+			}
+		</script>
 	</body>
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=300}}}
-{{{window_height=125}}}
--->
 </html>

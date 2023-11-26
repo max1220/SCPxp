@@ -1,4 +1,5 @@
 "use strict";
+
 // This is a library for working with the www/cgi-bin/cgi_command.sh script.
 // Executing server commands via CGI, and optionally streams the output as event-stream.
 // Allows to set the response headers, including content-type,
@@ -37,7 +38,7 @@ function CgiCommands(base_url) {
 		// append header args if any
 		if (headers) {
 			encoded = encoded.concat(
-				headers.map(function(header) { return "headers=" + encodeURIComponent(header) })
+				headers.map(function(header) { return "header=" + encodeURIComponent(header) })
 			)
 		}
 
@@ -68,7 +69,7 @@ function CgiCommands(base_url) {
 	// perform the XHR for an already-encoded command asynchronously
 	// cb is called with a sucessful request body as arugment
 	// the return value is the generated XHR
-	this.run_encoded_async = function(url_args, cb, body) {
+	this.run_encoded_async = function(url_args, cb, body, progress_cb) {
 		return make_xhr_async(
 			base_url + "?" + url_args,
 			"POST",
@@ -76,6 +77,10 @@ function CgiCommands(base_url) {
 			body,
 			function(url, resp, req) {
 				if (cb) { cb(resp); }
+			},
+			undefined,
+			function(e) {
+				if (progress_cb) { progress_cb(e) }
 			}
 		)
 	}
@@ -83,21 +88,23 @@ function CgiCommands(base_url) {
 	// run the already-encoded command by starting an event-stream to read lines
 	this.run_encoded_event_stream = function(encoded_command, stdout_cb, ret_cb, open_cb) {
 		let sse = new EventSource(base_url + "?" + encoded_command)
-
-		// forward the events to the callbacks
 		sse.addEventListener("stdout_line", function(ev) {
 			if (stdout_cb) { stdout_cb(event.data); }
 		})
 		sse.addEventListener("stdout_byte", function(ev) {
-			let char = String.fromCharCode(parseInt(event.data, 16))
-			if (stdout_cb) { stdout_cb(char, true); }
+			let char_code = parseInt(event.data, 16)
+			let char = String.fromCharCode(char_code)
+			if (stdout_cb) { stdout_cb(char, char_code); }
 		})
 		sse.addEventListener("return", function(ev) {
 			if (ret_cb) { ret_cb(parseInt(event.data)); }
 		})
-
-		// handle an error with the connection
-		sse.onerror = function() { sse.close() }
+		sse.addEventListener("error", function() {
+			sse.close()
+		})
+		sse.addEventListener("open", function() {
+			if (open_cb) { open_cb(); }
+		})
 		return sse
 	}
 
@@ -118,15 +125,27 @@ function CgiCommands(base_url) {
 	this.get_env = function() {
 		let env = {}
 		let env_str = this.run_command_sync([ "printenv" ])
-		env_str.split("\n").map(function(pair_str) {
+		env_str.split(/\r?\n/).map(function(pair_str) {
 			let pair = pair_str.split("=")
 			env[pair[0]] = pair.slice(1).join("=")
 		})
 		return env
 	}
 
-	// shortcut/ugly hack
-	this.base_url = function() { return base_url; }
+	// utillity function
+	this.base_url = function(encoded_args) {
+		if (encoded_args) {
+			return base_url + "?" + encoded_args
+		} else {
+			return base_url
+		}
+	}
+
+	this.escape_shell_args = function(args) {
+		return args.map(function(e) {
+			return this.escape_shell_arg(e)
+		}, this).join(" ")
+	}
 
 	// escape the shell argument using bash's strict quoting.
 	this.escape_shell_arg = function(arg) {

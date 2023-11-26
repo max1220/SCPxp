@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+	</head>
+	<body>
+		<div class="p8 m8">
+			<form method="GET" action="/xp/applications/run/run_output.html">
+				<input type="hidden" name="merge_stderr" value="on">
+				<input type="hidden" name="mode" value="lines">
+				<div class="field-row">
+					<label for="command_str">Command:</label>
+					<input type="text" name="command_str" id="command_str">
+				</div>
+				<div class="field-row">
+					<span></span>
+					<input type="submit" class="btn" value="Run">
+				</div>
+			</form>
+		</div>
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<!-- Application -->
+		<script>
+			document.getElementById("command_str").value = SEARCH_PARMS.command_str
+		</script>
+	</body>
+</html>

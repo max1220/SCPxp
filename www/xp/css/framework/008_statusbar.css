@@ -1,25 +1,19 @@
 /* status bar */
 
 	.status-bar {
-		position: fixed;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		height: var(--statusbar-height);
 		box-sizing: border-box;
-
 		margin: 0 0;
 		padding: 0 0;
 		display: flex;
+		flex-wrap: wrap;
 		border-top: 1px solid #888;
 		background-color: #EEEAD6;
-		z-index: 1000;
 		justify-content: space-between;
 	}
 
 	.status-bar-field {
 		height: calc(var(--statusbar-height) - 1px);
-		padding: 0 0;
+		padding: 1px 5px;
 		margin: 0 0;
 	}
 

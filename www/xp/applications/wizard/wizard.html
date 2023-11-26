@@ -1,0 +1,28 @@
+<!--
+Wizard loop:
+ Show UI dialog
+   Run Script OR
+   Show UI dialog
+
+The UI dialog sets environment variables, and can get the return text of a prevously executed script
+The scripts
+
+A wizard is a single JSON file.
+
+{
+	scripts: {
+		hello_world: "echo Hello $WIZARD_NAME"
+	},
+	dialogs: {
+		initial: "Name: <input id=\"_name\"><button onclick=\"run_script(window._name.value, 'response')\">Run</button>"
+		response: "The script responded with: <span id=\"resp\"></span><script>window.resp = script_returns.hello_world</script>"
+	}
+}
+
+
+
+
+
+
+
+-->

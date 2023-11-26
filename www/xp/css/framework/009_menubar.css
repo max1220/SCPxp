@@ -1,13 +1,7 @@
 /* menubar */
 
 	.menu-bar {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: var(--menubar-height);
-
-		z-index: 1000;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 	}
@@ -18,8 +12,8 @@
 
 	.menu-row {
 		border-bottom: 1px solid #888;
-		height: var(--menubar-row-height);
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		width: 100%;
 		background-color: var(--menubar-row-bg-color);
@@ -30,14 +24,14 @@
 		display: block;
 		padding: 4px;
 		margin: 1px 1px;
-		height: 14px;
-		line-height: 14px;
+		height: 16px;
+		line-height: 16px;
 		text-decoration: none !important;
 		color: var(--menubar-row-fg-color);
 		cursor: pointer;
 	}
 
-	.menu-item input[type=checkbox],input[type=radio] {
+	.menu-item input[type=checkbox],.menu-item input[type=radio] {
 		margin: 0 0;
 		width: 10px;
 		height: 10px;
@@ -77,9 +71,6 @@
 	.menu-item + .menu-sub:hover {
 		display: block;
 	}
-	.disabled {
-		display: none;
-	}
 
 	.menu-sub {
 		position: absolute;
@@ -91,6 +82,8 @@
 		background-color: var(--menubar-sub-bg-color);
 		z-index: 1100;
 		overflow: visible;
+		max-height: calc(100vh - var(--menubar-height));
+		overflow-y: auto;
 	}
 
 /* /menubar */

@@ -1,8 +1,5 @@
 /* application */
 
-	html, body {
-		min-height: 100vh;
-	}
 	body {
 		user-select: none;
 		background-color: var(--windows-bg-color);

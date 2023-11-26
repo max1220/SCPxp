@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="/xp/css/style.css">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Boot selection and login page">
+		<meta name="author" content="max1220">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css">
 		<title>BOOTING</title>
 		<style>
 			body {
@@ -52,22 +59,18 @@
 			#boot {
 				opacity: 0;
 				transition: opacity 2s;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
 			}
 			#boot_img {
-				position: absolute;
-				left: 50%;
-				top: 50%;
 				width: 320px;
 				height: 240px;
-				margin-left: -160px;
-				margin-top: -120px;
 			}
 			#boot_progress {
-				position: absolute;
-				top: 66%;
-				left: 50%;
 				width: 200px;
-				margin-left: -100px;
 				height: 20px;
 				appearance: none;
 				border-radius: 4px;
@@ -100,13 +103,6 @@
 				font-family: sans-serif;
 			}
 
-			#login {
-				opacity: 0;
-				transition: opacity 1s;
-			}
-			.window-content {
-				height: 100%;
-			}
 			label {
 				font-weight: bold;
 			}
@@ -152,38 +148,11 @@
 					<span><a href="https://github.com/max1220/lxc-scripts">Source code</a></span>
 				</footer>
 			</div>
-
-			<div id="login" style="opacity: 0" hidden>
-				<div class="window" style="margin: 5em auto; position: static; max-width: 300px;">
-					<div class="title-bar">
-						<div class="title-bar-text">Login</div>
-					</div>
-					<div class="window-body">
-						<div class="window-content">
-							<p>Please provide your login credentials below:</p>
-
-							<div class="field-row">
-								<label for="username">Username:</label>
-								<input id="username" type="text">
-							</div>
-							<div class="field-row">
-								<label for="password">Password:</label>
-								<input id="password" type="password">
-							</div>
-							<div class="field-row">
-								<a class="btn" href="/">Cancel</a>
-								<button class="btn" onclick="login()">Login</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 		</div>
 		<script>
 			let bios_seconds_elem = document.getElementById("bios_seconds")
 			let bios_elem = document.getElementById("bios")
 			let boot_elem = document.getElementById("boot")
-			let login_elem = document.getElementById("login")
 
 			let indicator_elem = document.getElementById("indicator")
 
@@ -202,7 +171,6 @@
 				clearInterval(boot_timeout)
 				bios_elem.hidden = true
 				boot_elem.hidden = false
-				login_elem.hidden = true
 				let i = 0
 				let paused = false
 				let scroller = setInterval(function() {
@@ -226,25 +194,7 @@
 				clearInterval(boot_timeout)
 				bios_elem.hidden = true
 				boot_elem.hidden = true
-				login_elem.hidden = false
-				login_elem.style.opacity = 1
-				document.body.style.backgroundColor = "#004E98"
-			}
-			// perform login
-			function login() {
-				let username = document.getElementById("username").value
-				let password = document.getElementById("password").value
-				if (username=="" || password=="") {
-					location.pathname = "/xp/desktop.html"
-				} else {
-					let auth_url = location.protocol+"//" + username + ":" + password + "@" + location.host + "/xp/desktop.html"
-					location.href = auth_url
-				}
-			}
-
-			// skip directly to the login screen
-			if (location.hash == "#login") {
-				show_login()
+				location.pathname = "/xp/login.html"
 			}
 		</script>
 	</body>

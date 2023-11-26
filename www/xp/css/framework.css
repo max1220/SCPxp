@@ -25,8 +25,6 @@
 	/* Add some values to windows to make the useful for the desktop */
 	.window {
 		position: absolute;
-		min-width: 100px;
-		min-height: 30px;
 		box-shadow: 1px 1px 4px var(--windows-shadow-color);
 		border-top-left-radius: var(--windows-border-radius);
 		border-top-right-radius: var(--windows-border-radius);
@@ -35,35 +33,28 @@
 		flex-direction: column;
 	}
 
-	/* Support for simpler popup-windows */
-	.popups {
-		position: absolute;
-		left: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 3000;
-		background-color: rgba(0,0,0,0.5);
-		display: flex;
+	/* Greout a window and disable interactions, e.g. when a dialog prevents interaction */
+	.window-greyout * {
+		filter: grayscale(100%);
+		pointer-events: none;
 	}
-	.popups .window {
-		z-index: 4000;
-		top: 50px;
-		left: calc( 50% - calc( var(--windows-popup-window-width) / 2 ) );
-		width: var(--windows-popup-window-width);
-		--windows-content-padding: 5px;
+
+	/* borderless windows */
+	.window-borderless {
+		box-shadow: none;
+		border-radius: 0;
+		border: none;
 	}
-	.popups .window-body {
-		position: relative;
-		top: 0;
+	.window-borderless .title-bar {
+		display: none;
 	}
-	.popups .window-content {
-		height: auto;
+	.window-borderless .window-body {
+		border: none;
 	}
 
 	/* The container of the window body(it's content, without titlebars/borders )*/
 	.window-body {
-		border: 2px outset var(--windows-border-color2);
+		border: var(--windows-border-size) outset var(--windows-border-color2);
 		border-top: none;
 		background-color: var(--windows-bg-color);
 		color: var(--windows-fg-color);
@@ -81,17 +72,22 @@
 		color: var(--windows-title-bar-text-color);
 		background-image: var(--windows-title-bar-background-image);
 	}
+	.title-bar-icon {
+		color: var(--windows-title-bar-icon-color);
+		padding-left: 8px;
+	}
 	.title-bar-text {
-		padding-left: 0.5em;
+		padding-left: 4px;
+		flex-grow: 1;
 		font-weight: bold;
 		letter-spacing: 0;
 		font-size: 13px;
 		font-family: sans-serif;
-		text-shadow: 1px 1px #0f1089;
+		text-shadow: 1px 1px var(--windows-title-bar-text-shadow-color);
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
-		min-width: 0;
+		margin-right: auto;
 	}
 
 	/* Container for the controls on the right */
@@ -107,88 +103,20 @@
 		position: relative;
 		margin: 0 0.5px;
 		padding: 0 0;
-		width: 21px;
-		height: 21px;
-		border-radius: 3px;
-		border: 1px solid #D3DAFF;
-		color: #fff;
-		background-color: #0050ee;
-		box-shadow: 0px 0px 2px inset rgba(0,0,0,0.5);
-		background-image: linear-gradient(
-				/* Bottom */
-				0deg,
-				rgba(0,0,0,0.2),
-				rgba(0,0,0,0.1) 16%,
-				rgba(0,0,0,0) 24%
-			),
-			linear-gradient(
-				/* Left */
-				90deg,
-				rgba(255,255,255,0.3),
-				rgba(255,255,255,0.15) 8%,
-				rgba(0,0,0,0) 16%
-			),
-			linear-gradient(
-				/* Top */
-				180deg,
-				rgba(255,255,255,0.15) 8%,
-				rgba(255,255,255,0) 16%
-			),
-			linear-gradient(
-				/* Right */
-				270deg,
-				rgba(0,0,0,0.2),
-				rgba(0,0,0,0.1) 16%,
-				rgba(0,0,0,0) 24%
-			),
-			radial-gradient(
-				/* highlight 1 */
-				at 10% 10%,
-				rgba(255,255,255,0.4),
-				rgba(255,255,255,0.15),
-				rgba(255,255,255,0)
-			),
-			radial-gradient(
-				/* highlight 1 */
-				at 12% 12%,
-				rgba(255,255,255,0.3),
-				rgba(255,255,255,0) 16%
-			)
-		;
-
+		width: var(--windows-title-button-width);
+		height: var(--windows-title-button-height);
+		border-radius: var(--windows-title-button-radius);
+		border: 1px solid var(--windows-title-button-border-color);
+		color: var(--windows-title-icon-color);
+		background-color: var(--windows-title-button-bg-color);
+		box-shadow: var(--windows-title-button-box-shadow);
+		background-image: var(--windows-title-button-bg-image);
 	}
 	.title-bar-controls *:hover {
-		background-color: #1262FF;
+		background-color: var(--windows-title-button-bg-color-hover);
 	}
 	.title-bar-controls *:active {
-		background-image: linear-gradient(
-				/* Bottom */
-				0deg,
-				rgba(255,255,255,0.2),
-				rgba(255,255,255,0.1) 12%,
-				rgba(255,255,255,0) 20%
-			),
-			linear-gradient(
-				/* Left */
-				90deg,
-				rgba(0,0,0,0.3),
-				rgba(0,0,0,0.15) 12%,
-				rgba(0,0,0,0) 20%
-			),
-			linear-gradient(
-				/* Top */
-				180deg,
-				rgba(0,0,0,0.15) 12%,
-				rgba(0,0,0,0) 20%
-			),
-			linear-gradient(
-				/* Right */
-				270deg,
-				rgba(255,255,255,0.2),
-				rgba(255,255,255,0.1) 12%,
-				rgba(255,255,255,0) 20%
-			)
-		;
+		background-image: var(--windows-title-button-bg-image-active);
 	}
 
 	/* Decolor the unfocused window */
@@ -196,7 +124,7 @@
 		background-image: var(--windows-title-bar-background-image-unfocused);
 	}
 	.window-unfocused .title-bar-controls * {
-		background-color: #3070EE;
+		background-color: var(--windows-title-button-bg-color-unfocused);
 	}
 
 	/* Add window icons to buttons */
@@ -215,10 +143,10 @@
 
 	/* Recolor close button */
 	.window .title-bar-controls [aria-label=Close] {
-		background-color: #ED3315;
+		background-color: var(--windows-title-button-close-bg-color);
 	}
 	.window .title-bar-controls [aria-label=Close]:hover {
-		background-color: #FF4021;
+		background-color: var(--windows-title-button-close-bg-color-hover);
 	}
 
 	/* Make a window resizeable */
@@ -235,27 +163,21 @@
 		border-radius: 0;
 	}
 
-	/* The container for the actual window content, excluding menu bars and such */
+	/* The container for the all window content, including menu bars and such */
 	.window-content {
-		padding: var(--windows-content-padding);
+		position: relative;
 		height: 100vh;
 		display: flex;
 		flex-direction: column;
-		padding-bottom:
-			calc(
-				var(--statusbar-height) + var(--windows-content-padding)
-			)
-		;
 		box-sizing: border-box;
 	}
 
-	/* Support a menubar/statusbar for the window content */
-	.menu-bar+.window-content {
-		padding-top:
-			calc(
-				var(--menubar-height) + var(--windows-content-padding)
-			)
-		;
+	/* The container for the actual window content, including menu bars and such */
+	.window-inner {
+		flex-grow: 1;
+		overflow: auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.window-body-iframe {
@@ -263,6 +185,7 @@
 		height: 100%;
 		border: none;
 		box-sizing: border-box;
+		position: absolute;
 	}
 
 /* /windows */
@@ -293,10 +216,11 @@
 		;
 	}
 
-	.taskbar-left {
+	/* The list of buttons in the taskbar for minimizing/restoring a window */
+	.windowlist {
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
+		overflow-x: auto;
+		margin-right: auto;
 	}
 
 	/* The buttons in the taskbar for minimizing/restoring a window */
@@ -320,9 +244,16 @@
 		color: #eee;
 		padding: 0px 10px;
 		width: 10em;
-		max-width: 10em;
+		max-width: 100px;
+		min-width: 75px;
 		text-align: left;
 		margin-left: 4px;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	.windowbutton-icon {
+		color: #000;
 	}
 	.windowbutton:hover {
 		border: 1px solid #0997ff;
@@ -346,6 +277,13 @@
 			) !important
 		;
 		border: 1px inset #003dd7;
+	}
+
+	.systray {
+		border: 1px solid #0787fb;
+		background-color: #003dd7;
+		color: #fff;
+		padding: 2px;
 	}
 
 	/* The clock at the right corner of the taskbar */
@@ -393,7 +331,7 @@
 		width: 20px;
 		height: 20px;
 		display: inline-block;
-		background: url("/static/tux.svg");
+		background: url("/xp/assets/tux.svg");
 	}
 
 /* /taskbar */
@@ -410,6 +348,8 @@
 		box-shadow: 1px 1px 5px #000;
 		font-family: sans-serif;
 		z-index: 10000;
+		max-height: calc(100vh - var(--taskbar-height) - 5px);
+		overflow-y: auto;
 	}
 	.start-menu-icon {
 		display: inline-block;
@@ -531,17 +471,33 @@
 			)
 		;
 	}
+	.btn:disabled,
+	.btn[disabled] {
+		color: #888;
+		outline: none !important;
+		box-shadow: none !important;
+		background:
+			linear-gradient(
+				180deg,
+				#fff,
+				#ecebe5 86%,
+				#d8d0c4
+			) !important
+		;
+	}
 
 	.btn-panel {
 		display: flex;
 		justify-content: space-between;
+		margin: 5px;
 	}
 
 /* /buttons */
 /* tabs */
 
 	.tabs {
-		padding: 5px 2px;
+		display: flex;
+		flex-direction: column;
 	}
 	.tabs menu {
 		display: block;
@@ -550,6 +506,7 @@
 		display: flex;
 	}
 	.tabs menu * {
+		z-index: 1000;
 		font-size: 12px;
 		background-color: #fcfcfe;
 		border: 1px solid #919b9c;
@@ -593,15 +550,6 @@
 			)
 		;
 	}
-	.tabs menu *[aria-selected="true"] {
-		background-image:
-			linear-gradient(
-				180deg,
-				#ffc73c,
-				rgba(0,0,0,0) 15%
-			)
-		;
-	}
 
 	.tabs article {
 		margin-top: -1px;
@@ -609,6 +557,7 @@
 		color: #050505;
 		border: 1px solid #919b9c;
 		padding: 7px;
+		flex-grow: 1;
 	}
 
 /* /tabs */
@@ -624,6 +573,7 @@ input {
 	outline: none;
 	width: 200px;
 	height: 23px;
+	margin: 2px;
 }
 input[type=checkbox] {
 	height: 12px;
@@ -659,25 +609,19 @@ textarea {
 /* status bar */
 
 	.status-bar {
-		position: fixed;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		height: var(--statusbar-height);
 		box-sizing: border-box;
-
 		margin: 0 0;
 		padding: 0 0;
 		display: flex;
+		flex-wrap: wrap;
 		border-top: 1px solid #888;
 		background-color: #EEEAD6;
-		z-index: 1000;
 		justify-content: space-between;
 	}
 
 	.status-bar-field {
 		height: calc(var(--statusbar-height) - 1px);
-		padding: 0 0;
+		padding: 1px 5px;
 		margin: 0 0;
 	}
 
@@ -685,13 +629,7 @@ textarea {
 /* menubar */
 
 	.menu-bar {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: var(--menubar-height);
-
-		z-index: 1000;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 	}
@@ -702,8 +640,8 @@ textarea {
 
 	.menu-row {
 		border-bottom: 1px solid #888;
-		height: var(--menubar-row-height);
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		width: 100%;
 		background-color: var(--menubar-row-bg-color);
@@ -714,14 +652,14 @@ textarea {
 		display: block;
 		padding: 4px;
 		margin: 1px 1px;
-		height: 14px;
-		line-height: 14px;
+		height: 16px;
+		line-height: 16px;
 		text-decoration: none !important;
 		color: var(--menubar-row-fg-color);
 		cursor: pointer;
 	}
 
-	.menu-item input[type=checkbox],input[type=radio] {
+	.menu-item input[type=checkbox],.menu-item input[type=radio] {
 		margin: 0 0;
 		width: 10px;
 		height: 10px;
@@ -761,9 +699,6 @@ textarea {
 	.menu-item + .menu-sub:hover {
 		display: block;
 	}
-	.disabled {
-		display: none;
-	}
 
 	.menu-sub {
 		position: absolute;
@@ -775,11 +710,19 @@ textarea {
 		background-color: var(--menubar-sub-bg-color);
 		z-index: 1100;
 		overflow: visible;
+		max-height: calc(100vh - var(--menubar-height));
+		overflow-y: auto;
 	}
 
 /* /menubar */
 /* scrollbar */
 
+:root {
+	/* Firefox only supports a background and handle color */
+	scrollbar-color: #8DA9F0 #EEEAD6;
+}
+
+/* Webkit supports styled scrollbars */
 ::-webkit-scrollbar {
   width: 16px;
   height: 16px;
@@ -932,6 +875,26 @@ textarea {
 	.clear {
 		clear: both;
 	}
+
+	.p0 { padding: 0; }
+	.p1 { padding: 1px; }
+	.p2 { padding: 2px; }
+	.p3 { padding: 3px; }
+	.p4 { padding: 4px; }
+	.p5 { padding: 5px; }
+	.p6 { padding: 6px; }
+	.p7 { padding: 7px; }
+	.p8 { padding: 8px; }
+	.ma { margin: auto; }
+	.m0 { margin: 0; }
+	.m1 { margin: 1px; }
+	.m2 { margin: 2px; }
+	.m3 { margin: 3px; }
+	.m4 { margin: 4px; }
+	.m5 { margin: 5px; }
+	.m6 { margin: 6px; }
+	.m7 { margin: 7px; }
+	.m8 { margin: 8px; }
 
 	/* Simple container with a border and a background */
 	.container {

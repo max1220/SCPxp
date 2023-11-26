@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Boot selection and login page">
+		<meta name="author" content="max1220">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css">
+		<title>LOGIN</title>
+		<style>
+			body {
+				background-color: #004E98;
+				padding: 0 0;
+				margin: 0 0;
+				color: #fff;
+				user-select: none;
+				transition: background-color 2s;
+			}
+			@font-face {
+				font-family: 'perfect_dos_vga_437';
+				src: url('/xp/assets/perfect_dos_vga_437.ttf');
+			}
+			a {
+				color: #fff;
+				text-decoration: none;
+				cursor: pointer;
+			}
+			.link {
+				font-weight: bold;
+			}
+
+			@keyframes show_elem_anim {
+				to { visibility: visible; }
+			}
+
+			#login {
+				opacity: 0;
+				transition: opacity 1s;
+			}
+			.window-content {
+				height: 100%;
+			}
+			label {
+				font-weight: bold;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="windows" class="windows">
+			<div class="window" style="margin: 5em auto; position: static; max-width: 300px;">
+				<div class="title-bar">
+					<div class="title-bar-text">Login</div>
+				</div>
+				<div class="window-body">
+					<div class="window-content p8">
+						<p id="main_text">Please provide your login credentials below:</p>
+
+						<div class="field-row">
+							<label for="username">Username:</label>
+							<input id="username" type="text">
+						</div>
+						<div class="field-row">
+							<label for="password">Password:</label>
+							<input id="password" type="password">
+						</div>
+						<div class="field-row">
+							<label for="server">Server:</label>
+							<input id="server" type="text">
+						</div>
+						<div class="field-row">
+							<a class="btn" href="/">Cancel</a>
+							<button class="btn" onclick="login()">Login</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/config/cgi_backend.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script>
+			function login_ok() {
+				location.href = "/xp/desktop.html"
+			}
+			function login_err() {
+				let main_text_elem = document.getElementById("main_text")
+				main_text_elem.style.color = "#f00"
+				main_text_elem.innerText = "Login failed!"
+			}
+			function test_login() {
+				let cgi_commands = new CgiCommands(localStorage.getItem("XP_CGI_BACKEND"))
+				let ret = cgi_commands.run_command_sync(["echo", "-n", "hello"])
+				if (ret == "hello") {
+					login_ok()
+				} else {
+					login_err()
+				}
+			}
+
+			// perform login and configure backend in local storage
+			function login() {
+				let username = document.getElementById("username").value
+				let password = document.getElementById("password").value
+				let server = document.getElementById("server").value
+				let default_server = location.host + "/cgi-bin/cgi_command.sh"
+				if (username=="" || password=="") {
+					let cgi_backend = (server == "") ? default_server : server
+					cgi_backend = location.protocol + "//" + cgi_backend
+					console.log("Backend URL:", cgi_backend)
+					localStorage.setItem("XP_CGI_BACKEND", cgi_backend)
+				} else {
+					let auth_url = location.protocol+"//" + username + ":" + password + "@"
+					let cgi_backend = (server == "") ? (auth_url+default_server) : (auth_url+server)
+					console.log("Backend URL(auth):", cgi_backend)
+					localStorage.setItem("XP_CGI_BACKEND", cgi_backend)
+				}
+				test_login()
+			}
+		</script>
+	</body>
+</html>

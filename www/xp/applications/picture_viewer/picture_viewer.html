@@ -3,56 +3,121 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="Run command dialog">
-		<meta name="author" content="max1220">
-		<title>🖻 Picture viewer</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
 		<style>
 			body {
 				background-color: #000;
-				/* background-image: url(/static/tux.svg); */
-				background-position: center;
-				background-repeat: no-repeat;
-				background-size: contain;
+			}
+			#image {
+				object-fit: contain;
+				margin: auto;
 			}
 		</style>
 	</head>
-	<body>
-		<script src="/static/js/make_xhr.js"></script>
-		<script src="/static/js/popups.js"></script>
-		<script>
-			let image_path_arg = location.hash.substr(1)
-			if (image_path_arg !== "") {
-				let image_path = decodeURIComponent(image_path_arg)
-				let content_type
-				if (image_path.toLowerCase().endsWith(".jpg") || image_path.toLowerCase().endsWith(".jpeg")) {
-					content_type = "image/jpeg"
-				} else if (image_path.toLowerCase().endsWith(".gif")) {
-					content_type = "image/gif"
-				} else if (image_path.toLowerCase().endsWith(".png")) {
-					content_type = "image/png"
-				} else if (image_path.toLowerCase().endsWith(".svg")) {
-					content_type = "image/svg+xml"
-				}
-				if (content_type) {
-					let background_url =
-						"/cgi-bin/file/read_file.sh?" +
-						"file_path=" + image_path_arg +
-						"&content_type=" + encodeURIComponent(content_type)
-					console.log("Changing background image: ", background_url)
-					document.body.style.backgroundImage = "url(" + background_url + ")"
-				}
-			}
-		</script>
+	<body onload="body_onload()">
+		<div class="window-content">
+			<div class="menu-bar">
+				<div class="menu-row">
+					<div class="menu-container">
+						<div class="menu-category">File</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_open_file()" class="menu-item icon icon-16" data-icon="file-image">
+								Open file...
+							</a>
+							<a onclick="btn_open_url()" class="menu-item icon icon-16" data-icon="file-web">
+								Open URL...
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_refresh()" class="menu-item icon icon-16" data-icon="action-reload">
+								Refresh
+							</a>
+							<a onclick="btn_info()" class="menu-item icon icon-16" data-icon="file-image">
+								Info...
+							</a>
+							<div class="menu-spacer"></div>
+							<a href="about:blank#close" class="menu-item icon icon-16" data-icon="action-exit">
+								Exit
+							</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">View</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_scale(0.25)" class="menu-item icon icon-16" data-icon="¹∕₄">
+								Scale 25%
+							</a>
+							<a onclick="btn_scale(0.5)" class="menu-item icon icon-16" data-icon="¹∕₂">
+								Scale 50%
+							</a>
+							<a onclick="btn_scale(1)" class="menu-item icon icon-16" data-icon="¹∕₁">
+								Scale 100%
+							</a>
+							<a onclick="btn_scale(2)" class="menu-item icon icon-16" data-icon="🔍">
+								Scale 200%
+							</a>
+							<a onclick="btn_scale(4)" class="menu-item icon icon-16" data-icon="🔍">
+								Scale 400%
+							</a>
+							<a onclick="btn_scale()" class="menu-item icon icon-16" data-icon="window-maximize">
+								Scale to Window
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_bg_white()" class="menu-item icon icon-16" data-icon="□">
+								White background
+							</a>
+							<a onclick="btn_bg_black()" class="menu-item icon icon-16" data-icon="■">
+								Black background
+							</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">Edit</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_convert()" class="menu-item">
+								Convert...
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_resize()" class="menu-item">
+								Resize...
+							</a>
+							<a onclick="btn_rotate()" class="menu-item">
+								Rotate CW...
+							</a>
+							<a onclick="btn_rotate(true)" class="menu-item">
+								Rotate CCW...
+							</a>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">Help</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_about()" class="menu-item icon icon-16" data-icon="generic-info">
+								About...
+							</a>
+						</div>
+					</div>
+					<a onclick="btn_previous()" class="menu-category icon icon-16 p3" data-icon="action-back">Previous</a>
+					<a onclick="btn_next()" class="menu-category icon icon-16 p3" data-icon="action-forward">Next</a>
+				</div>
+			</div>
+
+			<div class="window-inner"><img id="image"></div>
+		</div>
+
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script src="/xp/libraries/MessageBox.js"></script>
+		<script src="/xp/libraries/FileManager.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="/xp/applications/picture_viewer/picture_viewer.js"></script>
 	</body>
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=640}}}
-{{{window_height=480}}}
-{{{window_resizeable}}}
--->
 </html>
 
 

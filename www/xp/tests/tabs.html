@@ -3,45 +3,45 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="Run command dialog">
-		<meta name="author" content="max1220">
-		<title>Tabs</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
 	</head>
 	<body>
-		<div class="window-content">
-			<h3>Tabs test page</h3>
+		<div class="window-content p8">
 
 			<p>This page implements a tab-style interface.</p>
 			<p>Requires JS to work properly.</p>
 
-			<section class="tabs">
+			<section class="tabs" style="flex-grow: 1;">
 				<menu role="tablist" aria-label="Settings Tabs">
-					<button role="tab" aria-controls="tab-foo" aria-selected="true">Foo</button>
-					<button role="tab" aria-controls="tab-bar">Bar</button>
-					<button role="tab" aria-controls="tab-buzz">Buzz</button>
+					<button role="tab" data-tabgroup="settings" aria-controls="tab-foo" aria-selected="true" onclick="tab_onlick()">Foo</button>
+					<button role="tab" data-tabgroup="settings" aria-controls="tab-bar" onclick="tab_onlick()">Bar</button>
+					<button role="tab" data-tabgroup="settings" aria-controls="tab-buzz" onclick="tab_onlick()">Buzz</button>
 				</menu>
-				<article role="tabpanel" id="tab-foo">
+				<article role="tabpanel" id="tab-foo" data-tabgroup="settings">
 					<h3>This is foo</h3>
 					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Eros in cursus turpis massa tincidunt dui ut ornare lectus. Bibendum ut tristique et egestas. Tincidunt ornare massa eget egestas purus viverra.</p>
 				</article>
-				<article role="tabpanel" id="tab-bar">
+				<article role="tabpanel" id="tab-bar" data-tabgroup="settings" hidden>
 					<h3>Welcome to bar</h3>
 					<p>Ornare quam viverra orci sagittis eu volutpat odio facilisis. Consectetur purus ut faucibus pulvinar. Fames ac turpis egestas maecenas pharetra convallis posuere. Libero id faucibus nisl tincidunt eget nullam. Orci porta non pulvinar neque laoreet suspendisse.</p>
 				</article>
-				<article role="tabpanel" id="tab-buzz">
+				<article role="tabpanel" id="tab-buzz" data-tabgroup="settings" hidden>
 					<h3>Hello from buzz</h3>
 					<p>Donec adipiscing tristique risus nec feugiat in fermentum posuere. Venenatis urna cursus eget nunc scelerisque viverra. Consectetur libero id faucibus nisl. Enim lobortis scelerisque fermentum dui faucibus in ornare.</p>
 				</article>
 			</section>
 		</div>
-		<script src="/static/js/xp/tabs.js"></script>
+		<script src="/xp/libraries/utils.js"></script>
+		<script>
+			function win_load() {
+				win.resize(400,400)
+				win.title = "Tabs test page"
+				win.update()
+			}
+		</script>
 	</body>
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=300}}}
-{{{window_height=125}}}
--->
 </html>

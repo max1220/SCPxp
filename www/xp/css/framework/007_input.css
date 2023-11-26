@@ -9,6 +9,7 @@ input {
 	outline: none;
 	width: 200px;
 	height: 23px;
+	margin: 2px;
 }
 input[type=checkbox] {
 	height: 12px;

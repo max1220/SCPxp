@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="File manager action progress">
+		<meta name="author" content="max1220">
+		<title>Progress</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
+		<style>
+			.progress_status {
+				overflow: auto;
+				border: 1px solid #888;
+				height: 8em;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="window-content">
+			<h3 id="progress_title"></h3>
+			<p id="progress_text"></p>
+			<pre id="progress_status" class="progress_status"></pre>
+			<div class="field-row">
+				<span></span>
+				<button class="btn hidden" id="progress_close" onclick="win.dialog_return()">Close</button>
+			</div>
+		</div>
+		<script>
+			function win_ev(ev_type, win, arg) {
+				console.log("YYYYYYy ev_type",ev_type)
+				if (ev_type=="progress_stdout") {
+					document.getElementById("progress_status").innerText += arg + "\n"
+				} else if (ev_type=="progress_finish") {
+					document.getElementById("progress_status").innerText += "\n(finished)\n"
+					document.getElementById("progress_close").classList.remove("hidden")
+				}
+			}
+			function win_load() {
+				win.title = win.progress_title
+				win.icon = "application-file-manager"
+				win.resize(300, 250)
+				win.resizeable = false
+				win.closeable = false
+				win.minimizeable = false
+				document.getElementById("progress_title").innerText = win.progress_title
+				document.getElementById("progress_text").innerText = win.progress_text
+				win.update()
+			}
+		</script>
+	</body>
+</html>

@@ -1,5 +1,11 @@
 /* scrollbar */
 
+:root {
+	/* Firefox only supports a background and handle color */
+	scrollbar-color: #8DA9F0 #EEEAD6;
+}
+
+/* Webkit supports styled scrollbars */
 ::-webkit-scrollbar {
   width: 16px;
   height: 16px;

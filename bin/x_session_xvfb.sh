@@ -5,10 +5,11 @@ set -euo pipefail
 
 # SESSION_ID is required env variable
 [ "${SESSION_ID:-}" = "" ] && exit 1
+[ "${SESSIONS_DIR:-}" = "" ] && exit 1
 [ "${1}" = "" ] && exit 1;
 
 # make sure the session directory exists
-SESSION_DIR="xsessions/${SESSION_ID}"
+SESSION_DIR="${SESSIONS_DIR}/${SESSION_ID}"
 mkdir -p "${SESSION_DIR}"
 
 # create some info files
@@ -39,4 +40,5 @@ if ! [ "${SESSION_WM:-}" = "" ]; then
 	eval "${SESSION_WM}" &
 fi
 
-eval "${@}"
+eval "${@}" &
+wait

@@ -5,23 +5,21 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="Run command dialog">
 		<meta name="author" content="max1220">
-		<title>🖹 Text editor</title>
-		<link rel="stylesheet" href="/static/css/xp/style.css">
-		<link rel="stylesheet" href="/static/css/xp/application.css">
-		<link rel="stylesheet" href="/static/css/xp/icons.css">
+		<title>Text editor</title>
+		<link rel="stylesheet" href="/xp/css/framework.css">
+		<link rel="stylesheet" href="/xp/css/application.css">
+		<link rel="stylesheet" href="/xp/css/icon_sets/icons_utf8.css" id="css-icons">
+		<link rel="stylesheet" href="/xp/css/styles/lunatic.css" id="css-theme">
+		<link rel="stylesheet" href="/xp/config/application.css">
 		<style>
-			:root {
-				--windows-content-padding: 1px;
-			}
-			.text_content {
-				width: 100%;
-				height: 100%;
+			#text_content {
 				border: none;
 				outline: none;
-				padding: 0 0;
 				margin: 0 0;
+				width: 100%;
 			}
-			.preview_content {
+			#preview_content {
+				border: none;
 				border-left: 1px solid #888;
 				width: 100%;
 			}
@@ -32,113 +30,83 @@
 			}
 		</style>
 	</head>
-	<body onload="body_onload()">
-		<div class="menu-bar">
-			<div class="menu-row">
-				<div class="menu-container">
-					<div class="menu-category">File</div>
-					<div class="menu-sub hidden">
-						<a onclick="btn_new()" class="menu-item icon icon-16" data-icon="file-text">
-							New
-						</a>
-						<a onclick="btn_open()" class="menu-item icon icon-16" data-icon="action-open">
-							Open...
-						</a>
-						<a onclick="btn_reload()" class="menu-item icon icon-16" data-icon="action-reload">
-							Reload
-						</a>
-						<div class="menu-spacer"></div>
-						<a onclick="btn_save()" class="menu-item icon icon-16" data-icon="action-save">
-							Save
-						</a>
-						<a onclick="btn_saveas()" class="menu-item icon icon-16" data-icon="action-saveas">
-							Save as...
-						</a>
-						<div class="menu-spacer"></div>
-						<a href="about:blank#close" class="menu-item icon icon-16" data-icon="action-exit">
-							Exit
-						</a>
-					</div>
-				</div>
-				<div class="menu-container">
-					<div class="menu-category">View</div>
-					<div class="menu-sub hidden">
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="linewrap" data-update-type="input-boolean" data-update-onchange checked>
-							Line-wrap
-						</label>
-						<label class="menu-item">
-							<input type="checkbox" data-update-key="preview" data-update-type="input-boolean" data-update-onchange>
-							HTML preview
-						</label>
-					</div>
-				</div>
-				<div class="menu-container">
-					<div class="menu-category">Help</div>
-					<div class="menu-sub hidden">
-						<a onclick="show_popup('about-window')" class="menu-item icon icon-16" data-icon="generic-info">About...</a>
-					</div>
-				</div>
-			</div>
-		</div>
-
+	<body onload="onload()">
 		<div class="window-content">
-			<div class="splitview">
-				<textarea name="text_content" id="text_content" class="text_content"></textarea>
-				<iframe id="preview_content" class="preview_content hidden"></iframe>
-			</div>
-		</div>
-
-		<div class="status-bar">
-			<span class="status-bar-field" id="status_left"></span>
-			<span class="status-bar-field" id="status_middle"></span>
-			<span class="status-bar-field" id="status_right"></span>
-		</div>
-
-		<div id="popups" class="popups hidden">
-			<div id="about-window" class="window hidden">
-				<div class="title-bar">
-					<div class="title-bar-text">About text editor</div>
-					<div class="title-bar-controls">
-						<button aria-label="Close" onclick="close_popup()"></button>
+			<div class="menu-bar">
+				<div class="menu-row">
+					<div class="menu-container">
+						<div class="menu-category">File</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_new()" class="menu-item icon icon-16" data-icon="file-text">
+								New
+							</a>
+							<a onclick="btn_open()" class="menu-item icon icon-16" data-icon="action-open">
+								Open...
+							</a>
+							<a onclick="btn_reload()" class="menu-item icon icon-16" data-icon="action-reload">
+								Reload
+							</a>
+							<div class="menu-spacer"></div>
+							<a onclick="btn_save()" class="menu-item icon icon-16" data-icon="action-save">
+								Save
+							</a>
+							<a onclick="btn_saveas()" class="menu-item icon icon-16" data-icon="action-saveas">
+								Save as...
+							</a>
+							<div class="menu-spacer"></div>
+							<a href="about:blank#close" class="menu-item icon icon-16" data-icon="action-exit">
+								Exit
+							</a>
+						</div>
 					</div>
-				</div>
-				<div class="window-body">
-					<div class="window-content">
-						<h3>Text editor</h3>
-						<p>Just a simple text editor</p>
-						<ul>
-							<li>CGI API written in bash</li>
-							<li>Front-end written in plain Javascript</li>
-						</ul>
-						<br>
-						<br>
-						<div class="btn-panel">
-							<span></span>
-							<button class="btn" onclick="close_popup()">Close</button>
+					<div class="menu-container">
+						<div class="menu-category">View</div>
+						<div class="menu-sub hidden">
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="linewrap" data-update-type="input-boolean" data-update-onchange checked>
+								Line-wrap
+							</label>
+							<label class="menu-item">
+								<input type="checkbox" data-update-key="preview" data-update-type="input-boolean" data-update-onchange>
+								Preview
+							</label>
+						</div>
+					</div>
+					<div class="menu-container">
+						<div class="menu-category">Help</div>
+						<div class="menu-sub hidden">
+							<a onclick="btn_about()" class="menu-item icon icon-16" data-icon="generic-info">About...</a>
 						</div>
 					</div>
 				</div>
 			</div>
+
+			<div class="window-inner">
+				<div class="splitview">
+					<textarea id="text_content" class="p2"></textarea>
+					<iframe id="preview_content" class="hidden"></iframe>
+				</div>
+			</div>
+
+			<div class="status-bar">
+				<span class="status-bar-field" id="status_left"></span>
+				<span class="status-bar-field" id="status_middle"></span>
+				<span class="status-bar-field" id="status_right"></span>
+			</div>
 		</div>
-		<script src="/static/js/fix_link_targets_iframe.js"></script>
-		<script src="/static/js/fix_open_target.js"></script>
-		<script src="/static/js/fix_radio_onchange.js"></script>
-		<script src="/static/js/make_xhr.js"></script>
-		<script src="/static/js/popups.js"></script>
-		<script src="/static/js/CgiCommands.js"></script>
-		<script src="/static/js/AppState.js"></script>
-		<script src="/static/js/FileManager.js"></script>
-		<script src="/static/js/xp/text_editor.js"></script>
+
+		<!-- Libraries -->
+		<script src="/xp/libraries/utils.js"></script>
+		<script src="/xp/libraries/CgiCommands.js"></script>
+		<script src="/xp/libraries/AppState.js"></script>
+		<script src="/xp/libraries/FileManager.js"></script>
+		<script src="/xp/libraries/MessageBox.js"></script>
+		<!-- Config -->
+		<script src="/xp/config/cgi_backend.js"></script>
+		<!-- Application -->
+		<script src="/xp/applications/text_editor/text_editor.js"></script>
 	</body>
 
-<!--
-These values are read outside of the iframe
-to determine the prefered size of this window:
-{{{window_width=600}}}
-{{{window_height=400}}}
-{{{window_resizeable}}}
--->
 </html>
 
 
