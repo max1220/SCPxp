@@ -13,9 +13,6 @@ the panel yourself(e.g. using an authenticating reverse proxy).
 
 [![Demo video](https://img.youtube.com/vi/lBBFG3guG5w/hqdefault.jpg)](https://www.youtube.com/embed/lBBFG3guG5w)
 
-[<img src="https://img.youtube.com/vi/lBBFG3guG5w/hqdefault.jpg" width="600" height="300"
-/>](https://www.youtube.com/embed/lBBFG3guG5w)
-
 
 
 ## Installation
