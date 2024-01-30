@@ -229,12 +229,14 @@ function hide_start_menu() {
 
 function update_clock() {
 	let currentdate = new Date()
-	let time_str = currentdate.getHours().toString().padStart(2, "0") + ":" + currentdate.getMinutes().toString().padStart(2, "0") + ":" + currentdate.getSeconds().toString().padStart(2, "0")
+	//let time_str = currentdate.getHours().toString().padStart(2, "0") + ":" + currentdate.getMinutes().toString().padStart(2, "0") + ":" + currentdate.getSeconds().toString().padStart(2, "0")
+	let time_str = currentdate.getHours().toString().padStart(2, "0") + ":" + currentdate.getMinutes().toString().padStart(2, "0")
 	document.getElementById("clock").innerHTML = time_str
 }
 
 // update the clock in the taskbar
-setInterval(update_clock, 1000);
+//setInterval(update_clock, 1000);
+setInterval(update_clock, 60000);
 
 // emulate mouse events from touch events(no multi-touch)
 function make_touchable(elem) {
