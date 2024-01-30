@@ -114,9 +114,9 @@ function stop_stream() {
 		location.href = "about:blank#close"
 		return;
 	}
-	let screen_img_elem = document.getElementById(state.data.screen_img_elem_id)
-	screen_img_elem.classList.add("hidden")
-	screen_img_elem.src = ""
+	winwow.screen_img.hidden = false
+	winwow.screen_img.src = ""
+	window.settings.style.display = "flex"
 	state.data.has_stream = false
 }
 
@@ -283,8 +283,8 @@ function screen_img_elem_oncontextmenu(e) {
 }
 function screen_img_elem_onclick(e) {
 	if (!state.data.input_mouse_enable || !state.data.has_stream) { return; }
+	e.target.focus()
 	if (state.data.input_mouse_capture) {
-		e.target.focus()
 		e.target.requestPointerLock()
 		e.preventDefault()
 	}
@@ -344,10 +344,9 @@ function screen_img_elem_register() {
 function connect_session() {
 	if (!state.data.session_id || (state.data.session_id=="")) { return; }
 	// connect to an existing session
-	document.getElementById("settings").hidden = true
-	let screen_img_elem = document.getElementById("screen_img")
-	screen_img_elem.hidden = false
-	screen_img_elem.focus()
+	window.settings.style.display = "none"
+	window.screen_img.hidden = false
+	window.screen_img.focus()
 	update_stream()
 	window_onresize()
 	state.data.auto_connect_session = true
@@ -358,10 +357,9 @@ function connect_session() {
 // button handler for creating a new display
 function btn_create_session_xvfb() {
 	create_session_xvfb()
-	document.getElementById("settings").hidden = true
-	let screen_img_elem = document.getElementById("screen_img")
-	screen_img_elem.hidden = false
-	screen_img_elem.focus()
+	window.settings.style.display = "none"
+	window.screen_img.hidden = false
+	window.screen_img.focus()
 	state.data.auto_connect_session = true
 	state.data.auto_create_mirror = false
 	state.data.auto_create_xvfb = false
@@ -369,10 +367,9 @@ function btn_create_session_xvfb() {
 
 function btn_create_session_mirror() {
 	create_session_mirror()
-	document.getElementById("settings").hidden = true
-	let screen_img_elem = document.getElementById("screen_img")
-	screen_img_elem.hidden = false
-	screen_img_elem.focus()
+	window.settings.style.display = "none"
+	window.screen_img.hidden = false
+	window.screen_img.focus()
 	window.setTimeout(function() {
 		update_stream()
 		window_onresize()
