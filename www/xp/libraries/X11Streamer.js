@@ -51,7 +51,7 @@ function X11Streamer(config_obj, cgi_commands) {
 			cmd.push("-flags", "low_delay")
 		}
 		cmd.push("-")
-		return cgi_commands.encode_command(cmd, "multipart/x-mixed-replace; boundary=--ffmpeg", undefined, undefined, undefined, event_stream)
+		return cgi_commands.encode_command(cmd, "multipart/x-mixed-replace; boundary=--ffmpeg", ["X-Accel-Buffering: no","Cache-Control: no-cache"], undefined, undefined, event_stream)
 	}
 
 	// wrapper that reads config values from config_obj
