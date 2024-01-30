@@ -83,12 +83,13 @@
 		<script src="/xp/libraries/CgiCommands.js"></script>
 		<script>
 			function login_ok() {
-				location.href = "/xp/desktop.html"
+				//location.href = "/xp/desktop.html"
+				// relocate to desktop URL
+				location.href = localStorage.getItem("XP_CGI_BACKEND")+ "/../../xp/desktop.html"
 			}
 			function login_err() {
-				let main_text_elem = document.getElementById("main_text")
-				main_text_elem.style.color = "#f00"
-				main_text_elem.innerText = "Login failed!"
+				window.main_text.style.color = "#f00"
+				window.main_text.innerText = "Login failed!"
 			}
 			function test_login() {
 				let cgi_commands = new CgiCommands(localStorage.getItem("XP_CGI_BACKEND"))
@@ -102,9 +103,9 @@
 
 			// perform login and configure backend in local storage
 			function login() {
-				let username = document.getElementById("username").value
-				let password = document.getElementById("password").value
-				let server = document.getElementById("server").value
+				let username = window.username.value
+				let password = window.password.value
+				let server = window.server.value
 				let default_server = location.host + "/cgi-bin/cgi_command.sh"
 				if (username=="" || password=="") {
 					let cgi_backend = (server == "") ? default_server : server
