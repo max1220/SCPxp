@@ -27,6 +27,9 @@ function CgiCommands(base_url) {
 		if (event_stream) {
 			content_type = "text/event-stream"
 			encoded.push("event_stream="+encodeURIComponent(event_stream));
+			// disable buffering for SSE behind reverse proxy
+			encoded = encoded.concat(["header=" + encodeURIComponent("X-Accel-Buffering: no")])
+			encoded = encoded.concat(["header=" + encodeURIComponent("Cache-Control: no-cache")])
 		}
 
 		// append content_type arg if any
