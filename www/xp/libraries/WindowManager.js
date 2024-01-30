@@ -131,9 +131,20 @@ function Window(WM) {
 
 	// update window properties: position, dimensions, title, resizeable
 	win.update = function() {
-		// update dimensions
-		win.move(win.x, win.y)
-		win.resize(win.width, win.height)
+		if (win.maximized) {
+			// update to maximized dimensions
+			let max_dims = WM.get_maximized_size()
+			win.move(0, 0)
+			win.resize(max_dims[0], max_dims[1])
+			win.x = 0
+			win.y = 0
+			win.width = max_dims[0]
+			win.height = max_dims[1]
+		} else {
+			// update(ensure) dimensions are win.x, win.y, win.width, win.height
+			win.move(win.x, win.y)
+			win.resize(win.width, win.height)
+		}
 		win.elems.body.style.minWidth = win.min_width+"px"
 		win.elems.body.style.minHeight = win.min_height+"px"
 
@@ -168,24 +179,17 @@ function Window(WM) {
 		// add greyout class(greyout window and disable interactions)
 		if (win.greyout) {
 			win.elems.window.classList.add("window-greyout")
-			if (win.elems.iframe) {
-				win.elems.iframe.style.pointerEvents = "none"
-			}
 		} else {
 			win.elems.window.classList.remove("window-greyout")
-			if (win.elems.iframe) {
-				win.elems.iframe.style.pointerEvents = "auto"
-			}
 		}
 
-		/*
 		if (win.elems.iframe) {
 			if (win.greyout || (!win.focused)) {
 				win.elems.iframe.style.pointerEvents = "none"
 			} else {
 				win.elems.iframe.style.pointerEvents = "auto"
 			}
-		}*/
+		}
 
 		// update maximized/resizeable status of window
 		if (win.resizeable) {
